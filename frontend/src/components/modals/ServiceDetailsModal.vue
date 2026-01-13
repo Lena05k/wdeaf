@@ -1,187 +1,260 @@
 <template>
-  <Modal
-      :is-open="isOpen"
-      title="Детали услуги"
-      large
-      @close="emit('close')"
-  >
-    <template v-if="service">
-      <!-- Full Images Gallery -->
-      <ImageCarousel
-          :images="service.images"
-          class="mb-4"
-          @update:index="currentImageIndex = $event"
-      />
+  <div v-if="service" class="fixed inset-0 modal-overlay z-50 flex items-end">
+    <div class="modal-content w-full rounded-t-2xl p-4 max-w-md animate-slide-up">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-lg font-bold">{{ service.name }}</h2>
+        <button @click="$emit('close')" class="text-2xl text-gray-400">✕</button>
+      </div>
 
-      <div class="space-y-4 mb-4 max-h-96 overflow-y-auto">
+      <!-- Image Carousel -->
+      <div v-if="service.images" class="image-carousel mb-4">
+        <img
+            :src="service.images[modalImageIndex]"
+            class="carousel-image"
+            :alt="service.name"
+        >
+        <button
+            v-if="service.images.length > 1"
+            @click.stop="$emit('prev-image')"
+            class="carousel-nav prev"
+        >
+          ‹
+        </button>
+        <button
+            v-if="service.images.length > 1"
+            @click.stop="$emit('next-image')"
+            class="carousel-nav next"
+        >
+          ›
+        </button>
+        <div class="carousel-dots" v-if="service.images.length > 1">
+          <div
+              v-for="(img, idx) in service.images"
+              :key="idx"
+              :class="['dot', { 'active': modalImageIndex === idx }]"
+              @click.stop="selectImage(idx)"
+          ></div>
+        </div>
+      </div>
+
+      <div class="space-y-4 mb-4 max-h-80 overflow-y-auto">
         <!-- Full Description -->
         <div>
-          <label class="label-small">Полное описание</label>
-          <p class="text-primary">{{ service.fullDescription || service.description }}</p>
+          <p class="text-sm text-gray-400 mb-1">Полное описание</p>
+          <p class="text-gray-300">{{ service.fullDescription || service.description }}</p>
         </div>
 
-        <!-- Provider Profile Button -->
-        <button
-            @click="emit('view-provider', service.provider)"
-            class="provider-button"
+        <!-- Provider Profile -->
+        <div
+            @click="$emit('view-provider', service.provider)"
+            class="bg-blue-900 bg-opacity-30 rounded-lg p-3 border border-blue-700 cursor-pointer hover:bg-opacity-50 transition"
         >
-          <span>👤 Профиль исполнителя</span>
-          <Rating :value="service.providerRating || 4.8" :show-value="false" />
-        </button>
-
-        <!-- Stats Grid -->
-        <div class="grid grid-cols-2 gap-4">
-          <div class="stat-item">
-            <label class="label-small">Рейтинг</label>
-            <Rating :value="service.providerRating || 4.8" :review-count="service.reviews" />
-          </div>
-          <div class="stat-item">
-            <label class="label-small">Цена</label>
-            <p class="price-text">{{ formatters.price(service.price) }}</p>
+          <p class="text-sm text-gray-400 mb-2">👤 Профиль исполнителя</p>
+          <div class="flex items-center justify-between">
+            <p class="font-semibold">{{ service.provider }}</p>
+            <span class="text-yellow-400">⭐ {{ service.providerRating || 4.8 }}</span>
           </div>
         </div>
 
-        <!-- Response Time -->
-        <div class="stat-item">
-          <label class="label-small">Время ответа</label>
-          <p class="text-primary">{{ service.response_time }}</p>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <p class="text-sm text-gray-400 mb-1">Рейтинг</p>
+            <p class="font-semibold">⭐ {{ service.providerRating || 4.8 }} ({{ service.reviews }} отзывов)</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-400 mb-1">Цена</p>
+            <p class="font-bold text-blue-400 text-lg">{{ service.price }}₽</p>
+          </div>
+        </div>
+
+        <div>
+          <p class="text-sm text-gray-400 mb-1">Время ответа</p>
+          <p class="text-gray-300">{{ service.response_time }}</p>
         </div>
 
         <!-- Reviews Section -->
-        <ReviewsSection
-            v-if="service.reviews > 0"
-            :reviews="mockReviews"
-            :provider-name="service.provider"
-        />
+        <div v-if="service.reviews > 0" class="reviews-section">
+          <p class="text-sm font-semibold text-blue-400 mb-3">💬 Последние отзывы:</p>
+          <div class="review-item">
+            <p class="text-sm font-semibold mb-1">{{ service.provider }}</p>
+            <p class="text-xs text-gray-400">⭐ 5.0</p>
+            <p class="text-sm text-gray-300 mt-1">Отличная работа! Очень доволен качеством и скоростью выполнения.</p>
+          </div>
+          <div class="review-item">
+            <p class="text-sm font-semibold mb-1">Клиент</p>
+            <p class="text-xs text-gray-400">⭐ 4.8</p>
+            <p class="text-sm text-gray-300 mt-1">Профессионал своего дела, рекомендую!</p>
+          </div>
+        </div>
       </div>
 
-      <!-- Action Buttons -->
-      <template #footer>
-        <Button
-            variant="primary"
-            size="lg"
-            @click="emit('order')"
-            class="flex-1"
-        >
-          Заказать услугу
-        </Button>
-        <Button
-            variant="outline"
-            size="lg"
-            @click="emit('close')"
-            class="flex-1"
-        >
-          Отмена
-        </Button>
-      </template>
-    </template>
-  </Modal>
+      <button
+          @click="$emit('order-confirm')"
+          class="btn-primary w-full py-3 rounded-lg font-bold text-lg mb-2"
+      >
+        Заказать услугу
+      </button>
+      <button
+          @click="$emit('close')"
+          class="btn-secondary w-full py-3 rounded-lg font-semibold"
+      >
+        Отмена
+      </button>
+    </div>
+  </div>
 </template>
 
-<script setup lang="ts">
-import { defineProps, defineEmits, ref } from 'vue'
-import Modal from '@/components/shared/Modal.vue'
-import ImageCarousel from '@/components/shared/ImageCarousel.vue'
-import Button from '@/components/shared/Button.vue'
-import Rating from '@/components/shared/Rating.vue'
-import ReviewsSection from '@/components/shared/ReviewsSection.vue'
-import { Formatters } from '@/utils/formatters'
-
-interface Service {
-  id: number
-  name: string
-  provider: string
-  category: string
-  description: string
-  fullDescription: string
-  price: number
-  reviews: number
-  response_time: string
-  providerRating: number
-  images: string[]
-}
-
-interface Review {
-  author: string
-  rating: number
-  text: string
-  date?: string
-}
-
-defineProps<{
-  isOpen: boolean
-  service: Service | null
-}>()
-
-const emit = defineEmits<{
-  close: []
-  order: []
-  'view-provider': [provider: string]
-}>()
-
-const currentImageIndex = ref(0)
-const formatters = Formatters
-
-const mockReviews: Review[] = [
-  {
-    author: 'Иван П.',
-    rating: 5.0,
-    text: 'Отличная работа! Очень доволен качеством и скоростью выполнения.',
-    date: '2 дня назад'
+<script>
+export default {
+  name: 'ServiceDetailsModal',
+  props: {
+    service: {
+      type: Object,
+      default: null
+    },
+    modalImageIndex: {
+      type: Number,
+      default: 0
+    }
   },
-  {
-    author: 'Мария К.',
-    rating: 4.8,
-    text: 'Профессионал своего дела, рекомендую!',
-    date: '1 неделю назад'
+  emits: ['close', 'order-confirm', 'view-provider', 'next-image', 'prev-image'],
+  methods: {
+    selectImage(idx) {
+      this.$emit('update:modalImageIndex', idx);
+    }
   }
-]
+}
 </script>
 
 <style scoped>
-.label-small {
-  display: block;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  margin-bottom: 8px;
+.modal-overlay {
+  background: rgba(0, 0, 0, 0.7);
 }
 
-.text-primary {
-  color: var(--color-text-primary);
-  font-size: 14px;
-  line-height: 1.5;
+.modal-content {
+  background: #1a1f2e;
+  color: #FFFFFF;
+  border: 1px solid #0055FF;
 }
 
-.provider-button {
+.image-carousel {
+  position: relative;
+  width: 100%;
+  height: 200px;
+  background: #0F1319;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.3s ease;
+}
+
+.carousel-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 85, 255, 0.8);
+  color: white;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 12px;
-  background: rgba(0, 85, 255, 0.1);
-  border: 1px solid var(--color-primary);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s;
-  color: var(--color-text-primary);
-  font-weight: 600;
-  width: 100%;
+  justify-content: center;
+  transition: background 0.3s;
 }
 
-.provider-button:hover {
-  background: rgba(0, 85, 255, 0.2);
+.carousel-nav:hover {
+  background: #0055FF;
 }
 
-.stat-item {
+.carousel-nav.prev { left: 8px; }
+.carousel-nav.next { right: 8px; }
+
+.carousel-dots {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 6px;
+  z-index: 10;
 }
 
-.price-text {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--color-primary);
-  margin: 0;
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.dot.active {
+  background: #0055FF;
+}
+
+.reviews-section {
+  background: #0F1319;
+  border-radius: 8px;
+  padding: 12px;
+  border-left: 3px solid #0055FF;
+}
+
+.review-item {
+  background: #1a1f2e;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  border: 1px solid rgba(0, 85, 255, 0.2);
+}
+
+.btn-primary {
+  background: #0055FF;
+  color: #FFFFFF;
+  transition: all 0.3s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background: #0044CC;
+  box-shadow: 0 8px 16px rgba(0, 85, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #0055FF;
+  border: 1px solid #0055FF;
+  transition: all 0.3s;
+  cursor: pointer;
+}
+
+.btn-secondary:hover {
+  background: rgba(0, 85, 255, 0.1);
+}
+
+.text-gray-300 { color: #CCCCCC; }
+.text-gray-400 { color: #999999; }
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.animate-slide-up {
+  animation: slideUp 0.3s ease-out;
 }
 </style>

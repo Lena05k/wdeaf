@@ -2,20 +2,20 @@ import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 import { useAuthStore } from '../stores/userStore'
 
 // Layouts
-import MainLayout from '@/layouts/MainLayout.vue'
-import AuthLayout from '@/layouts/AuthLayout.vue'
+import MainLayout from '../components/layout/MainLayout.vue'
+import AuthLayout from '../components/layout/AuthLayout.vue'
 
 // Pages
-import HomePage from '@/pages/HomePage.vue'
-import CatalogPage from '@/pages/CatalogPage.vue'
-import OrdersPage from '@/pages/OrdersPage.vue'
-import ProfilePage from '@/pages/ProfilePage.vue'
-import ServiceDetailPage from '@/pages/ServiceDetailPage.vue'
-import ProviderProfilePage from '@/pages/ProviderProfilePage.vue'
-import LoginPage from '@/pages/auth/LoginPage.vue'
-import SignupPage from '@/pages/auth/SignupPage.vue'
-import ForgotPasswordPage from '@/pages/auth/ForgotPasswordPage.vue'
-import NotFoundPage from '@/pages/NotFoundPage.vue'
+import HomePage from '../pages/HomePage.vue'
+import CatalogPage from '../pages/CatalogPage.vue'
+import OrdersPage from '../pages/OrdersPage.vue'
+import ProfilePage from '../pages/ProfilePage.vue'
+import ServiceDetailPage from '../pages/ServiceDetailPage.vue'
+import ProviderProfilePage from '../pages/ProviderProfilePage.vue'
+import LoginPage from '../pages/LoginPage.vue'
+import SignupPage from '../pages/SignupPage.vue'
+import ForgotPasswordPage from '../pages/ForgotPasswordPage.vue'
+import NotFoundPage from '../pages/NotFoundPage.vue'
 
 const routes: RouteRecordRaw[] = [
     // Auth Routes

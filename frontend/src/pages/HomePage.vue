@@ -1,5 +1,5 @@
 <template>
-  <div id="app" class="bg-slate-900 min-h-screen">
+  <div class="home-page">
     <!-- Header Component -->
     <Header 
       :userData="userData"
@@ -54,7 +54,7 @@
     </main>
 
     <!-- Service Details Modal -->
-    <ServiceModal 
+    <ServiceDetailsModal 
       v-if="selectedServiceModal"
       :service="selectedServiceModal"
       :modalImageIndex="modalImageIndex"
@@ -66,7 +66,7 @@
     />
 
     <!-- Provider Profile Modal -->
-    <ProviderModal 
+    <ProviderProfileModal 
       v-if="providerProfileModal"
       :providerName="providerProfileModal"
       @close="providerProfileModal = null"
@@ -81,18 +81,18 @@
 </template>
 
 <script>
-import Header from '@/components/layout/Header.vue'
-import TabNavigation from '@/components/layout/TabNavigation.vue'
-import BrowseServices from '@/views/BrowseServices.vue'
-import CatalogView from '@/views/CatalogView.vue'
-import OrdersView from '@/views/OrdersView.vue'
-import ProfileView from '@/views/ProfileView.vue'
-import ServiceModal from '@/components/modals/ServiceDetailsModal.vue'
-import ProviderModal from '@/components/modals/ProviderProfileModal.vue'
-import Toast from '@/components/shared/Toast.vue'
+import Header from '../components/layout/Header.vue'
+import Toast from '../components/shared/Toast.vue'
+import TabNavigation from '../components/layout/TabNavigation.vue'
+import BrowseServices from '../views/BrowseServices.vue'
+import CatalogView from '../views/CatalogView.vue'
+import OrdersView from '../views/OrdersView.vue'
+import ProfileView from '../views/ProfileView.vue'
+import ServiceDetailsModal from '../components/modals/ServiceDetailsModal.vue'
+import ProviderProfileModal from '../components/modals/ProviderProfileModal.vue'
 
 export default {
-  name: 'App',
+  name: 'HomePage',
   components: {
     Header,
     TabNavigation,
@@ -100,8 +100,8 @@ export default {
     CatalogView,
     OrdersView,
     ProfileView,
-    ServiceModal,
-    ProviderModal,
+    ServiceDetailsModal,
+    ProviderProfileModal,
     Toast
   },
   data() {
@@ -302,14 +302,5 @@ export default {
 }
 </script>
 
-<style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  padding: 0;
-  background: #0F1319;
-  min-height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #FFFFFF;
-}
+<style scoped>
 </style>
