@@ -1,236 +1,93 @@
+// src/stores/userStore.ts
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-export interface User {
-    id: string
-    username: string
-    first_name: string
-    last_name?: string
-    photo_url?: string
-    is_premium: boolean
-    is_provider: boolean
-    rating: number
-    reviews_count: number
-    joined_date: string
-    bio?: string
+interface TelegramUser {
+  id: number
+  is_bot: boolean
+  first_name: string
+  last_name?: string
+  username?: string
+  language_code?: string
+  is_premium?: boolean
+  added_to_attachment_menu?: boolean
+  allows_user_initiated_voice_chats?: boolean
+  allows_user_initiated_video_chats?: boolean
 }
 
-export interface AuthState {
-    user: User | null
-    token: string | null
-    isAuthenticated: boolean
-    isLoading: boolean
-    error: string | null
+interface User extends TelegramUser {
+  authToken?: string
+  email?: string
 }
 
-export const useAuthStore = defineStore('auth', () => {
+export const useUserStore = defineStore('user', () => {
+  const user = ref<User | null>(null)
+  const isAuthenticated = ref(false)
+  const loading = ref(false)
+
+  const setUser = (userData: User) => {
+    user.value = userData
+    isAuthenticated.value = !!userData.authToken
+  }
+
+  const logout = () => {
+    user.value = null
+    isAuthenticated.value = false
+    localStorage.removeItem('authToken')
+  }
+
+  const getTelegramUser = (): TelegramUser | null => {
+    try {
+      if (window.telegramUser) {
+        return window.telegramUser
+      }
+      if (window.Telegram?.WebApp?.initData) {
+        const params = new URLSearchParams(window.Telegram.WebApp.initData)
+        const userData = params.get('user')
+        return userData ? JSON.parse(userData) : null
+      }
+    } catch (e) {
+      console.error('Error getting Telegram user:', e)
+    }
+    return null
+  }
+
+  const initFromTelegram = () => {
+    const tgUser = getTelegramUser()
+    if (tgUser) {
+      setUser({
+        ...tgUser,
+        authToken: localStorage.getItem('authToken') || undefined,
+        email: localStorage.getItem('userEmail') || undefined
+      })
+    }
+  }
+
+  const firstName = computed(() => user.value?.first_name || '')
+  const lastName = computed(() => user.value?.last_name || '')
+  const fullName = computed(() => 
+    `${user.value?.first_name || ''} ${user.value?.last_name || ''}`.trim()
+  )
+  const username = computed(() => user.value?.username || '')
+  const userId = computed(() => user.value?.id || null)
+
+  return {
     // State
-    const user = ref<User | null>(null)
-    const token = ref<string | null>(null)
-    const isLoading = ref(false)
-    const error = ref<string | null>(null)
-
+    user,
+    isAuthenticated,
+    loading,
+    
+    // Actions
+    setUser,
+    logout,
+    getTelegramUser,
+    initFromTelegram,
+    
     // Computed
-    const isAuthenticated = computed(() => !!user.value && !!token.value)
-
-    const userDisplayName = computed(() => {
-        if (!user.value) return 'Гость'
-        return user.value.first_name || user.value.username
-    })
-
-    const userInitials = computed(() => {
-        if (!user.value) return '?'
-        const parts = [user.value.first_name, user.value.last_name].filter(Boolean)
-        return parts.map(p => p[0].toUpperCase()).join('')
-    })
-
-    // Methods
-    const initAuth = () => {
-        // Восстановить сессию из localStorage
-        const savedUser = localStorage.getItem('user')
-        const savedToken = localStorage.getItem('token')
-
-        if (savedUser && savedToken) {
-            try {
-                user.value = JSON.parse(savedUser)
-                token.value = savedToken
-            } catch (e) {
-                clearAuth()
-            }
-        }
-
-        // Если есть Telegram WebApp, использовать данные оттуда
-        if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-            const tgUser = window.Telegram.WebApp.initDataUnsafe.user
-            setUserFromTelegram(tgUser)
-        }
-    }
-
-    const setUserFromTelegram = (tgUser: any) => {
-        user.value = {
-            id: String(tgUser.id),
-            username: tgUser.username || `user_${tgUser.id}`,
-            first_name: tgUser.first_name || 'User',
-            last_name: tgUser.last_name,
-            photo_url: tgUser.photo_url,
-            is_premium: tgUser.is_premium || false,
-            is_provider: false,
-            rating: 4.8,
-            reviews_count: 0,
-            joined_date: new Date().toISOString()
-        }
-        token.value = `telegram_${tgUser.id}_${Date.now()}`
-        saveSession()
-    }
-
-    const login = async (username: string, password: string) => {
-        isLoading.value = true
-        error.value = null
-
-        try {
-            // Имитация API запроса
-            // const response = await apiClient.post('/auth/login', { username, password })
-
-            // Mock данные
-            user.value = {
-                id: '123456789',
-                username: username,
-                first_name: 'Иван',
-                last_name: 'Петров',
-                is_premium: false,
-                is_provider: false,
-                rating: 4.8,
-                reviews_count: 0,
-                joined_date: new Date().toISOString()
-            }
-            token.value = `token_${Date.now()}`
-
-            saveSession()
-            return true
-        } catch (e) {
-            error.value = 'Ошибка входа. Проверьте учетные данные.'
-            return false
-        } finally {
-            isLoading.value = false
-        }
-    }
-
-    const signup = async (username: string, firstName: string, password: string) => {
-        isLoading.value = true
-        error.value = null
-
-        try {
-            // const response = await apiClient.post('/auth/signup', {
-            //   username,
-            //   first_name: firstName,
-            //   password
-            // })
-
-            user.value = {
-                id: `${Date.now()}`,
-                username: username,
-                first_name: firstName,
-                is_premium: false,
-                is_provider: false,
-                rating: 5.0,
-                reviews_count: 0,
-                joined_date: new Date().toISOString()
-            }
-            token.value = `token_${Date.now()}`
-
-            saveSession()
-            return true
-        } catch (e) {
-            error.value = 'Ошибка регистрации. Попробуйте позже.'
-            return false
-        } finally {
-            isLoading.value = false
-        }
-    }
-
-    const logout = () => {
-        clearAuth()
-    }
-
-    const updateProfile = async (updates: Partial<User>) => {
-        if (!user.value) return false
-
-        isLoading.value = true
-        error.value = null
-
-        try {
-            // const response = await apiClient.put(`/users/${user.value.id}`, updates)
-
-            user.value = {
-                ...user.value,
-                ...updates
-            }
-            saveSession()
-            return true
-        } catch (e) {
-            error.value = 'Ошибка обновления профиля.'
-            return false
-        } finally {
-            isLoading.value = false
-        }
-    }
-
-    const becomeProvider = async () => {
-        if (!user.value) return false
-
-        isLoading.value = true
-        error.value = null
-
-        try {
-            // const response = await apiClient.post(`/users/${user.value.id}/become-provider`)
-
-            user.value.is_provider = true
-            saveSession()
-            return true
-        } catch (e) {
-            error.value = 'Ошибка активации режима исполнителя.'
-            return false
-        } finally {
-            isLoading.value = false
-        }
-    }
-
-    const saveSession = () => {
-        if (user.value) {
-            localStorage.setItem('user', JSON.stringify(user.value))
-        }
-        if (token.value) {
-            localStorage.setItem('token', token.value)
-        }
-    }
-
-    const clearAuth = () => {
-        user.value = null
-        token.value = null
-        error.value = null
-        localStorage.removeItem('user')
-        localStorage.removeItem('token')
-    }
-
-    return {
-        // State
-        user,
-        token,
-        isLoading,
-        error,
-
-        // Computed
-        isAuthenticated,
-        userDisplayName,
-        userInitials,
-
-        // Methods
-        initAuth,
-        login,
-        signup,
-        logout,
-        updateProfile,
-        becomeProvider,
-        setUserFromTelegram
-    }
+    firstName,
+    lastName,
+    fullName,
+    username,
+    userId
+  }
 })

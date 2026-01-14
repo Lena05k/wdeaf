@@ -28,7 +28,7 @@ defineProps<{
 
 <style scoped>
 .header {
-  background: var(--color-bg-secondary);
+  background: #0f1319;
   border-bottom: 1px solid var(--color-primary);
   box-shadow: 0 2px 8px var(--color-shadow);
 }
