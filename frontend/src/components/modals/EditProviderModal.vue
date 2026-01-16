@@ -72,35 +72,36 @@
         <!-- Images Section - Optional with Paper Clip -->
         <div>
           <div class="flex items-center gap-2 mb-3">
-            <span class="text-sm font-semibold text-blue-400">📎 Фото</span>
+            <span class="text-sm font-semibold text-blue-400">📎 Фото и файлы</span>
             <span class="text-xs text-gray-500">(опционально)</span>
           </div>
 
-          <!-- Current Images -->
+          <!-- Current Attachments -->
           <div v-if="editedService.images && editedService.images.length > 0" class="space-y-2 mb-3">
             <div
                 v-for="(image, index) in editedService.images"
-                :key="index"
-                class="relative bg-slate-700 border border-blue-900 rounded-lg overflow-hidden group"
+                :key="`existing-${index}`"
+                class="relative bg-slate-700 border border-blue-900 rounded-lg overflow-hidden group flex items-center gap-2 p-2 h-16"
             >
               <img
                   :src="image.preview || image"
                   :alt="'Image ' + (index + 1)"
-                  class="w-full h-20 object-cover"
+                  class="w-14 h-14 object-cover rounded"
               />
+              <span class="text-xs text-gray-300 truncate flex-1">{{ `Image ${index + 1}` }}</span>
               <button
                   @click="removeImage(index)"
-                  class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 hover:bg-red-700 transition"
+                  class="bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 hover:bg-red-700 transition flex-shrink-0"
               >
                 ✕
               </button>
             </div>
           </div>
 
-          <!-- Add Photos Button (Paper Clip Style) -->
-          <label v-if="editedService.images && editedService.images.length < 5" class="flex items-center justify-center gap-2 bg-slate-700 border border-dashed border-slate-600 rounded-lg py-3 cursor-pointer hover:border-blue-500 hover:bg-slate-700/80 transition text-sm font-medium text-gray-400 hover:text-blue-400">
+          <!-- Add Attachments Button (Paper Clip Style) -->
+          <label v-if="!editedService.images || editedService.images.length < 5" class="flex items-center justify-center gap-2 bg-slate-700 border border-dashed border-slate-600 rounded-lg py-3 px-2 cursor-pointer hover:border-blue-500 hover:bg-slate-700/80 transition text-sm font-medium text-gray-400 hover:text-blue-400">
             <span class="text-lg">📎</span>
-            <span>Добавить фото</span>
+            <span>{{ editedService.images && editedService.images.length > 0 ? 'Добавить ещё' : 'Добавить' }}</span>
             <input
                 type="file"
                 accept="image/*"
@@ -188,7 +189,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive } from 'vue'
+import { computed, reactive, watch } from 'vue'
 
 interface ServiceImage {
   file?: File
@@ -240,11 +241,12 @@ const editedService = reactive<Service>({
   }
 })
 
-// Initialize edited service when prop changes - СОХРАНЯЕМ ДАННЫЕ КАК ЕСТЬ
-const initializeForm = () => {
-  if (props.service) {
+// Watch for prop changes and update editedService - СОХРАНЯЕМ ДАННЫЕ КАК ЕСТЬ
+watch(() => props.service, (newService) => {
+  if (newService) {
     // Копируем все данные точно как есть
-    Object.assign(editedService, JSON.parse(JSON.stringify(props.service)))
+    const copy = JSON.parse(JSON.stringify(newService))
+    Object.assign(editedService, copy)
     // Гарантируем структуру availability
     if (!editedService.availability) {
       editedService.availability = {
@@ -254,9 +256,7 @@ const initializeForm = () => {
       }
     }
   }
-}
-
-initializeForm()
+}, { immediate: true, deep: true })
 
 // Валидация: ФОТО ТЕПЕРЬ ОПЦИОНАЛЬНО
 const isFormValid = computed(() => {
