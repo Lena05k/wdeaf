@@ -63,7 +63,7 @@
         </button>
         <button
             v-else
-            @click="emit('submit')"
+            @click="handleSubmit"
             class="flex-1 bg-green-600 hover:bg-green-500 text-white font-semibold py-2 rounded-lg transition"
         >
           ✓ Нарегистрируть
@@ -139,6 +139,25 @@ const isStepValid = computed(() => {
       return false
   }
 })
+
+const handleSubmit = () => {
+  emit('submit', formData.value)
+  // Reset form
+  currentStep.value = 1
+  formData.value = {
+    serviceName: '',
+    description: '',
+    category: '',
+    price: 0,
+    timezone: 'UTC+3',
+    availability: {
+      weekdays: true,
+      weekends: false,
+      evenings: true
+    },
+    images: []
+  }
+}
 </script>
 
 <style scoped>
