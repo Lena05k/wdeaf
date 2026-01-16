@@ -1,54 +1,97 @@
 <template>
-  <div class="tab-navigation sticky top-0 z-40 bg-slate-900">
-    <div class="flex justify-around max-w-md mx-auto">
+  <div class="tab-nav sticky top-0 z-40 bg-slate-900 border-b border-slate-800">
+    <div class="flex justify-between px-2">
       <button
         v-for="tab in tabs"
         :key="tab.id"
-        @click="handleTabClick(tab.id)"
-        :class="[
-          'flex-1 py-3 px-4 text-center font-semibold transition',
-          currentTab === tab.id
-            ? 'text-blue-400 border-b-2 border-blue-400'
-            : 'text-gray-400 hover:text-gray-300'
-        ]"
+        @click="emit('update:currentTab', tab.id)"
+        :class="{
+          active: currentTab === tab.id,
+          'tab-btn': true
+        }"
+        :title="tab.label"
       >
-        {{ tab.icon }} {{ tab.label }}
+        <span class="text-lg">{{ tab.icon }}</span>
+        <span class="hidden xs:inline text-xs font-medium ml-1">{{ tab.label }}</span>
       </button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-
 interface Tab {
   id: string
   label: string
   icon: string
 }
 
-const props = defineProps<{
+interface Props {
   currentTab: string
-}>()
+}
+
+defineProps<Props>()
 
 const emit = defineEmits<{
   'update:currentTab': [value: string]
 }>()
 
+// Оптимизированный список табов
 const tabs: Tab[] = [
   { id: 'browse', label: 'Обзор', icon: '🏪' },
   { id: 'catalog', label: 'Каталог', icon: '📚' },
   { id: 'orders', label: 'Заказы', icon: '📦' },
   { id: 'profile', label: 'Профиль', icon: '👤' }
 ]
-
-const handleTabClick = (tabId: string) => {
-  emit('update:currentTab', tabId)
-}
 </script>
 
 <style scoped>
-.tab-navigation {
+.tab-nav {
   background: #0f1319;
+  padding: 0;
+}
+
+.tab-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.75rem 0.5rem;
+  color: #999999;
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 14px;
+}
+
+.tab-btn:hover {
+  color: #bbb;
+  background: rgba(0, 85, 255, 0.05);
+}
+
+.tab-btn.active {
+  color: #60a5fa;
+  border-bottom-color: #60a5fa;
+  background: rgba(0, 85, 255, 0.08);
+}
+
+/* Mobile optimization */
+@media (max-width: 400px) {
+  .tab-btn {
+    padding: 0.6rem 0.4rem;
+    gap: 0;
+  }
+  
+  .tab-btn span:last-child {
+    display: none !important;
+  }
+}
+
+/* Accessibility */
+.tab-btn:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: -2px;
 }
 </style>
