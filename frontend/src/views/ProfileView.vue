@@ -731,6 +731,9 @@ const toggleCategory = (category: string) => {
 }
 
 const submitProviderProfile = () => {
+  console.log('📝 Submitting provider profile...')
+  console.log('Current isProvider before:', userStore.isProvider)
+  
   userStore.setProviderInfo({
     serviceName: newProviderProfile.value.name,
     description: newProviderProfile.value.description,
@@ -741,6 +744,9 @@ const submitProviderProfile = () => {
     availability: newProviderProfile.value.availability,
     maxConcurrentOrders: 5
   })
+
+  console.log('Current isProvider after:', userStore.isProvider)
+  console.log('Provider info:', userStore.getProviderInfo())
 
   closeBecomeProviderModal()
 }
