@@ -1,12 +1,12 @@
 <template>
-  <div class="modal-overlay fixed inset-0 bg-black/50 flex items-end z-50 animate-fade-in">
-    <div class="modal-content bg-slate-800 w-full max-w-md rounded-t-2xl border-t border-blue-900 max-h-[90vh] overflow-y-auto animate-slide-up">
+  <div v-if="service" class="modal-overlay fixed inset-0 bg-black/50 flex items-end z-50">
+    <div class="modal-content bg-slate-800 w-full max-w-md rounded-t-2xl border-t border-blue-900 max-h-[90vh] overflow-y-auto">
       <!-- Header -->
       <div class="sticky top-0 bg-slate-800 border-b border-blue-900 p-4 flex justify-between items-center">
         <h2 class="text-xl font-bold">✏️ Редактировать услугу</h2>
         <button
-          @click="$emit('close')"
-          class="text-gray-400 hover:text-white text-2xl"
+            @click="emit('close')"
+            class="text-gray-400 hover:text-white text-2xl ml-2"
         >
           ✕
         </button>
@@ -14,121 +14,170 @@
 
       <!-- Content -->
       <div class="p-4 space-y-4">
-        <!-- Service Name -->
-        <div>
-          <label class="block text-sm font-semibold mb-2">Название услуги</label>
-          <input
-            v-model="editData.serviceName"
-            type="text"
-            class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-          />
+        <!-- Basic Info Section -->
+        <div class="space-y-3">
+          <div>
+            <label class="block text-sm font-semibold mb-2">Название услуги</label>
+            <input
+                v-model="editedService.serviceName"
+                type="text"
+                placeholder="Название услуги"
+                class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-2">Описание</label>
+            <textarea
+                v-model="editedService.description"
+                placeholder="Подробное описание услуги"
+                rows="4"
+                class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 resize-none"
+            />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-2">Категория</label>
+            <select
+                v-model="editedService.category"
+                class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+            >
+              <option value="repair">🏠 Ремонт</option>
+              <option value="business">💼 Бизнес</option>
+              <option value="fashion">👗 Мода</option>
+              <option value="education">📚 Обучение</option>
+              <option value="design">🎨 Дизайн</option>
+              <option value="it">💻 IT</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold mb-2">Цена (₽)</label>
+            <input
+                v-model.number="editedService.price"
+                type="number"
+                placeholder="500"
+                class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+            />
+          </div>
         </div>
 
-        <!-- Description -->
-        <div>
-          <label class="block text-sm font-semibold mb-2">Описание</label>
-          <textarea
-            v-model="editData.description"
-            rows="4"
-            class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 resize-none"
-          />
-        </div>
+        <!-- Divider -->
+        <div class="h-px bg-slate-700"></div>
 
-        <!-- Category -->
+        <!-- Images Section -->
         <div>
-          <label class="block text-sm font-semibold mb-2">Категория</label>
-          <select
-            v-model="editData.category"
-            class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-          >
-            <option value="languages">🗣️ Языки</option>
-            <option value="music">🎵 Музыка</option>
-            <option value="design">🎨 Дизайн</option>
-            <option value="programming">💻 Программирование</option>
-            <option value="fitness">💪 Фитнес</option>
-            <option value="other">📦 Другое</option>
-          </select>
-        </div>
+          <h3 class="text-sm font-semibold text-blue-400 mb-3">📸 Фотографии</h3>
 
-        <!-- Price -->
-        <div>
-          <label class="block text-sm font-semibold mb-2">Цена (₽)</label>
-          <input
-            v-model="editData.price"
-            type="number"
-            class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <!-- Max Concurrent Orders -->
-        <div>
-          <label class="block text-sm font-semibold mb-2">Макс. одновременных заказов</label>
-          <input
-            v-model="editData.maxConcurrentOrders"
-            type="number"
-            class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-          />
-        </div>
-
-        <!-- Availability -->
-        <div>
-          <label class="block text-sm font-semibold mb-3">Доступность</label>
-          <div class="space-y-2 bg-slate-700 rounded-lg p-3 border border-blue-900">
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                v-model="editData.availability.weekdays"
-                type="checkbox"
-                class="w-4 h-4"
+          <!-- Current Images -->
+          <div class="space-y-2 mb-3">
+            <div
+                v-for="(image, index) in editedService.images"
+                :key="index"
+                class="relative bg-slate-700 border border-blue-900 rounded-lg overflow-hidden"
+            >
+              <img
+                  :src="image.preview || image"
+                  :alt="'Image ' + (index + 1)"
+                  class="w-full h-24 object-cover"
               />
-              <span class="text-sm">Будни (Пн-Пт)</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
+              <button
+                  @click="removeImage(index)"
+                  class="absolute top-1 right-1 bg-red-600 text-white rounded-full p-1 hover:bg-red-700"
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <!-- Add More Images -->
+          <div v-if="editedService.images.length < 5">
+            <label class="flex items-center justify-center gap-2 bg-slate-700 border border-dashed border-blue-900 rounded-lg py-4 cursor-pointer hover:border-blue-500 transition">
+              <span class="text-xl">➕</span>
+              <span class="text-sm font-semibold">Добавить ещё</span>
               <input
-                v-model="editData.availability.weekends"
-                type="checkbox"
-                class="w-4 h-4"
+                  type="file"
+                  accept="image/*"
+                  class="hidden"
+                  @change="handleAddImage"
               />
-              <span class="text-sm">Выходные (Сб-Вс)</span>
-            </label>
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input
-                v-model="editData.availability.evenings"
-                type="checkbox"
-                class="w-4 h-4"
-              />
-              <span class="text-sm">Вечерние часы (18:00-23:00)</span>
             </label>
           </div>
         </div>
 
-        <!-- Timezone -->
+        <!-- Divider -->
+        <div class="h-px bg-slate-700"></div>
+
+        <!-- Schedule Section -->
         <div>
-          <label class="block text-sm font-semibold mb-2">Часовой пояс</label>
-          <select
-            v-model="editData.timezone"
-            class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-          >
-            <option value="UTC+3">UTC+3 (Москва)</option>
-            <option value="UTC+4">UTC+4 (Казань)</option>
-            <option value="UTC+5">UTC+5 (Екатеринбург)</option>
-            <option value="UTC+8">UTC+8 (Владивосток)</option>
-          </select>
+          <h3 class="text-sm font-semibold text-blue-400 mb-3">📅 График и часовой пояс</h3>
+
+          <div class="space-y-3">
+            <div>
+              <label class="block text-sm font-semibold mb-2">Часовой пояс</label>
+              <select
+                  v-model="editedService.timezone"
+                  class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="UTC+3">UTC+3 (Москва)</option>
+                <option value="UTC+4">UTC+4 (Казань)</option>
+                <option value="UTC+5">UTC+5 (Екатеринбург)</option>
+                <option value="UTC+8">UTC+8 (Владивосток)</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold mb-2">Доступность</label>
+              <div class="space-y-2 bg-slate-700 rounded-lg p-3 border border-blue-900">
+                <label class="flex items-center gap-2 cursor-pointer hover:text-blue-400 transition">
+                  <input
+                      v-model="editedService.availability.weekdays"
+                      type="checkbox"
+                      class="w-4 h-4 cursor-pointer"
+                  />
+                  <span class="text-sm">Будни (Пн-Пт)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer hover:text-blue-400 transition">
+                  <input
+                      v-model="editedService.availability.weekends"
+                      type="checkbox"
+                      class="w-4 h-4 cursor-pointer"
+                  />
+                  <span class="text-sm">Выходные (Сб-Вс)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer hover:text-blue-400 transition">
+                  <input
+                      v-model="editedService.availability.evenings"
+                      type="checkbox"
+                      class="w-4 h-4 cursor-pointer"
+                  />
+                  <span class="text-sm">Вечерние часы (18:00-23:00)</span>
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Footer -->
+      <!-- Footer Buttons -->
       <div class="sticky bottom-0 bg-slate-800 border-t border-blue-900 p-4 flex gap-2">
         <button
-          @click="$emit('close')"
-          class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 rounded-lg transition"
+            @click="emit('close')"
+            class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 rounded-lg transition"
         >
-          Отмена
+          ✕ Отмена
         </button>
         <button
-          @click="saveChanges"
-          class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg transition"
+            @click="handleSave"
+            :disabled="!isFormValid"
+            :class="[
+              'flex-1 font-semibold py-2 rounded-lg transition',
+              isFormValid
+                ? 'bg-green-600 hover:bg-green-500 text-white'
+                : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+            ]"
         >
-          ✓ Сохранить
+          💾 Сохранить
         </button>
       </div>
     </div>
@@ -136,45 +185,131 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, watch } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
-const props = defineProps({
-  provider: Object
-})
+interface ServiceImage {
+  file?: File
+  preview?: string
+  url?: string
+}
 
-const emit = defineEmits(['close', 'save'])
+interface Service {
+  id: string
+  serviceName: string
+  name?: string
+  description: string
+  category: string
+  price: number
+  timezone?: string
+  images?: (ServiceImage | string)[]
+  availability?: {
+    weekdays: boolean
+    weekends: boolean
+    evenings: boolean
+  }
+  rating?: number
+  reviewsCount?: number
+}
 
-const editData = reactive({
+interface Props {
+  service: Service | null
+}
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  'close': []
+  'save': [service: Service]
+}>()
+
+const editedService = reactive<Service>({
+  id: '',
   serviceName: '',
   description: '',
   category: '',
   price: 0,
   timezone: 'UTC+3',
+  images: [],
   availability: {
     weekdays: true,
     weekends: false,
     evenings: true
-  },
-  maxConcurrentOrders: 5
+  }
 })
 
-// Инициализация данных при загрузке
-watch(
-  () => props.provider,
-  (newProvider) => {
-    if (newProvider) {
-      Object.assign(editData, newProvider)
+// Initialize edited service when prop changes
+const initializeForm = () => {
+  if (props.service) {
+    Object.assign(editedService, props.service)
+    if (!editedService.availability) {
+      editedService.availability = {
+        weekdays: true,
+        weekends: false,
+        evenings: true
+      }
     }
-  },
-  { immediate: true }
-)
+  }
+}
 
-const saveChanges = () => {
-  emit('save', editData)
+initializeForm()
+
+const isFormValid = computed(() => {
+  return (
+    editedService.serviceName.trim().length > 0 &&
+    editedService.description.trim().length > 10 &&
+    editedService.category.length > 0 &&
+    editedService.price > 0 &&
+    editedService.images && editedService.images.length > 0
+  )
+})
+
+const handleAddImage = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  const files = target.files
+  if (!files) return
+
+  Array.from(files).forEach(file => {
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Файл слишком большой (макс 5 МБ)')
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      if (editedService.images && editedService.images.length < 5 && e.target?.result) {
+        editedService.images.push({
+          file,
+          preview: e.target.result as string
+        })
+      }
+    }
+    reader.readAsDataURL(file)
+  })
+  target.value = ''
+}
+
+const removeImage = (index: number) => {
+  if (editedService.images) {
+    editedService.images.splice(index, 1)
+  }
+}
+
+const handleSave = () => {
+  if (isFormValid.value) {
+    emit('save', { ...editedService })
+  }
 }
 </script>
 
 <style scoped>
+.modal-overlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.modal-content {
+  animation: slideUp 0.3s ease-out;
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -191,13 +326,5 @@ const saveChanges = () => {
   to {
     transform: translateY(0);
   }
-}
-
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.3s ease-out;
 }
 </style>
