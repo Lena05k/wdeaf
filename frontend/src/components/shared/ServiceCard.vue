@@ -25,9 +25,9 @@
 
       <button
           class="btn-primary w-full"
-          @click.stop="emit('order', service)"
+          @click.stop="emit('select', service)"
       >
-        Заказать
+        Подробности
       </button>
     </div>
   </div>

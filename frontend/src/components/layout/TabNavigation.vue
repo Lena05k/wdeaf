@@ -12,7 +12,7 @@
         :title="tab.label"
       >
         <span class="text-lg">{{ tab.icon }}</span>
-        <span class="hidden xs:inline text-xs font-medium ml-1">{{ tab.label }}</span>
+        <span class="text-xs font-medium ml-1">{{ tab.label }}</span>
       </button>
     </div>
   </div>
@@ -85,7 +85,7 @@ const tabs: Tab[] = [
   }
   
   .tab-btn span:last-child {
-    display: none !important;
+    display: none;
   }
 }
 
