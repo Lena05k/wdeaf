@@ -5,7 +5,9 @@ import type { ProviderFormData } from '@/components/modals/BecomeProviderModal.v
 export const useProfile = () => {
   const userStore = useUserStore()
   const showBecomeProviderModal = ref(false)
+  const showEditProviderModal = ref(false)
   const selectedServiceForEdit = ref<any>(null)
+  const selectedServiceForDetails = ref<any>(null)
 
   const openBecomeProviderModal = () => {
     showBecomeProviderModal.value = true
@@ -13,6 +15,16 @@ export const useProfile = () => {
 
   const closeBecomeProviderModal = () => {
     showBecomeProviderModal.value = false
+  }
+
+  const openEditProviderModal = (service: any) => {
+    selectedServiceForEdit.value = { ...service }
+    showEditProviderModal.value = true
+  }
+
+  const closeEditProviderModal = () => {
+    showEditProviderModal.value = false
+    selectedServiceForEdit.value = null
   }
 
   const submitProvider = (data: ProviderFormData) => {
@@ -31,12 +43,29 @@ export const useProfile = () => {
     return '✅ Профиль исполнителя создан!'
   }
 
-  const selectServiceForEdit = (service: any) => {
-    selectedServiceForEdit.value = service
+  const saveEditedService = (service: any) => {
+    // Update service in store
+    userStore.updateService(service.id, {
+      serviceName: service.serviceName,
+      name: service.serviceName,
+      description: service.description,
+      category: service.category,
+      price: service.price,
+      images: service.images,
+      availability: service.availability,
+      timezone: service.timezone
+    })
+
+    closeEditProviderModal()
+    return '✅ Услуга обновлена!'
+  }
+
+  const selectServiceForDetails = (service: any) => {
+    selectedServiceForDetails.value = service
   }
 
   const closeServiceDetails = () => {
-    selectedServiceForEdit.value = null
+    selectedServiceForDetails.value = null
   }
 
   const deleteService = (serviceId: string) => {
@@ -48,28 +77,26 @@ export const useProfile = () => {
     return null
   }
 
-  const editService = () => {
-    // TODO: Implement edit functionality
-    console.log('🔍 Редактирование услуги:', selectedServiceForEdit.value)
-    closeServiceDetails()
-  }
-
   const openProviderDashboard = () => {
-    console.log('📋 Открытие дошборда исполнителя')
+    console.log('📊 Открытие дашборда исполнителя')
     return '👤 Профиль исполнителя открыт'
   }
 
   return {
     userStore,
     showBecomeProviderModal,
+    showEditProviderModal,
     selectedServiceForEdit,
+    selectedServiceForDetails,
     openBecomeProviderModal,
     closeBecomeProviderModal,
+    openEditProviderModal,
+    closeEditProviderModal,
     submitProvider,
-    selectServiceForEdit,
+    saveEditedService,
+    selectServiceForDetails,
     closeServiceDetails,
     deleteService,
-    editService,
     openProviderDashboard
   }
 }
