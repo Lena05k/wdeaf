@@ -92,7 +92,7 @@
       <!-- Footer Buttons -->
       <div class="sticky bottom-0 bg-slate-800 border-t border-blue-900 p-4 flex gap-2">
         <button
-            @click="handleDelete"
+            @click="emit('delete')"
             class="flex-1 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
         >
           🗑️ Удалить
@@ -132,7 +132,7 @@ interface Props {
   service: Service | null
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'close': []
@@ -142,17 +142,11 @@ const emit = defineEmits<{
 
 const imageIndex = ref(0)
 
-const handleDelete = () => {
-  emit('delete')
-}
-
 const handleEdit = () => {
   if (props.service) {
     emit('edit', props.service)
   }
 }
-
-const props = defineProps<Props>()
 </script>
 
 <style scoped>
