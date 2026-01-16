@@ -1,21 +1,30 @@
 <template>
-  <div class="tab-nav sticky top-0 z-40 bg-slate-900 border-b border-slate-800">
-    <div class="flex justify-between px-2">
+  <nav class="tab-nav fixed bottom-0 inset-x-0 z-40 bg-slate-900 border-t border-slate-800">
+    <div class="max-w-md mx-auto flex">
       <button
-        v-for="tab in tabs"
-        :key="tab.id"
-        @click="emit('update:currentTab', tab.id)"
-        :class="{
-          active: currentTab === tab.id,
-          'tab-btn': true
-        }"
-        :title="tab.label"
+          v-for="tab in tabs"
+          :key="tab.id"
+          @click="emit('update:currentTab', tab.id)"
+          :class="[
+          'tab-btn flex-1 flex flex-col items-center justify-center py-2 text-xs',
+          currentTab === tab.id ? 'text-sky-400' : 'text-slate-500'
+        ]"
+          :title="tab.label"
       >
-        <span class="text-lg">{{ tab.icon }}</span>
-        <span class="hidden xs:inline text-xs font-medium ml-1">{{ tab.label }}</span>
+        <span class="text-base leading-none mb-0.5">
+          {{ tab.icon }}
+        </span>
+        <span class="leading-none">
+          {{ tab.label }}
+        </span>
+
+        <span
+            v-if="currentTab === tab.id"
+            class="mt-1 h-0.5 w-8 rounded-full bg-sky-400"
+        />
       </button>
     </div>
-  </div>
+  </nav>
 </template>
 
 <script setup lang="ts">
@@ -35,58 +44,28 @@ const emit = defineEmits<{
   'update:currentTab': [value: string]
 }>()
 
-// Оптимизированный список табов
 const tabs: Tab[] = [
-  { id: 'browse', label: 'Обзор', icon: '🏪' },
-  { id: 'catalog', label: 'Каталог', icon: '📚' },
-  { id: 'orders', label: 'Заказы', icon: '📦' },
-  { id: 'profile', label: 'Профиль', icon: '👤' }
+  { id: 'browse', label: 'Обзор', labelShort: 'Обзор',} as any,
+  { id: 'catalog', label: 'Каталог',},
+  { id: 'orders', label: 'Заказы',},
+  { id: 'profile', label: 'Профиль' }
 ]
 </script>
 
 <style scoped>
 .tab-nav {
-  background: #0f1319;
   padding: 0;
 }
 
 .tab-btn {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.25rem;
-  padding: 0.75rem 0.5rem;
-  color: #999999;
-  background: transparent;
   border: none;
-  border-bottom: 2px solid transparent;
+  background: transparent;
   cursor: pointer;
-  transition: all 0.15s ease;
-  font-size: 14px;
+  transition: background-color 0.15s ease, color 0.15s ease;
 }
 
 .tab-btn:hover {
-  color: #bbb;
-  background: rgba(0, 85, 255, 0.05);
-}
-
-.tab-btn.active {
-  color: #60a5fa;
-  border-bottom-color: #60a5fa;
-  background: rgba(0, 85, 255, 0.08);
-}
-
-/* Mobile optimization */
-@media (max-width: 400px) {
-  .tab-btn {
-    padding: 0.6rem 0.4rem;
-    gap: 0;
-  }
-  
-  .tab-btn span:last-child {
-    display: none !important;
-  }
+  background: rgba(15, 23, 42, 0.9);
 }
 
 /* Accessibility */
