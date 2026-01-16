@@ -59,8 +59,7 @@
       :service="selectedServiceModal"
       :modalImageIndex="modalImageIndex"
       @close="selectedServiceModal = null"
-      @order-confirm="orderServiceConfirm"
-      @view-provider="viewProviderProfile"
+      @contact-provider="handleContactProvider"
       @next-image="modalImageIndex = (modalImageIndex + 1) % selectedServiceModal.images.length"
       @prev-image="modalImageIndex = (modalImageIndex - 1 + selectedServiceModal.images.length) % selectedServiceModal.images.length"
     />
@@ -132,7 +131,7 @@ export default {
         {
           id: 1,
           name: 'Услуга сантехника',
-          provider: 'Олег М.',
+          provider: 'oleg_m',
           category: '🏠 Ремонт',
           description: 'Профессиональный ремонт и монтаж сантехники',
           fullDescription: 'Профессиональный ремонт и монтаж сантехники с гарантией. Выполняю любые работы: замену кранов, чистку труб, установку полотенцесушителей. 10 лет опыта, работаю быстро и аккуратно.',
@@ -146,7 +145,7 @@ export default {
         {
           id: 2,
           name: 'Консультация бухгалтера',
-          provider: 'Мария С.',
+          provider: 'maria_s',
           category: '💼 Бизнес',
           description: 'Налоговое планирование и бухгалтерская отчетность',
           fullDescription: 'Профессиональная консультация по налоговому планированию, ведение бухгалтерского учета, подготовка отчетности. Помогу оптимизировать налоги и разобраться в законодательстве.',
@@ -160,7 +159,7 @@ export default {
         {
           id: 3,
           name: 'Пошив платья',
-          provider: 'Анна Т.',
+          provider: 'anna_t',
           category: '👗 Мода',
           description: 'Изготовление платьев и костюмов по индивидуальному заказу',
           fullDescription: 'Создам платье вашей мечты! Работаю с любыми тканями, помогу с выбором фасона. Изготовлю платье, юбку, костюм - все сшивается по вашим меркам и предпочтениям.',
@@ -174,7 +173,7 @@ export default {
         {
           id: 4,
           name: 'Уроки английского',
-          provider: 'Джон Д.',
+          provider: 'john_d',
           category: '📚 Обучение',
           description: 'Индивидуальные занятия по английскому языку',
           fullDescription: 'Native speaker проводит индивидуальные занятия английским. Программа подбирается под ваш уровень и цели. Разговорный курс, подготовка к экзаменам, бизнес-английский.',
@@ -188,7 +187,7 @@ export default {
         {
           id: 5,
           name: 'Web-дизайн сайта',
-          provider: 'Артем К.',
+          provider: 'artem_k',
           category: '🎨 Дизайн',
           description: 'Создание современного дизайна вашего сайта',
           fullDescription: 'Создам красивый и функциональный дизайн вашего сайта. Работаю в современных стилях, адаптирую под мобильные устройства, учитываю ваши пожелания и особенности бизнеса.',
@@ -202,7 +201,7 @@ export default {
         {
           id: 6,
           name: 'Обслуживание ПК',
-          provider: 'Вадим Н.',
+          provider: 'vadim_n',
           category: '🏠 Ремонт',
           description: 'Чистка, диагностика и ремонт компьютеров',
           fullDescription: 'Профессиональная диагностика и ремонт компьютеров. Чищу от пыли, устраняю ошибки, устанавливаю ПО, заменяю неисправные детали. Быстрая и качественная работа.',
@@ -243,24 +242,12 @@ export default {
       this.selectedServiceModal = service;
       this.modalImageIndex = 0;
     },
-    orderServiceConfirm() {
-      if (this.selectedServiceModal) {
-        this.userOrders.unshift({
-          id: Date.now(),
-          service: this.selectedServiceModal.name,
-          provider: this.selectedServiceModal.provider,
-          status: 'pending',
-          price: this.selectedServiceModal.price,
-          date: 'завтра в ' + new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-        });
-        
-        this.selectedServiceModal = null;
-        this.showToast = true;
-        this.toastMessage = '✓ Заказ создан! Исполнитель свяжется с вами';
-        setTimeout(() => {
-          this.showToast = false;
-        }, 3000);
-      }
+    handleContactProvider(service) {
+      this.showToast = true;
+      this.toastMessage = `✓ Отправляем вас в чат с ${service.provider}`;
+      setTimeout(() => {
+        this.showToast = false;
+      }, 2000);
     },
     viewProviderProfile(providerName) {
       this.providerProfileModal = providerName;
