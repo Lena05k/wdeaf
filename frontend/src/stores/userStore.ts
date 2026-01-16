@@ -33,6 +33,7 @@ interface ProviderInfo {
   serviceName: string
   description: string
   category: string
+  categories?: string[]
   price: number
   timezone: string
   availability: {
@@ -76,7 +77,7 @@ export const useUserStore = defineStore('user', () => {
   const providerServices = ref<Service[]>([])
 
   const isAuthenticated = computed(() => !!authToken.value || !!user.value)
-  const isProvider = computed(() => providerServices.value.length > 0)
+  const isProvider = computed(() => providerServices.value.length > 0 && providerInfo.value !== null)
 
   // Инициализация из Telegram (может вызвать повторно если нужно)
   const initFromTelegram = () => {
