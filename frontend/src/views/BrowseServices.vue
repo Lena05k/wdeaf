@@ -24,7 +24,7 @@
       />
 
       <!-- Empty State -->
-      <div v-if="filteredServices.length === 0" class="empty-state">
+      <div v-if="filteredServices.length === 0" class="empty-state text-center py-12">
         <p class="text-4xl mb-2">😔</p>
         <p class="text-gray-400 mb-4">Services not found</p>
         <button 
@@ -161,7 +161,6 @@ export default {
 }
 
 .empty-state {
-  text-center py-12;
   display: flex;
   flex-direction: column;
   align-items: center;
