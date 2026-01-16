@@ -46,16 +46,28 @@
 </template>
 
 <script setup lang="ts">
-import type { ProviderFormData } from '@/components/modals/BecomeProviderModal.vue'
+interface FormData {
+  serviceName: string
+  description: string
+  category: string
+  price: number
+  timezone: string
+  availability: {
+    weekdays: boolean
+    weekends: boolean
+    evenings: boolean
+  }
+  images: Array<{ file?: File; preview?: string }>
+}
 
 interface Props {
-  formData: ProviderFormData
+  formData: FormData
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  'update:formData': [data: ProviderFormData]
+  'update:formData': [data: FormData]
 }>()
 
 const handleImageUpload = (event: Event) => {

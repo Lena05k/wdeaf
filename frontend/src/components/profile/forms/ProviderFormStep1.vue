@@ -57,23 +57,33 @@
 </template>
 
 <script setup lang="ts">
-import type { ProviderFormData } from '@/components/modals/BecomeProviderModal.vue'
-
-interface Props {
-  formData: ProviderFormData
+interface FormData {
+  serviceName: string
+  description: string
+  category: string
+  price: number
+  timezone: string
+  availability: {
+    weekdays: boolean
+    weekends: boolean
+    evenings: boolean
+  }
+  images: Array<{ file?: File; preview?: string }>
 }
 
-defineProps<Props>()
-
-const emit = defineEmits<{
-  'update:formData': [data: ProviderFormData]
-}>()
-
-const updateField = (field: keyof ProviderFormData, value: any) => {
-  emit('update:formData', { ...props.formData, [field]: value })
+interface Props {
+  formData: FormData
 }
 
 const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  'update:formData': [data: FormData]
+}>()
+
+const updateField = (field: keyof FormData, value: any) => {
+  emit('update:formData', { ...props.formData, [field]: value })
+}
 </script>
 
 <style scoped></style>
