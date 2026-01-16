@@ -1,16 +1,16 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
-// Pages
-import HomePage from '@/pages/HomePage.vue'
-import CatalogPage from '@/pages/CatalogPage.vue'
-import OrdersPage from '@/pages/OrdersPage.vue'
-import ProfilePage from '@/pages/ProfilePage.vue'
-import ServiceDetailPage from '@/pages/ServiceDetailPage.vue'
-import ProviderProfilePage from '@/pages/ProviderProfilePage.vue'
-import LoginPage from '@/pages/LoginPage.vue'
-import SignupPage from '@/pages/SignupPage.vue'
-import ForgotPasswordPage from '@/pages/ForgotPasswordPage.vue'
-import NotFoundPage from '@/pages/NotFoundPage.vue'
+import HomePage from '../pages/HomePage.vue'
+import CatalogPage from '../pages/CatalogPage.vue'
+import OrdersPage from '../pages/OrdersPage.vue'
+import ProfilePage from '../pages/ProfilePage.vue'
+import ServiceDetailPage from '../pages/ServiceDetailPage.vue'
+import ProviderProfilePage from '../pages/ProviderProfilePage.vue'
+import ProviderDashboardPage from '../pages/ProviderDashboardPage.vue'
+import LoginPage from '../pages/auth/LoginPage.vue'
+import SignupPage from '../pages/auth/SignupPage.vue'
+import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage.vue'
+import NotFoundPage from '../pages/NotFoundPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -32,6 +32,22 @@ const routes: Array<RouteRecordRaw> = [
     path: '/profile',
     name: 'profile',
     component: ProfilePage
+  },
+  {
+    path: '/provider-dashboard',
+    name: 'provider-dashboard',
+    component: () => {
+      console.log('📊 Loading ProviderDashboard component')
+      return import('../pages/ProviderDashboardPage.vue')
+          .then(module => {
+            console.log('✅ ProviderDashboard loaded successfully!', module)
+            return module
+          })
+          .catch(error => {
+            console.error('❌ Failed to load ProviderDashboard:', error)
+            throw error
+          })
+    }
   },
   {
     path: '/service/:id',
@@ -77,7 +93,22 @@ const router = createRouter({
   }
 })
 
-// ⏸️ Аутентификация временно отключена
-// Раскомментируйте когда нужна проверка прав доступа
+// Логирование всех навигаций
+router.beforeEach((to, from, next) => {
+  console.log(`🔄 Navigating from "${from.name || 'initial'}" to "${to.name}"`)
+  console.log('📍 Available routes:', routes.map(r => ({ name: r.name, path: r.path })))
+  next()
+})
+
+router.afterEach((to) => {
+  console.log(`✅ Successfully navigated to "${to.name}"`)
+  console.log('Current URL:', window.location.href)
+})
+
+router.onError((error) => {
+  console.error('❌ Router error:', error)
+  console.error('Stack:', error.stack)
+})
+
 
 export default router

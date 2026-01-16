@@ -1,93 +1,184 @@
-// src/stores/userStore.ts
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-interface TelegramUser {
-  id: number
-  is_bot: boolean
+interface User {
+  id: string | number
   first_name: string
   last_name?: string
   username?: string
-  language_code?: string
-  is_premium?: boolean
-  added_to_attachment_menu?: boolean
-  allows_user_initiated_voice_chats?: boolean
-  allows_user_initiated_video_chats?: boolean
+  email?: string
+  phone?: string
 }
 
-interface User extends TelegramUser {
-  authToken?: string
-  email?: string
+interface Service {
+  id: number
+  serviceName: string
+  name?: string
+  description: string
+  category: string
+  price: number
+  timezone: string
+  availability: {
+    weekdays: boolean
+    weekends: boolean
+    evenings: boolean
+  }
+  images?: any[]
+  maxConcurrentOrders?: number
+  rating?: number
+  reviews?: number
+}
+
+interface ProviderInfo {
+  serviceName: string
+  description: string
+  category: string
+  price: number
+  timezone: string
+  availability: {
+    weekdays: boolean
+    weekends: boolean
+    evenings: boolean
+  }
+  maxConcurrentOrders: number
+  rating?: number
+  reviews?: number
 }
 
 export const useUserStore = defineStore('user', () => {
-  const user = ref<User | null>(null)
-  const isAuthenticated = ref(false)
-  const loading = ref(false)
+  // ← НОВОЕ: Функция для получения данных из Telegram
+  const getTelegramUser = (): User => {
+    // Пытаемся получить данные из Telegram Mini App
+    if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
+      const telegramUser = window.Telegram.WebApp.initDataUnsafe.user
+      console.log('👤 Loaded user from Telegram:', telegramUser)
+      return {
+        id: telegramUser.id,
+        first_name: telegramUser.first_name,
+        last_name: telegramUser.last_name,
+        username: telegramUser.username
+      }
+    }
 
+    // Fallback если Telegram недоступен (для разработки)
+    console.warn('⚠️ Telegram not available, using default user data')
+    return {
+      id: '123456789',
+      first_name: 'Иван',
+      username: 'ivan_user'
+    }
+  }
+
+  // Инициализируем с данными из Telegram или fallback
+  const user = ref<User>(getTelegramUser())
+  const authToken = ref<string | null>('authenticated')
+  const providerInfo = ref<ProviderInfo | null>(null)
+  const providerServices = ref<Service[]>([])
+
+  const isAuthenticated = computed(() => !!authToken.value || !!user.value)
+  const isProvider = computed(() => providerServices.value.length > 0)
+
+  // Инициализация из Telegram (может вызвать повторно если нужно)
+  const initFromTelegram = () => {
+    user.value = getTelegramUser()
+  }
+
+  // Установить юзера
   const setUser = (userData: User) => {
     user.value = userData
-    isAuthenticated.value = !!userData.authToken
+    if (userData) {
+      authToken.value = 'authenticated'
+    }
   }
 
+  // Установить информацию исполнителя
+  const setProviderInfo = (provider: ProviderInfo) => {
+    providerInfo.value = provider
+  }
+
+  // Получить информацию исполнителя
+  const getProviderInfo = () => {
+    return providerInfo.value
+  }
+
+  // Обновить профиль исполнителя
+  const updateProviderInfo = (updates: Partial<ProviderInfo>) => {
+    if (providerInfo.value) {
+      providerInfo.value = { ...providerInfo.value, ...updates }
+    }
+  }
+
+  // Добавить услугу
+  const addService = (service: Omit<Service, 'id'>) => {
+    providerServices.value.push({
+      id: Date.now(),
+      ...service
+    } as Service)
+  }
+
+  // Обновить услугу
+  const updateService = (serviceId: number, updates: Partial<Service>) => {
+    const service = providerServices.value.find(s => s.id === serviceId)
+    if (service) {
+      Object.assign(service, updates)
+    }
+  }
+
+  // Удалить услугу
+  const deleteService = (serviceId: number) => {
+    providerServices.value = providerServices.value.filter(s => s.id !== serviceId)
+  }
+
+  // Установить статус провайдера
+  const setProviderStatus = (status: boolean) => {
+    if (!status) {
+      providerServices.value = []
+      providerInfo.value = null
+    }
+  }
+
+  // Выход
   const logout = () => {
-    user.value = null
-    isAuthenticated.value = false
-    localStorage.removeItem('authToken')
+    // Сбрасываем к дефолтному или телеграмм юзеру
+    user.value = getTelegramUser()
+    authToken.value = null
+    providerInfo.value = null
+    providerServices.value = []
   }
 
-  const getTelegramUser = (): TelegramUser | null => {
-    try {
-      if (window.telegramUser) {
-        return window.telegramUser
-      }
-      if (window.Telegram?.WebApp?.initData) {
-        const params = new URLSearchParams(window.Telegram.WebApp.initData)
-        const userData = params.get('user')
-        return userData ? JSON.parse(userData) : null
-      }
-    } catch (e) {
-      console.error('Error getting Telegram user:', e)
-    }
-    return null
-  }
+  // Получить полное имя
+  const fullName = computed(() => {
+    if (!user.value) return ''
+    const { first_name, last_name } = user.value
+    return last_name ? `${first_name} ${last_name}` : first_name
+  })
 
-  const initFromTelegram = () => {
-    const tgUser = getTelegramUser()
-    if (tgUser) {
-      setUser({
-        ...tgUser,
-        authToken: localStorage.getItem('authToken') || undefined,
-        email: localStorage.getItem('userEmail') || undefined
-      })
-    }
-  }
-
-  const firstName = computed(() => user.value?.first_name || '')
-  const lastName = computed(() => user.value?.last_name || '')
-  const fullName = computed(() => 
-    `${user.value?.first_name || ''} ${user.value?.last_name || ''}`.trim()
-  )
-  const username = computed(() => user.value?.username || '')
-  const userId = computed(() => user.value?.id || null)
+  // Получить ID пользователя
+  const userId = computed(() => user.value?.id)
 
   return {
     // State
     user,
-    isAuthenticated,
-    loading,
-    
-    // Actions
-    setUser,
-    logout,
-    getTelegramUser,
-    initFromTelegram,
-    
+    authToken,
+    providerInfo,
+    providerServices,
+
     // Computed
-    firstName,
-    lastName,
+    isAuthenticated,
+    isProvider,
     fullName,
-    username,
-    userId
+    userId,
+
+    // Methods
+    initFromTelegram,
+    setUser,
+    setProviderInfo,
+    getProviderInfo,
+    updateProviderInfo,
+    addService,
+    updateService,
+    deleteService,
+    setProviderStatus,
+    logout
   }
 })

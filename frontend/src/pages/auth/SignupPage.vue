@@ -102,7 +102,7 @@
 </template>
 
 <script>
-import AuthLayout from '@/components/layout/AuthLayout.vue'
+import AuthLayout from '../../components/layout/AuthLayout.vue'
 
 export default {
   name: 'SignupPage',
