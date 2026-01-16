@@ -80,11 +80,11 @@
         <div class="grid grid-cols-2 gap-3 bg-slate-700/50 rounded-lg p-3">
           <div class="text-center">
             <p class="text-2xl font-bold text-yellow-400">⭐</p>
-            <p class="text-xs text-gray-400">4.9 Рейтинг</p>
+            <p class="text-xs text-gray-400">{{ service.rating || 4.9 }} Рейтинг</p>
           </div>
           <div class="text-center">
             <p class="text-2xl font-bold text-green-400">✓</p>
-            <p class="text-xs text-gray-400">23 Отзыва</p>
+            <p class="text-xs text-gray-400">{{ service.reviewsCount || 0 }} Отзывов</p>
           </div>
         </div>
       </div>
@@ -92,16 +92,16 @@
       <!-- Footer Buttons -->
       <div class="sticky bottom-0 bg-slate-800 border-t border-blue-900 p-4 flex gap-2">
         <button
-            @click="emit('delete')"
-            class="flex-1 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 rounded-lg transition"
+            @click="handleDelete"
+            class="flex-1 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
         >
           🗑️ Удалить
         </button>
         <button
-            @click="emit('edit')"
-            class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg transition"
+            @click="handleEdit"
+            class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
         >
-          ✏️ Редактировать
+          🔍 Редактировать
         </button>
       </div>
     </div>
@@ -124,6 +124,8 @@ interface Service {
     weekends?: boolean
     evenings?: boolean
   }
+  rating?: number
+  reviewsCount?: number
 }
 
 interface Props {
@@ -135,10 +137,22 @@ defineProps<Props>()
 const emit = defineEmits<{
   'close': []
   'delete': []
-  'edit': []
+  'edit': [service: Service]
 }>()
 
 const imageIndex = ref(0)
+
+const handleDelete = () => {
+  emit('delete')
+}
+
+const handleEdit = () => {
+  if (props.service) {
+    emit('edit', props.service)
+  }
+}
+
+const props = defineProps<Props>()
 </script>
 
 <style scoped>
