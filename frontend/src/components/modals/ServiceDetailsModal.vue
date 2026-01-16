@@ -89,19 +89,13 @@
         </div>
       </div>
 
-      <!-- Footer Buttons -->
-      <div class="sticky bottom-0 bg-slate-800 border-t border-blue-900 p-4 flex gap-2">
+      <!-- Footer Button -->
+      <div class="sticky bottom-0 bg-slate-800 border-t border-blue-900 p-4">
         <button
-            @click="emit('delete')"
-            class="flex-1 bg-red-600 hover:bg-red-500 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
+            @click="handleContactProvider"
+            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
         >
-          🗑️ Удалить
-        </button>
-        <button
-            @click="handleEdit"
-            class="flex-1 bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg transition flex items-center justify-center gap-2"
-        >
-          🔍 Редактировать
+          💬 Связаться с исполнителем
         </button>
       </div>
     </div>
@@ -117,6 +111,7 @@ interface Service {
   description: string
   category: string
   price: number
+  provider?: string
   timezone?: string
   images?: Array<{ preview?: string }>
   availability?: {
@@ -136,15 +131,27 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   'close': []
-  'delete': []
-  'edit': [service: Service]
+  'contact-provider': [service: Service]
 }>()
 
 const imageIndex = ref(0)
 
-const handleEdit = () => {
+const handleContactProvider = () => {
   if (props.service) {
-    emit('edit', props.service)
+    // Открыть чат с исполнителем в Telegram
+    if (window.Telegram?.WebApp) {
+      const tg = window.Telegram.WebApp
+      // Если у сервиса есть username исполнителя, открываем диалог
+      if (props.service.provider) {
+        // Преобразуем имя в username формат (убираем пробелы, спецсимволы)
+        const providerUsername = props.service.provider.toLowerCase().replace(/[^a-z0-9_]/g, '')
+        tg.openLink(`https://t.me/${providerUsername}`)
+      }
+    } else {
+      // Fallback для веб-версии
+      console.log('Контакт с:', props.service.provider)
+    }
+    emit('contact-provider', props.service)
   }
 }
 </script>
