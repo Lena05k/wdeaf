@@ -11,7 +11,7 @@ interface User {
 }
 
 interface Service {
-  id: number
+  id: string | number
   serviceName: string
   name?: string
   description: string
@@ -117,16 +117,23 @@ export const useUserStore = defineStore('user', () => {
   }
 
   // Обновить услугу
-  const updateService = (serviceId: number, updates: Partial<Service>) => {
+  const updateService = (serviceId: string | number, updates: Partial<Service>) => {
     const service = providerServices.value.find(s => s.id === serviceId)
     if (service) {
       Object.assign(service, updates)
+      console.log('✏️ Service updated:', serviceId, updates)
+    } else {
+      console.warn('⚠️ Service not found:', serviceId)
     }
   }
 
   // Удалить услугу
-  const deleteService = (serviceId: number) => {
+  const deleteService = (serviceId: string | number) => {
+    const initialLength = providerServices.value.length
     providerServices.value = providerServices.value.filter(s => s.id !== serviceId)
+    if (providerServices.value.length < initialLength) {
+      console.log('🗑️ Service deleted:', serviceId)
+    }
   }
 
   // Установить статус провайдера

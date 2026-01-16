@@ -19,16 +19,23 @@
     <ProviderServicesList
         v-if="userStore.isProvider"
         :services="userStore.providerServices"
-        @select-service="selectServiceForEdit"
+        @select-service="selectServiceForDetails"
         @add-service="openBecomeProviderModal"
     />
 
     <!-- Service Details Modal -->
     <ServiceDetailsModal
-        :service="selectedServiceForEdit"
+        :service="selectedServiceForDetails"
         @close="closeServiceDetails"
         @delete="handleDeleteService"
-        @edit="editService"
+        @edit="openEditModal"
+    />
+
+    <!-- Edit Service Modal -->
+    <EditProviderModal
+        :service="selectedServiceForEdit"
+        @close="closeEditModal"
+        @save="handleSaveEdited"
     />
 
     <!-- Become Provider Modal -->
@@ -47,6 +54,7 @@ import ProfileStats from '@/components/profile/ProfileStats.vue'
 import ProfileActions from '@/components/profile/ProfileActions.vue'
 import ProviderServicesList from '@/components/profile/ProviderServicesList.vue'
 import ServiceDetailsModal from '@/components/modals/ServiceDetailsModal.vue'
+import EditProviderModal from '@/components/modals/EditProviderModal.vue'
 import BecomeProviderModal from '@/components/modals/BecomeProviderModal.vue'
 import type { ProviderFormData } from '@/components/modals/BecomeProviderModal.vue'
 
@@ -65,14 +73,18 @@ const emit = defineEmits<{
 const {
   userStore,
   showBecomeProviderModal,
+  showEditProviderModal,
   selectedServiceForEdit,
+  selectedServiceForDetails,
   openBecomeProviderModal,
   closeBecomeProviderModal,
+  openEditProviderModal,
+  closeEditProviderModal,
   submitProvider,
-  selectServiceForEdit,
+  saveEditedService,
+  selectServiceForDetails,
   closeServiceDetails,
   deleteService,
-  editService,
   openProviderDashboard
 } = useProfile()
 
@@ -82,8 +94,8 @@ const handleSubmitProvider = (data: ProviderFormData) => {
 }
 
 const handleDeleteService = () => {
-  if (!selectedServiceForEdit.value) return
-  const message = deleteService(selectedServiceForEdit.value.id)
+  if (!selectedServiceForDetails.value) return
+  const message = deleteService(selectedServiceForDetails.value.id)
   if (message) {
     emit('show-toast', message)
   }
@@ -91,6 +103,20 @@ const handleDeleteService = () => {
 
 const handleProviderDashboard = () => {
   const message = openProviderDashboard()
+  emit('show-toast', message)
+}
+
+const openEditModal = (service: any) => {
+  openEditProviderModal(service)
+  closeServiceDetails()
+}
+
+const closeEditModal = () => {
+  closeEditProviderModal()
+}
+
+const handleSaveEdited = (service: any) => {
+  const message = saveEditedService(service)
   emit('show-toast', message)
 }
 </script>
