@@ -50,12 +50,12 @@ export const useProfile = () => {
 
   const editService = () => {
     // TODO: Implement edit functionality
-    console.log('✏️ Editing service:', selectedServiceForEdit.value)
+    console.log('🔍 Редактирование услуги:', selectedServiceForEdit.value)
     closeServiceDetails()
   }
 
   const openProviderDashboard = () => {
-    console.log('📋 Opening provider dashboard')
+    console.log('📋 Открытие дошборда исполнителя')
     return '👤 Профиль исполнителя открыт'
   }
 
