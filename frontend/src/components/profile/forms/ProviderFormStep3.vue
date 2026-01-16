@@ -1,54 +1,56 @@
 <template>
   <div>
-    <h3 class="text-lg font-semibold text-blue-400 mb-4">График работы</h3>
+    <h3 class="text-lg font-semibold text-blue-400 mb-4">✅ Проверка данных</h3>
 
-    <div class="space-y-4">
-      <div>
-        <label class="block text-sm font-semibold mb-2">Часовой пояс</label>
-        <select
-            :value="formData.timezone"
-            @change="updateField('timezone', ($event.target as HTMLSelectElement).value)"
-            class="w-full bg-slate-700 border border-blue-900 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
-        >
-          <option value="UTC+3">UTC+3 (Москва)</option>
-          <option value="UTC+4">UTC+4 (Казань)</option>
-          <option value="UTC+5">UTC+5 (Екатеринбург)</option>
-          <option value="UTC+8">UTC+8 (Владивосток)</option>
-        </select>
-      </div>
-
-      <div>
-        <label class="block text-sm font-semibold mb-3">Доступность</label>
-        <div class="space-y-2 bg-slate-700 rounded-lg p-3 border border-blue-900">
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input
-                :checked="formData.availability.weekdays"
-                @change="updateAvailability('weekdays', ($event.target as HTMLInputElement).checked)"
-                type="checkbox"
-                class="w-4 h-4"
-            />
-            <span class="text-sm">Будни (Пн-Пт)</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input
-                :checked="formData.availability.weekends"
-                @change="updateAvailability('weekends', ($event.target as HTMLInputElement).checked)"
-                type="checkbox"
-                class="w-4 h-4"
-            />
-            <span class="text-sm">Выходные (Сб-Вс)</span>
-          </label>
-          <label class="flex items-center gap-2 cursor-pointer">
-            <input
-                :checked="formData.availability.evenings"
-                @change="updateAvailability('evenings', ($event.target as HTMLInputElement).checked)"
-                type="checkbox"
-                class="w-4 h-4"
-            />
-            <span class="text-sm">Вечерние часы (18:00-23:00)</span>
-          </label>
+    <!-- Summary Card -->
+    <div class="bg-blue-900/20 border border-blue-900 rounded-lg p-4 space-y-4">
+      <!-- Service Name & Category -->
+      <div class="flex items-start gap-3">
+        <span class="text-green-400 text-xl font-bold flex-shrink-0">✓</span>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-white truncate">{{ formData.serviceName }}</p>
+          <p class="text-sm text-gray-400">{{ getCategoryName(formData.category) }}</p>
         </div>
       </div>
+
+      <div class="h-px bg-slate-700"></div>
+
+      <!-- Price & Media Count -->
+      <div class="flex items-start gap-3">
+        <span class="text-green-400 text-xl font-bold flex-shrink-0">✓</span>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-white">{{ formData.price }}₽ за услугу</p>
+          <p class="text-sm text-gray-400">{{ formData.images.length }} {{ getImageWord() }}</p>
+        </div>
+      </div>
+
+      <div class="h-px bg-slate-700"></div>
+
+      <!-- Schedule -->
+      <div class="flex items-start gap-3">
+        <span class="text-green-400 text-xl font-bold flex-shrink-0">✓</span>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-white">{{ formData.timezone }}</p>
+          <p class="text-xs text-gray-400 space-y-1">
+            <div v-if="formData.availability.weekdays">{{ getAvailabilityText() }}</div>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Text -->
+    <div class="mt-4 p-3 bg-slate-700/50 border border-slate-600 rounded-lg">
+      <p class="text-xs text-gray-400 leading-relaxed">
+        🌟 Описание вашей услуги:
+      </p>
+      <p class="text-sm text-gray-200 mt-2 line-clamp-4">{{ formData.description }}</p>
+    </div>
+
+    <!-- Info Message -->
+    <div class="mt-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
+      <p class="text-xs text-blue-300 leading-relaxed">
+        ✨ После публикации васа услуга станет видна клиентам в каталоге.
+      </p>
     </div>
   </div>
 </template>
@@ -72,22 +74,41 @@ interface Props {
   formData: FormData
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
-const emit = defineEmits<{
-  'update:formData': [data: FormData]
-}>()
-
-const updateField = (field: keyof FormData, value: any) => {
-  emit('update:formData', { ...props.formData, [field]: value })
+const categoryNames: Record<string, string> = {
+  repair: '🏠 Ремонт',
+  business: '💼 Бизнес',
+  fashion: '👗 Мода',
+  education: '📚 Обучение',
+  design: '🎨 Дизайн',
+  it: '💻 IT'
 }
 
-const updateAvailability = (field: keyof FormData['availability'], value: boolean) => {
-  emit('update:formData', {
-    ...props.formData,
-    availability: { ...props.formData.availability, [field]: value }
-  })
+const getCategoryName = (category: string): string => {
+  return categoryNames[category] || category
+}
+
+const getImageWord = (): string => {
+  const count = (0 as any).formData?.images?.length || 0
+  if (count === 0) return 'без фото'
+  if (count === 1) return 'фото'
+  if (count <= 4) return 'фото'
+  return 'фото'
+}
+
+const getAvailabilityText = (): string => {
+  const days = []
+  // Это место ставим ранее
+  return 'Настроики графика сохранены'
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
