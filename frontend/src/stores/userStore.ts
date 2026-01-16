@@ -77,7 +77,8 @@ export const useUserStore = defineStore('user', () => {
   const providerServices = ref<Service[]>([])
 
   const isAuthenticated = computed(() => !!authToken.value || !!user.value)
-  const isProvider = computed(() => providerServices.value.length > 0 && providerInfo.value !== null)
+  // ✅ ИСПРАВЛЕНО: Исполнитель создан только если есть providerInfo (профиль создан)
+  const isProvider = computed(() => providerInfo.value !== null)
 
   // Инициализация из Telegram (может вызвать повторно если нужно)
   const initFromTelegram = () => {
@@ -95,6 +96,7 @@ export const useUserStore = defineStore('user', () => {
   // Установить информацию исполнителя
   const setProviderInfo = (provider: ProviderInfo) => {
     providerInfo.value = provider
+    console.log('✅ Provider profile created:', provider)
   }
 
   // Получить информацию исполнителя
@@ -106,15 +108,18 @@ export const useUserStore = defineStore('user', () => {
   const updateProviderInfo = (updates: Partial<ProviderInfo>) => {
     if (providerInfo.value) {
       providerInfo.value = { ...providerInfo.value, ...updates }
+      console.log('✏️ Provider profile updated:', providerInfo.value)
     }
   }
 
   // Добавить услугу
   const addService = (service: Omit<Service, 'id'>) => {
-    providerServices.value.push({
+    const newService = {
       id: Date.now(),
       ...service
-    } as Service)
+    } as Service
+    providerServices.value.push(newService)
+    console.log('✅ Service added:', newService)
   }
 
   // Обновить услугу
