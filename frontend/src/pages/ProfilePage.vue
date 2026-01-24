@@ -1,14 +1,14 @@
 <template>
   <div class="profile-page">
     <!-- Header with Navigation -->
-    <ProfileHeaderWithNav />
+    <UserHeader />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useUserStore } from '@/stores/userStore'
-import ProfileHeaderWithNav from '@/components/profile/ProfileHeaderWithNav.vue'
+import UserHeader from '@/components/profile/UserHeader.vue'
 
 const userStore = useUserStore()
 
