@@ -19,90 +19,201 @@
 
     <!-- Settings Sections (iOS 18 style) -->
     <div class="settings-container">
-      <!-- Profile Section -->
+      <!-- For Regular User -->
+      <template v-if="!isProvider">
+        <!-- Orders History Section -->
+        <div class="settings-section">
+          <h2 class="settings-section-title">ИСТОРИЯ</h2>
+          
+          <div class="settings-cell-group">
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-blue-500">📋</div>
+              <div class="cell-content">
+                <p class="cell-label">Мои заказы</p>
+                <p class="cell-value">{{ ordersCount }} активных</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <!-- Reviews -->
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-yellow-500">⭐</div>
+              <div class="cell-content">
+                <p class="cell-label">Оставленные отзывы</p>
+                <p class="cell-value">{{ reviewsCount }} отзывов</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <!-- Saved Services -->
+            <button class="settings-cell">
+              <div class="cell-icon bg-red-500">❤️</div>
+              <div class="cell-content">
+                <p class="cell-label">Сохраненные услуги</p>
+                <p class="cell-value">{{ savedCount }} услуг</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Become Provider Section -->
+        <div class="settings-section">
+          <h2 class="settings-section-title">ВОЗМОЖНОСТИ</h2>
+          
+          <div class="settings-cell-group">
+            <button 
+              @click="$emit('become-provider')"
+              class="settings-cell-provider"
+            >
+              <div class="cell-icon bg-gradient-to-br from-purple-500 to-purple-600">🚀</div>
+              <div class="cell-content">
+                <p class="cell-label-provider">Стать исполнителем</p>
+                <p class="cell-value">Создавайте услуги и зарабатывайте</p>
+              </div>
+              <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- For Provider -->
+      <template v-else>
+        <!-- My Services Section -->
+        <div class="settings-section">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="settings-section-title">МОИ УСЛУГИ</h2>
+            <button 
+              @click="$emit('add-service')"
+              class="text-blue-400 hover:text-blue-300 text-sm font-semibold transition"
+            >
+              + Добавить
+            </button>
+          </div>
+          
+          <div class="settings-cell-group">
+            <button 
+              v-if="services.length === 0"
+              @click="$emit('add-service')"
+              class="settings-cell-empty"
+            >
+              <div class="cell-icon bg-slate-700">➕</div>
+              <div class="cell-content">
+                <p class="cell-label">Добавить первую услугу</p>
+                <p class="cell-value">Начните предлагать услуги</p>
+              </div>
+            </button>
+
+            <div v-for="(service, index) in services" :key="service.id">
+              <button 
+                v-if="index < 3"
+                class="settings-cell border-b border-slate-700 group"
+                @click="$emit('edit-service', service)"
+              >
+                <div class="cell-icon bg-blue-500">📌</div>
+                <div class="cell-content">
+                  <p class="cell-label">{{ service.name }}</p>
+                  <p class="cell-value">{{ service.price | formatPrice }} ₽</p>
+                </div>
+                <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                  <button 
+                    @click.stop="$emit('delete-service', service.id)"
+                    class="text-red-400 hover:text-red-300 text-sm"
+                  >
+                    🗑
+                  </button>
+                </div>
+              </button>
+            </div>
+
+            <button 
+              v-if="services.length > 3"
+              class="settings-cell text-blue-400"
+            >
+              <div class="cell-icon bg-slate-700">📂</div>
+              <div class="cell-content">
+                <p class="cell-label">Еще услуг</p>
+                <p class="cell-value">{{ services.length - 3 }} услуги</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Provider Stats Section -->
+        <div class="settings-section">
+          <h2 class="settings-section-title">СТАТИСТИКА</h2>
+          
+          <div class="settings-cell-group">
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-green-500">✅</div>
+              <div class="cell-content">
+                <p class="cell-label">Выполненные заказы</p>
+                <p class="cell-value">{{ completedOrders }} заказов</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-yellow-500">⭐</div>
+              <div class="cell-content">
+                <p class="cell-label">Рейтинг</p>
+                <p class="cell-value">{{ providerRating }}/5.0 ({{ providerReviews }} отзывов)</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <button class="settings-cell">
+              <div class="cell-icon bg-purple-500">💰</div>
+              <div class="cell-content">
+                <p class="cell-label">Общий доход</p>
+                <p class="cell-value">{{ totalEarnings | formatPrice }} ₽</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </template>
+
+      <!-- Common Settings Section -->
       <div class="settings-section">
         <h2 class="settings-section-title">ПРОФИЛЬ</h2>
         
-        <!-- Profile Cell -->
         <div class="settings-cell-group">
-          <button class="settings-cell">
-            <div class="cell-icon bg-blue-500">👤</div>
+          <button 
+            @click="$emit('edit-profile')"
+            class="settings-cell border-b border-slate-700"
+          >
+            <div class="cell-icon bg-blue-500">✏️</div>
             <div class="cell-content">
-              <p class="cell-label">Обновить профиль</p>
+              <p class="cell-label">Редактировать профиль</p>
               <p class="cell-value">{{ user?.first_name }}</p>
             </div>
             <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
             </svg>
           </button>
-        </div>
-      </div>
 
-      <!-- Account Section -->
-      <div class="settings-section">
-        <h2 class="settings-section-title">АККАУНТ</h2>
-        
-        <div class="settings-cell-group">
-          <!-- Email Cell -->
-          <button class="settings-cell border-b border-slate-700">
-            <div class="cell-icon bg-red-500">📧</div>
-            <div class="cell-content">
-              <p class="cell-label">Почта</p>
-              <p class="cell-value">user@example.com</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          <!-- Phone Cell -->
-          <button class="settings-cell border-b border-slate-700">
-            <div class="cell-icon bg-green-500">📱</div>
-            <div class="cell-content">
-              <p class="cell-label">Номер телефона</p>
-              <p class="cell-value">+7 (999) 123-45-67</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          <!-- Location Cell -->
-          <button class="settings-cell">
-            <div class="cell-icon bg-purple-500">📍</div>
-            <div class="cell-content">
-              <p class="cell-label">Место расположения</p>
-              <p class="cell-value">Москва, Россия</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Privacy & Security Section -->
-      <div class="settings-section">
-        <h2 class="settings-section-title">БЕЗОПАСНОСТЬ</h2>
-        
-        <div class="settings-cell-group">
-          <!-- Privacy Cell -->
-          <button class="settings-cell border-b border-slate-700">
-            <div class="cell-icon bg-blue-600">🔒</div>
-            <div class="cell-content">
-              <p class="cell-label">Приватность</p>
-              <p class="cell-value">Увидим для всех</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          <!-- Notifications Cell -->
           <button class="settings-cell">
             <div class="cell-icon bg-orange-500">🔔</div>
             <div class="cell-content">
-              <p class="cell-label">Нотификации</p>
+              <p class="cell-label">Уведомления</p>
               <p class="cell-value">Включены</p>
             </div>
             <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -115,7 +226,10 @@
       <!-- Danger Zone -->
       <div class="settings-section">
         <div class="settings-cell-group">
-          <button class="settings-cell-danger">
+          <button 
+            @click="$emit('logout')"
+            class="settings-cell-danger"
+          >
             <div class="cell-icon-danger">🚪</div>
             <div class="cell-content">
               <p class="cell-label-danger">Выйти из аккаунта</p>
@@ -129,6 +243,8 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
+
 interface User {
   id?: string | number
   first_name?: string
@@ -136,9 +252,35 @@ interface User {
   username?: string
 }
 
-defineProps<{
+interface Service {
+  id: string | number
+  name: string
+  price: number
+  description?: string
+}
+
+interface Props {
   user?: User
   isProvider: boolean
+  services?: Service[]
+  ordersCount?: number
+  reviewsCount?: number
+  savedCount?: number
+  completedOrders?: number
+  providerRating?: number
+  providerReviews?: number
+  totalEarnings?: number
+}
+
+defineProps<Props>()
+
+defineEmits<{
+  'become-provider': []
+  'add-service': []
+  'edit-service': [service: Service]
+  'delete-service': [id: string | number]
+  'edit-profile': []
+  'logout': []
 }>()
 </script>
 
@@ -188,6 +330,13 @@ defineProps<{
   text-transform: uppercase;
 }
 
+/* Section */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
 /* Cell Group (iOS 18 style) */
 .settings-cell-group {
   background: rgba(30, 41, 59, 0.5);
@@ -208,7 +357,6 @@ defineProps<{
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-radius: 0.875rem;
 }
 
 .settings-cell:hover {
@@ -217,6 +365,51 @@ defineProps<{
 
 .settings-cell:active {
   background: rgba(59, 130, 246, 0.1);
+}
+
+/* Empty State Cell */
+.settings-cell-empty {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-cell-empty:hover {
+  background: rgba(167, 139, 250, 0.05);
+}
+
+/* Provider Highlight Cell */
+.settings-cell-provider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  background: rgba(147, 51, 234, 0.1);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-cell-provider:hover {
+  background: rgba(147, 51, 234, 0.15);
+}
+
+.settings-cell-provider:active {
+  background: rgba(147, 51, 234, 0.2);
+}
+
+.cell-label-provider {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #a78bfa;
+  margin: 0;
 }
 
 /* Cell Icon */
@@ -264,7 +457,6 @@ defineProps<{
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  border-radius: 0.875rem;
 }
 
 .settings-cell-danger:hover {
@@ -310,7 +502,10 @@ defineProps<{
     gap: 1.5rem;
   }
 
-  .settings-cell {
+  .settings-cell,
+  .settings-cell-empty,
+  .settings-cell-provider,
+  .settings-cell-danger {
     padding: 0.875rem;
   }
 
