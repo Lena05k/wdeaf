@@ -1,14 +1,14 @@
 <template>
   <div class="profile-page">
-    <!-- UserHeader contains everything now -->
-    <UserHeader />
+    <!-- Header with Navigation -->
+    <ProfileHeaderWithNav />
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useUserStore } from '@/stores/userStore'
-import UserHeader from '@/components/profile/UserHeader.vue'
+import ProfileHeaderWithNav from '@/components/profile/ProfileHeaderWithNav.vue'
 
 const userStore = useUserStore()
 
@@ -21,6 +21,6 @@ onMounted(() => {
 .profile-page {
   background: linear-gradient(135deg, #0f1319 0%, #1a1f2e 100%);
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
 }
 </style>
