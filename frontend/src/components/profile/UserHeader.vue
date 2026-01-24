@@ -26,7 +26,10 @@
           <h2 class="settings-section-title">ИСТОРИЯ</h2>
           
           <div class="settings-cell-group">
-            <button class="settings-cell border-b border-slate-700">
+            <button 
+              @click="navigateTo('orders')"
+              class="settings-cell border-b border-slate-700"
+            >
               <div class="cell-icon bg-blue-500">📋</div>
               <div class="cell-content">
                 <p class="cell-label">Мои заказы</p>
@@ -38,7 +41,10 @@
             </button>
 
             <!-- Reviews -->
-            <button class="settings-cell border-b border-slate-700">
+            <button 
+              @click="navigateTo('reviews')"
+              class="settings-cell border-b border-slate-700"
+            >
               <div class="cell-icon bg-yellow-500">⭐</div>
               <div class="cell-content">
                 <p class="cell-label">Оставленные отзывы</p>
@@ -50,7 +56,10 @@
             </button>
 
             <!-- Saved Services -->
-            <button class="settings-cell">
+            <button 
+              @click="navigateTo('saved')"
+              class="settings-cell"
+            >
               <div class="cell-icon bg-red-500">❤️</div>
               <div class="cell-content">
                 <p class="cell-label">Сохраненные услуги</p>
@@ -65,7 +74,7 @@
 
         <!-- Become Provider Section -->
         <div class="settings-section">
-          <h2 class="settings-section-title">ВОЗМОЖНОСТИ</h2>
+          <h2 class="settings-section-title">ВОЗМОЖНОстИ</h2>
           
           <div class="settings-cell-group">
             <button 
@@ -121,7 +130,7 @@
                 <div class="cell-icon bg-blue-500">📌</div>
                 <div class="cell-content">
                   <p class="cell-label">{{ service.name }}</p>
-                  <p class="cell-value">{{ service.price | formatPrice }} ₽</p>
+                  <p class="cell-value">{{ formatPrice(service.price) }} ₽</p>
                 </div>
                 <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition">
                   <button 
@@ -136,6 +145,7 @@
 
             <button 
               v-if="services.length > 3"
+              @click="navigateTo('all-services')"
               class="settings-cell text-blue-400"
             >
               <div class="cell-icon bg-slate-700">📂</div>
@@ -152,10 +162,13 @@
 
         <!-- Provider Stats Section -->
         <div class="settings-section">
-          <h2 class="settings-section-title">СТАТИСТИКА</h2>
+          <h2 class="settings-section-title">СТАТИсТИКА</h2>
           
           <div class="settings-cell-group">
-            <button class="settings-cell border-b border-slate-700">
+            <button 
+              @click="navigateTo('provider-orders')"
+              class="settings-cell border-b border-slate-700"
+            >
               <div class="cell-icon bg-green-500">✅</div>
               <div class="cell-content">
                 <p class="cell-label">Выполненные заказы</p>
@@ -166,7 +179,10 @@
               </svg>
             </button>
 
-            <button class="settings-cell border-b border-slate-700">
+            <button 
+              @click="navigateTo('provider-reviews')"
+              class="settings-cell border-b border-slate-700"
+            >
               <div class="cell-icon bg-yellow-500">⭐</div>
               <div class="cell-content">
                 <p class="cell-label">Рейтинг</p>
@@ -177,11 +193,14 @@
               </svg>
             </button>
 
-            <button class="settings-cell">
+            <button 
+              @click="navigateTo('analytics')"
+              class="settings-cell"
+            >
               <div class="cell-icon bg-purple-500">💰</div>
               <div class="cell-content">
                 <p class="cell-label">Общий доход</p>
-                <p class="cell-value">{{ totalEarnings | formatPrice }} ₽</p>
+                <p class="cell-value">{{ formatPrice(totalEarnings) }} ₽</p>
               </div>
               <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -210,7 +229,10 @@
             </svg>
           </button>
 
-          <button class="settings-cell">
+          <button 
+            @click="navigateTo('notifications')"
+            class="settings-cell"
+          >
             <div class="cell-icon bg-orange-500">🔔</div>
             <div class="cell-content">
               <p class="cell-label">Уведомления</p>
@@ -243,7 +265,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 
 interface User {
   id?: string | number
@@ -272,7 +294,18 @@ interface Props {
   totalEarnings?: number
 }
 
-defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  services: () => [],
+  ordersCount: 0,
+  reviewsCount: 0,
+  savedCount: 0,
+  completedOrders: 0,
+  providerRating: 0,
+  providerReviews: 0,
+  totalEarnings: 0
+})
+
+const router = useRouter()
 
 defineEmits<{
   'become-provider': []
@@ -282,6 +315,33 @@ defineEmits<{
   'edit-profile': []
   'logout': []
 }>()
+
+// Навигация по кликам
+const navigateTo = (page: string) => {
+  const routes: Record<string, string> = {
+    // Обычный пользователь
+    'orders': '/profile/orders',
+    'reviews': '/profile/reviews',
+    'saved': '/profile/saved',
+    // Исполнитель
+    'all-services': '/profile/services',
+    'provider-orders': '/profile/provider-orders',
+    'provider-reviews': '/profile/provider-reviews',
+    'analytics': '/profile/analytics',
+    // Обычее
+    'notifications': '/profile/notifications'
+  }
+  
+  const route = routes[page]
+  if (route) {
+    router.push(route)
+  }
+}
+
+// Форматирование цены
+const formatPrice = (price: number): string => {
+  return new Intl.NumberFormat('ru-RU').format(price)
+}
 </script>
 
 <style scoped>
