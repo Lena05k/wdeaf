@@ -1,110 +1,128 @@
 <template>
-  <div v-if="providerInfo" class="space-y-4 pb-4">
-    <!-- Profile Card -->
-    <div class="bg-gradient-to-br from-blue-900/30 to-blue-800/20 border border-blue-700 rounded-xl p-4 space-y-4">
-      <!-- Header with Edit -->
-      <div class="flex items-center justify-between">
-        <h3 class="text-lg font-bold text-blue-300 flex items-center gap-2">
-          <span>👤</span> Профиль исполнителя
-        </h3>
+  <div class="provider-profile-section">
+    <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-6">
+      <!-- Profile Header -->
+      <div class="flex items-start justify-between pb-4 border-b border-slate-700">
+        <div>
+          <h3 class="text-2xl font-bold text-white">{{ providerInfo?.name ?? 'Профиль' }}</h3>
+          <p class="text-gray-400 mt-1">
+            🌟 {{ providerInfo?.rating ?? 0 }} рейтинг · {{ providerInfo?.reviews ?? 0 }} отзывов
+          </p>
+        </div>
         <button
-          @click="$emit('edit')"
-          class="text-blue-400 hover:text-blue-300 text-xl transition"
+          @click="editProfile"
+          class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2 rounded-lg transition active:scale-95 flex items-center gap-2"
         >
-          ✍️
+          ✍️ Отредактировать
         </button>
       </div>
 
-      <!-- Info Grid -->
-      <div class="space-y-3">
-        <!-- Name -->
-        <div>
-          <p class="text-xs text-gray-400 mb-1">ИМЕ</p>
-          <p class="font-semibold text-white">{{ providerInfo.serviceName }}</p>
-        </div>
+      <!-- Bio -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-300 mb-2">📝 О себе</label>
+        <p class="text-gray-400 leading-relaxed">
+          {{ providerInfo?.bio ?? 'Ни с чем еще не направялось. Напишите детально о себе!' }}
+        </p>
+      </div>
 
-        <!-- Description -->
-        <div>
-          <p class="text-xs text-gray-400 mb-1">О сЕБЕ</p>
-          <p class="text-sm text-gray-300 line-clamp-3">{{ providerInfo.description }}</p>
-        </div>
+      <!-- Location -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-300 mb-2">📍 Местонахождение</label>
+        <p class="text-gray-400">
+          {{ providerInfo?.location ?? 'Не указано' }}
+        </p>
+      </div>
 
-        <!-- Categories -->
-        <div>
-          <p class="text-xs text-gray-400 mb-2">КАТЕГОРИИ</p>
-          <div class="flex flex-wrap gap-2">
-            <span
-              v-for="cat in providerInfo.categories"
-              :key="cat"
-              class="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-semibold"
-            >
-              {{ cat }}
-            </span>
-          </div>
+      <!-- Specializations -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-300 mb-3">🌟 Специализация</label>
+        <div class="flex flex-wrap gap-2">
+          <span
+            v-if="providerInfo?.specializations && providerInfo.specializations.length > 0"
+            v-for="spec in providerInfo.specializations"
+            :key="spec"
+            class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm font-medium"
+          >
+            {{ spec }}
+          </span>
+          <span v-else class="text-gray-400 text-sm">Не указано</span>
         </div>
+      </div>
 
-        <!-- Timezone -->
+      <!-- Experience -->
+      <div>
+        <label class="block text-sm font-semibold text-gray-300 mb-2">🎤 Основной эксперимент</label>
+        <p class="text-gray-400">
+          {{ providerInfo?.experience ?? 'Не указано' }}
+        </p>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="border-t border-slate-700 pt-4 space-y-3">
+        <label class="block text-sm font-semibold text-gray-300">📞 Контактные данные</label>
         <div>
-          <p class="text-xs text-gray-400 mb-1">ЧАСОВОЙ ПОЯС</p>
-          <p class="font-semibold text-white">{{ providerInfo.timezone }}</p>
+          <p class="text-xs text-gray-500 mb-1">Email</p>
+          <p class="text-gray-300 font-mono text-sm">
+            {{ providerInfo?.email ?? 'Не указано' }}
+          </p>
         </div>
-
-        <!-- Availability -->
         <div>
-          <p class="text-xs text-gray-400 mb-2">ДОСТУПНОСТЬ</p>
-          <div class="space-y-1">
-            <p v-if="providerInfo.availability?.weekdays" class="text-sm text-green-400 flex items-center gap-2">
-              <span>✓</span> Будни (Пн-Пт)
-            </p>
-            <p v-if="providerInfo.availability?.weekends" class="text-sm text-green-400 flex items-center gap-2">
-              <span>✓</span> Выходные (Сб-Вс)
-            </p>
-            <p v-if="providerInfo.availability?.evenings" class="text-sm text-green-400 flex items-center gap-2">
-              <span>✓</span> Вечерние (18:00-23:00)
-            </p>
-          </div>
+          <p class="text-xs text-gray-500 mb-1">Телефон</p>
+          <p class="text-gray-300 font-mono text-sm">
+            {{ providerInfo?.phone ?? 'Не указано' }}
+          </p>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="grid grid-cols-3 gap-3 border-t border-slate-700 pt-4">
+        <div class="text-center">
+          <p class="text-2xl font-bold text-blue-400">
+            {{ providerInfo?.completedOrders ?? 0 }}
+          </p>
+          <p class="text-xs text-gray-400 mt-1">Заказов</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-yellow-400">
+            {{ (providerInfo?.rating ?? 0).toFixed(1) }}
+          </p>
+          <p class="text-xs text-gray-400 mt-1">Рейтинг</p>
+        </div>
+        <div class="text-center">
+          <p class="text-2xl font-bold text-green-400">
+            {{ providerInfo?.reviews ?? 0 }}
+          </p>
+          <p class="text-xs text-gray-400 mt-1">Отзывов</p>
         </div>
       </div>
     </div>
-
-    <!-- Stats -->
-    <div class="grid grid-cols-2 gap-3">
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-3 text-center">
-        <p class="text-2xl font-bold text-yellow-400">4.8</p>
-        <p class="text-xs text-gray-400 mt-1">⭐ Рейтинг</p>
-      </div>
-      <div class="bg-slate-800 border border-slate-700 rounded-xl p-3 text-center">
-        <p class="text-2xl font-bold text-blue-400">24</p>
-        <p class="text-xs text-gray-400 mt-1">💬 Отзывы</p>
-      </div>
-    </div>
-  </div>
-
-  <!-- Empty State -->
-  <div v-else class="text-center py-12 text-gray-400">
-    <p class="text-3xl mb-2👤</p>
-    <p class="text-sm">Профиль не загружен</p>
   </div>
 </template>
 
 <script setup lang="ts">
 interface ProviderInfo {
-  serviceName?: string
-  description?: string
-  categories?: string[]
-  timezone?: string
-  availability?: {
-    weekdays: boolean
-    weekends: boolean
-    evenings: boolean
-  }
+  id?: string | number
+  name?: string
+  bio?: string
+  location?: string
+  experience?: string
+  specializations?: string[]
+  email?: string
+  phone?: string
+  rating?: number
+  reviews?: number
+  completedOrders?: number
 }
 
 defineProps<{
   providerInfo?: ProviderInfo
 }>()
 
-defineEmits<{
+const emit = defineEmits<{
   edit: []
 }>()
+
+const editProfile = () => {
+  emit('edit')
+}
 </script>
