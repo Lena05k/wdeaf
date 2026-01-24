@@ -33,6 +33,57 @@ const routes: Array<RouteRecordRaw> = [
     name: 'profile',
     component: ProfilePage
   },
+  // Маршруты для обычного пользователя
+  {
+    path: '/profile/orders',
+    name: 'profile-orders',
+    component: () => import('../views/profile/UserOrdersView.vue'),
+    meta: { title: 'Мои заказы' }
+  },
+  {
+    path: '/profile/reviews',
+    name: 'profile-reviews',
+    component: () => import('../views/profile/UserReviewsView.vue'),
+    meta: { title: 'Отзывы' }
+  },
+  {
+    path: '/profile/saved',
+    name: 'profile-saved',
+    component: () => import('../views/profile/SavedServicesView.vue'),
+    meta: { title: 'Сохраненные' }
+  },
+  // Маршруты для исполнителя
+  {
+    path: '/profile/services',
+    name: 'profile-services',
+    component: () => import('../views/profile/ProviderServicesView.vue'),
+    meta: { title: 'Мои услуги' }
+  },
+  {
+    path: '/profile/provider-orders',
+    name: 'profile-provider-orders',
+    component: () => import('../views/profile/ProviderOrdersView.vue'),
+    meta: { title: 'Заказы' }
+  },
+  {
+    path: '/profile/provider-reviews',
+    name: 'profile-provider-reviews',
+    component: () => import('../views/profile/ProviderReviewsView.vue'),
+    meta: { title: 'Отзывы' }
+  },
+  {
+    path: '/profile/analytics',
+    name: 'profile-analytics',
+    component: () => import('../views/profile/AnalyticsView.vue'),
+    meta: { title: 'Аналитика' }
+  },
+  // Обые маршруты
+  {
+    path: '/profile/notifications',
+    name: 'profile-notifications',
+    component: () => import('../views/profile/NotificationsView.vue'),
+    meta: { title: 'Уведомления' }
+  },
   {
     path: '/provider-dashboard',
     name: 'provider-dashboard',
@@ -96,19 +147,22 @@ const router = createRouter({
 // Логирование всех навигаций
 router.beforeEach((to, from, next) => {
   console.log(`🔄 Navigating from "${from.name || 'initial'}" to "${to.name}"`)
-  console.log('📍 Available routes:', routes.map(r => ({ name: r.name, path: r.path })))
+  console.log('📋 Available routes:', routes.map(r => ({ name: r.name, path: r.path })))
   next()
 })
 
 router.afterEach((to) => {
   console.log(`✅ Successfully navigated to "${to.name}"`)
   console.log('Current URL:', window.location.href)
+  // Обновить титл страницы
+  if (to.meta.title) {
+    document.title = `${to.meta.title} - WDEAF`
+  }
 })
 
 router.onError((error) => {
   console.error('❌ Router error:', error)
   console.error('Stack:', error.stack)
 })
-
 
 export default router
