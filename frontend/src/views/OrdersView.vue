@@ -18,31 +18,19 @@
         v-for="order in userOrders"
         :key="order.id"
         :order="order"
-        @select="selectOrder(order)"
         @cancel="cancelOrder(order.id)"
-        @message="openMessage(order.id)"
       />
     </div>
-
-    <!-- Order Details Modal -->
-    <OrderDetailsModal
-      :order="selectedOrder"
-      @close="selectedOrder = null"
-      @cancel="handleOrderCancel"
-      @message="handleOrderMessage"
-    />
   </div>
 </template>
 
 <script>
 import OrderCard from '../components/shared/OrderCard.vue';
-import OrderDetailsModal from '../components/modals/OrderDetailsModal.vue';
 
 export default {
   name: 'OrdersView',
   components: {
-    OrderCard,
-    OrderDetailsModal
+    OrderCard
   },
   props: {
     userOrders: {
@@ -50,33 +38,10 @@ export default {
       required: true
     }
   },
-  emits: ['browse-services', 'cancel-order', 'message-order'],
-  data() {
-    return {
-      selectedOrder: null
-    }
-  },
+  emits: ['browse-services', 'cancel-order'],
   methods: {
-    selectOrder(order) {
-      this.selectedOrder = order
-    },
     cancelOrder(orderId) {
       this.$emit('cancel-order', orderId)
-    },
-    openMessage(orderId) {
-      this.$emit('message-order', orderId)
-    },
-    handleOrderCancel() {
-      if (this.selectedOrder) {
-        this.cancelOrder(this.selectedOrder.id)
-        this.selectedOrder = null
-      }
-    },
-    handleOrderMessage() {
-      if (this.selectedOrder) {
-        this.openMessage(this.selectedOrder.id)
-        this.selectedOrder = null
-      }
     }
   }
 }
