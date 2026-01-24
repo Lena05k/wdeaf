@@ -1,14 +1,14 @@
 <template>
   <header class="sticky top-0 z-50 bg-white border-b border-gray-200" :style="headerStyle">
-    <div class="max-w-md mx-auto px-4 py-3">
-      <!-- Header Row: Logo + Tabs + Profile -->
-      <div class="flex items-center justify-between gap-4">
-        <!-- Logo & Brand -->
+    <!-- Logo Row -->
+    <div class="max-w-md mx-auto px-4 py-3 border-b border-gray-200">
+      <div class="flex items-center justify-between">
+        <!-- Logo -->
         <button
           @click="goHome"
           @keydown.enter="goHome"
           @keydown.space="goHome"
-          class="logo-btn flex items-center gap-2 flex-shrink-0 group"
+          class="logo-btn flex items-center flex-shrink-0 group"
           title="На главную"
           aria-label="WDEAF Главная"
         >
@@ -37,8 +37,6 @@
               </defs>
             </svg>
           </div>
-          <!-- Brand Text (hidden on mobile) -->
-          <span class="hidden sm:inline text-sm font-bold">WDEAF</span>
         </button>
 
         <!-- Spacer -->
@@ -58,30 +56,111 @@
         </button>
       </div>
     </div>
+
+    <!-- Tab Navigation -->
+    <nav class="max-w-md mx-auto flex h-12" role="tablist">
+      <button
+        v-for="tab in tabs"
+        :key="tab.id"
+        role="tab"
+        :aria-selected="currentTab === tab.id"
+        :aria-controls="`panel-${tab.id}`"
+        @click="updateTab(tab.id)"
+        :class="[
+          'flex-1 flex flex-col items-center justify-center text-xs font-medium transition-all',
+          currentTab === tab.id
+            ? 'border-b-2 border-blue-600'
+            : 'border-b-2 border-transparent hover:border-gray-300'
+        ]"
+        :style="currentTab === tab.id ? activeTabStyle : inactiveTabStyle"
+        :title="tab.label"
+      >
+        <!-- SVG Icons -->
+        <svg
+          v-if="tab.id === 'browse'"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="mb-1"
+        >
+          <circle cx="11" cy="11" r="8"></circle>
+          <path d="m21 21-4.35-4.35"></path>
+        </svg>
+
+        <svg
+          v-else-if="tab.id === 'catalog'"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="mb-1"
+        >
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+        </svg>
+
+        <svg
+          v-else-if="tab.id === 'orders'"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          class="mb-1"
+        >
+          <path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
+          <line x1="6" y1="6" x2="18" y2="6"></line>
+          <line x1="6" y1="10" x2="18" y2="10"></line>
+          <line x1="6" y1="14" x2="18" y2="14"></line>
+        </svg>
+
+        <span class="text-xs mt-0.5 font-medium leading-none">{{ tab.label }}</span>
+      </button>
+    </nav>
   </header>
 </template>
 
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 
+interface Tab {
+  id: string
+  label: string
+}
+
 interface Props {
   userName?: string
   userInitials?: string
   buttonColor?: string
+  currentTab?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   userName: 'User',
   userInitials: 'U',
-  buttonColor: '#2563eb'
+  buttonColor: '#2563eb',
+  currentTab: 'browse'
 })
 
 const emit = defineEmits<{
   'open-profile': []
   'go-home': []
+  'update:current-tab': [value: string]
 }>()
 
 const isDarkMode = ref(false)
+const currentTabLocal = ref(props.currentTab)
+
+const tabs: Tab[] = [
+  { id: 'browse', label: 'Обзор' },
+  { id: 'catalog', label: 'Каталог' },
+  { id: 'orders', label: 'Заказы' }
+]
 
 const getTelegramThemeParams = () => {
   if (!window.Telegram?.WebApp?.themeParams) {
@@ -107,6 +186,23 @@ const avatarStyle = computed(() => ({
   backgroundColor: props.buttonColor || themeParams.value.button_color || '#2563eb',
   borderColor: props.buttonColor || themeParams.value.button_color || '#2563eb'
 }))
+
+const activeTabStyle = computed(() => ({
+  color: '#2563eb',
+  fontWeight: '600'
+}))
+
+const inactiveTabStyle = computed(() => ({
+  color: themeParams.value.hint_color || '#6b7280',
+  fontWeight: '500'
+}))
+
+const currentTab = computed(() => props.currentTab)
+
+const updateTab = (tabId: string) => {
+  currentTabLocal.value = tabId
+  emit('update:current-tab', tabId)
+}
 
 const goHome = () => {
   emit('go-home')
@@ -138,7 +234,6 @@ onMounted(() => {
   transition: background-color 0.2s ease-out;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
   position: relative;
 }
 
@@ -194,11 +289,29 @@ onMounted(() => {
   outline-offset: 2px;
 }
 
-/* Smooth transitions */
-button {
+/* Tab Navigation */
+nav button {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  color: inherit;
+  border: none;
+  background: none;
   font-family: inherit;
   font-size: inherit;
+  cursor: pointer;
+}
+
+nav button:hover {
+  opacity: 0.8;
+}
+
+nav button:active {
+  transform: scale(0.98);
+}
+
+/* Focus states */
+nav button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: -2px;
 }
 
 /* SVG Icon styling */
@@ -212,12 +325,6 @@ svg {
   .logo-btn {
     padding: 0.25rem;
   }
-}
-
-/* Focus states */
-button:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
 }
 
 /* High contrast mode support */
