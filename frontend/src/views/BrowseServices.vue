@@ -12,32 +12,37 @@
     </div>
 
     <!-- Services List -->
-    <div class="services-container p-4 space-y-3">
-      <ServiceCard 
-        v-for="service in filteredServices"
-        :key="service.id"
-        :service="service"
-        @select="$emit('select-service', service)"
-        @order="$emit('order-service', service)"
-        @next-image="nextImage(service)"
-        @prev-image="prevImage(service)"
-      />
+    <div class="services-container">
+      <div class="services-grid">
+        <ServiceCard 
+          v-for="service in filteredServices"
+          :key="service.id"
+          :service="service"
+          @select="$emit('select-service', service)"
+          @order="$emit('order-service', service)"
+          @next-image="nextImage(service)"
+          @prev-image="prevImage(service)"
+        />
+      </div>
 
       <!-- Empty State -->
-      <div v-if="filteredServices.length === 0" class="empty-state text-center py-12">
-        <p class="text-4xl mb-2">😔</p>
-        <p class="text-gray-400 mb-4">Services not found</p>
-        <button 
-          @click="clearFilters"
-          class="btn-clear"
-        >
-          ❌ Clear filters
-        </button>
+      <div v-if="filteredServices.length === 0" class="empty-state">
+        <div class="empty-state-content">
+          <p class="empty-icon">🔍</p>
+          <p class="empty-title">Услуги не найдены</p>
+          <p class="empty-description">Попробуйте другие фильтры или поиск</p>
+          <button 
+            @click="clearFilters"
+            class="btn-reset"
+          >
+            Сбросить фильтры
+          </button>
+        </div>
       </div>
 
       <!-- Loading indicator (optional) -->
-      <div v-if="isLoading" class="text-center py-4">
-        <p class="text-gray-400">Loading...</p>
+      <div v-if="isLoading" class="loading-state">
+        <p class="text-gray-400">Загрузка...</p>
       </div>
     </div>
   </div>
@@ -141,50 +146,102 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: #0f1319;
+  background: var(--color-bg-primary, #f5f5f5);
 }
 
 .search-sticky {
   position: sticky;
   top: 0;
   z-index: 30;
-  background: #0f1319;
+  background: var(--color-bg-primary, #f5f5f5);
   padding: 1rem;
-  border-bottom: 1px solid #1a1f2e;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid var(--color-border, #e0e0e0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .services-container {
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  padding: 1rem;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
 }
 
 .empty-state {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 3rem 1rem;
+  min-height: 400px;
+  padding: 2rem;
 }
 
-.btn-clear {
-  background: rgba(0, 85, 255, 0.2);
-  color: #60a5fa;
-  border: 1px solid #0055FF;
+.empty-state-content {
+  text-align: center;
+  max-width: 300px;
+}
+
+.empty-icon {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.empty-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text, #000);
+  margin-bottom: 0.5rem;
+}
+
+.empty-description {
+  font-size: 0.875rem;
+  color: var(--color-text-secondary, #666);
+  margin-bottom: 1.5rem;
+}
+
+.btn-reset {
+  background: #0055FF;
+  color: white;
+  border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
+  font-size: 0.875rem;
 }
 
-.btn-clear:hover {
-  background: #0055FF;
-  color: white;
+.btn-reset:hover {
+  background: #0044cc;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 85, 255, 0.3);
 }
 
-.btn-clear:active {
+.btn-reset:active {
   transform: scale(0.98);
+}
+
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: var(--color-text-secondary, #666);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .browse-container {
+    background: #fff;
+  }
+  
+  .search-sticky {
+    background: #fff;
+  }
 }
 </style>
