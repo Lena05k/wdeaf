@@ -1,17 +1,13 @@
 <template>
   <div class="home-page">
-    <!-- Header with Logo and Avatar -->
+    <!-- Header with Logo, Tabs, and Avatar -->
     <Header
       :user-name="userData?.first_name"
       :user-initials="getUserInitials(userData?.first_name)"
       :button-color="buttonColor"
+      :current-tab="currentTab"
       @go-home="goHome"
       @open-profile="currentTab = 'profile'"
-    />
-
-    <!-- Tab Navigation -->
-    <TabNavigation
-      :current-tab="currentTab"
       @update:current-tab="currentTab = $event"
     />
 
@@ -66,7 +62,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import Header from '@/components/layout/Header.vue'
-import TabNavigation from '@/components/layout/TabNavigation.vue'
 import Toast from '@/components/shared/Toast.vue'
 import BrowseServices from '@/views/BrowseServices.vue'
 import CatalogView from '@/views/CatalogView.vue'
