@@ -54,25 +54,6 @@
       />
     </main>
 
-    <!-- Service Details Modal -->
-    <ServiceModal 
-      v-if="selectedServiceModal"
-      :service="selectedServiceModal"
-      :modalImageIndex="modalImageIndex"
-      @close="selectedServiceModal = null"
-      @order-confirm="orderServiceConfirm"
-      @view-provider="viewProviderProfile"
-      @next-image="modalImageIndex = (modalImageIndex + 1) % selectedServiceModal.images.length"
-      @prev-image="modalImageIndex = (modalImageIndex - 1 + selectedServiceModal.images.length) % selectedServiceModal.images.length"
-    />
-
-    <!-- Provider Profile Modal -->
-    <ProviderModal 
-      v-if="providerProfileModal"
-      :providerName="providerProfileModal"
-      @close="providerProfileModal = null"
-    />
-
     <!-- Toast Notification -->
     <Toast 
       v-if="showToast"
@@ -88,8 +69,6 @@ import BrowseServices from '@/views/BrowseServices.vue'
 import CatalogView from '@/views/CatalogView.vue'
 import OrdersView from '@/views/OrdersView.vue'
 import ProfileView from '@/views/ProfileView.vue'
-import ServiceModal from '@/components/modals/ServiceDetailsModal.vue'
-import ProviderModal from '@/components/modals/ProviderProfileModal.vue'
 import Toast from '@/components/shared/Toast.vue'
 
 export default {
@@ -101,8 +80,6 @@ export default {
     CatalogView,
     OrdersView,
     ProfileView,
-    ServiceModal,
-    ProviderModal,
     Toast
   },
   data() {
@@ -115,16 +92,13 @@ export default {
       currentTab: 'browse',
       searchQuery: '',
       selectedCategory: '',
-      selectedServiceModal: null,
-      providerProfileModal: null,
-      modalImageIndex: 0,
       showToast: false,
       toastMessage: '',
       categories: ['Ремонт', 'Бизнес', 'Мода', 'Обучение', 'Дизайн'],
       catalogCategories: [
         { id: 1, name: 'Ремонт', icon: '🔧', count: 23 },
         { id: 2, name: 'Бизнес', icon: '📊', count: 18 },
-        { id: 3, name: 'Мода', icon: '✂️', count: 34 },
+        { id: 3, name: 'Мода', icon: '✌️', count: 34 },
         { id: 4, name: 'Обучение', icon: '📖', count: 45 },
         { id: 5, name: 'Дизайн', icon: '🎭', count: 29 },
         { id: 6, name: 'IT', icon: '💻', count: 56 }
@@ -164,7 +138,7 @@ export default {
           provider: 'Анна Т.',
           category: 'Мода',
           description: 'Изготовление платьев и костюмов по индивидуальному заказу',
-          fullDescription: 'Создам платье вашей мечты! Работаю с любыми тканями, помогу с выбором фасона. Изготовлю платье, юбку, костюм - все сшивается по вашим меркам и предпочтениям.',
+          fullDescription: 'Создам платье вашей мечты! Работаю с любыми тканями, помогу с выбором фасона. Изготовлю платье, юбку, костюм - всё шьются по вашим меркам и предпочтениям.',
           price: 5000,
           reviews: 234,
           response_time: '< 3 часов',
@@ -237,34 +211,24 @@ export default {
   },
   methods: {
     selectService(service) {
-      this.selectedServiceModal = service;
-      this.modalImageIndex = 0;
+      // Модальное окно для деталей услуги
+      console.log('Service selected:', service)
     },
     orderService(service) {
-      this.selectedServiceModal = service;
-      this.modalImageIndex = 0;
-    },
-    orderServiceConfirm() {
-      if (this.selectedServiceModal) {
-        this.userOrders.unshift({
-          id: Date.now(),
-          service: this.selectedServiceModal.name,
-          provider: this.selectedServiceModal.provider,
-          status: 'pending',
-          price: this.selectedServiceModal.price,
-          date: 'завтра в ' + new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-        });
-        
-        this.selectedServiceModal = null;
-        this.showToast = true;
-        this.toastMessage = '✓ Заказ создан! Исполнитель свяжется с вами';
-        setTimeout(() => {
-          this.showToast = false;
-        }, 3000);
-      }
-    },
-    viewProviderProfile(providerName) {
-      this.providerProfileModal = providerName;
+      this.userOrders.unshift({
+        id: Date.now(),
+        service: service.name,
+        provider: service.provider,
+        status: 'pending',
+        price: service.price,
+        date: 'завтра в ' + new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
+      });
+      
+      this.showToast = true;
+      this.toastMessage = '✓ Заказ создан! Исполнитель свяжется с вами';
+      setTimeout(() => {
+        this.showToast = false;
+      }, 3000);
     },
     onCategorySelected(category) {
       this.selectedCategory = category.name;
