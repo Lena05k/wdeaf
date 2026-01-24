@@ -27,7 +27,7 @@
           
           <div class="settings-cell-group">
             <button 
-              @click="navigateTo('orders')"
+              @click="$emit('show-orders')"
               class="settings-cell border-b border-slate-700"
             >
               <div class="cell-icon bg-blue-500">📋</div>
@@ -42,7 +42,7 @@
 
             <!-- Reviews -->
             <button 
-              @click="navigateTo('reviews')"
+              @click="$emit('show-reviews')"
               class="settings-cell border-b border-slate-700"
             >
               <div class="cell-icon bg-yellow-500">⭐</div>
@@ -57,7 +57,7 @@
 
             <!-- Saved Services -->
             <button 
-              @click="navigateTo('saved')"
+              @click="$emit('show-saved')"
               class="settings-cell"
             >
               <div class="cell-icon bg-red-500">❤️</div>
@@ -74,7 +74,7 @@
 
         <!-- Become Provider Section -->
         <div class="settings-section">
-          <h2 class="settings-section-title">ВОЗМОЖНОстИ</h2>
+          <h2 class="settings-section-title">ВОЗМОЖНОсТИ</h2>
           
           <div class="settings-cell-group">
             <button 
@@ -145,7 +145,7 @@
 
             <button 
               v-if="services.length > 3"
-              @click="navigateTo('all-services')"
+              @click="$emit('show-all-services')"
               class="settings-cell text-blue-400"
             >
               <div class="cell-icon bg-slate-700">📂</div>
@@ -162,11 +162,11 @@
 
         <!-- Provider Stats Section -->
         <div class="settings-section">
-          <h2 class="settings-section-title">СТАТИсТИКА</h2>
+          <h2 class="settings-section-title">СТАТИСТИКА</h2>
           
           <div class="settings-cell-group">
             <button 
-              @click="navigateTo('provider-orders')"
+              @click="$emit('show-provider-orders')"
               class="settings-cell border-b border-slate-700"
             >
               <div class="cell-icon bg-green-500">✅</div>
@@ -180,7 +180,7 @@
             </button>
 
             <button 
-              @click="navigateTo('provider-reviews')"
+              @click="$emit('show-provider-reviews')"
               class="settings-cell border-b border-slate-700"
             >
               <div class="cell-icon bg-yellow-500">⭐</div>
@@ -194,7 +194,7 @@
             </button>
 
             <button 
-              @click="navigateTo('analytics')"
+              @click="$emit('show-analytics')"
               class="settings-cell"
             >
               <div class="cell-icon bg-purple-500">💰</div>
@@ -230,7 +230,7 @@
           </button>
 
           <button 
-            @click="navigateTo('notifications')"
+            @click="$emit('show-notifications')"
             class="settings-cell"
           >
             <div class="cell-icon bg-orange-500">🔔</div>
@@ -265,8 +265,6 @@
 </template>
 
 <script setup lang="ts">
-import { useRouter } from 'vue-router'
-
 interface User {
   id?: string | number
   first_name?: string
@@ -305,9 +303,15 @@ const props = withDefaults(defineProps<Props>(), {
   totalEarnings: 0
 })
 
-const router = useRouter()
-
 defineEmits<{
+  'show-orders': []
+  'show-reviews': []
+  'show-saved': []
+  'show-all-services': []
+  'show-provider-orders': []
+  'show-provider-reviews': []
+  'show-analytics': []
+  'show-notifications': []
   'become-provider': []
   'add-service': []
   'edit-service': [service: Service]
@@ -315,28 +319,6 @@ defineEmits<{
   'edit-profile': []
   'logout': []
 }>()
-
-// Навигация по кликам
-const navigateTo = (page: string) => {
-  const routes: Record<string, string> = {
-    // Обычный пользователь
-    'orders': '/profile/orders',
-    'reviews': '/profile/reviews',
-    'saved': '/profile/saved',
-    // Исполнитель
-    'all-services': '/profile/services',
-    'provider-orders': '/profile/provider-orders',
-    'provider-reviews': '/profile/provider-reviews',
-    'analytics': '/profile/analytics',
-    // Обычее
-    'notifications': '/profile/notifications'
-  }
-  
-  const route = routes[page]
-  if (route) {
-    router.push(route)
-  }
-}
 
 // Форматирование цены
 const formatPrice = (price: number): string => {
