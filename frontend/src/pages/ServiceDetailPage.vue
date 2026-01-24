@@ -12,23 +12,74 @@
       </button>
 
       <!-- Service Details -->
-      <ServiceDetailsModal 
-        :service="service"
-        :modalImageIndex="modalImageIndex"
-        @close="goBack"
-        @order-confirm="handleOrder"
-        @view-provider="handleViewProvider"
-        @next-image="nextImage"
-        @prev-image="prevImage"
-      />
-    </main>
+      <div class="bg-slate-800 border border-slate-700 rounded-xl p-6 space-y-4">
+        <!-- Images Carousel -->
+        <div class="relative bg-slate-700 rounded-lg overflow-hidden aspect-video">
+          <img 
+            :src="service.images[modalImageIndex]"
+            :alt="service.name"
+            class="w-full h-full object-cover"
+          />
+          <!-- Navigation -->
+          <div class="absolute inset-0 flex items-center justify-between px-4">
+            <button @click="prevImage" class="bg-black/50 hover:bg-black/70 text-white p-2 rounded-full">
+              ‹
+            </button>
+            <button @click="nextImage" class="bg-black/50 hover:bg-black/70 text-white p-2 rounded-full">
+              ›
+            </button>
+          </div>
+        </div>
 
-    <!-- Provider Profile Modal -->
-    <ProviderProfileModal 
-      v-if="providerProfileModal"
-      :providerName="providerProfileModal"
-      @close="providerProfileModal = null"
-    />
+        <!-- Service Info -->
+        <div>
+          <h1 class="text-2xl font-bold text-white mb-2">{{ service.name }}</h1>
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-gray-400 text-sm">{{ service.category }}</p>
+              <p class="text-yellow-400 font-semibold">⭐ {{ service.providerRating }} ({{ service.reviews }} отзывов)</p>
+            </div>
+            <div class="text-right">
+              <p class="text-2xl font-bold text-white">{{ service.price.toLocaleString('ru-RU') }} ₽</p>
+              <p class="text-gray-400 text-sm">{{ service.response_time }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Provider Info -->
+        <div class="border-t border-slate-700 pt-4">
+          <button
+            @click="handleViewProvider(service.provider)"
+            class="w-full text-left px-4 py-3 bg-slate-700 hover:bg-slate-600 rounded-lg transition"
+          >
+            <p class="text-gray-300 text-sm">Исполнитель</p>
+            <p class="text-white font-semibold">{{ service.provider }}</p>
+          </button>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <h3 class="text-lg font-semibold text-white mb-2">Описание</h3>
+          <p class="text-gray-300 leading-relaxed">{{ service.fullDescription }}</p>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="grid grid-cols-2 gap-3 pt-4">
+          <button
+            @click="goBack"
+            class="px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition"
+          >
+            Отмена
+          </button>
+          <button
+            @click="handleOrder"
+            class="px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg transition"
+          >
+            Заказать
+          </button>
+        </div>
+      </div>
+    </main>
 
     <Toast v-if="showToast" :message="toastMessage" />
   </div>
@@ -36,16 +87,12 @@
 
 <script>
 import Header from '../components/layout/Header.vue'
-import ServiceDetailsModal from '../components/modals/ServiceDetailsModal.vue'
-import ProviderProfileModal from '../components/modals/ProviderProfileModal.vue'
 import Toast from '../components/shared/Toast.vue'
 
 export default {
   name: 'ServiceDetailPage',
   components: {
     Header,
-    ServiceDetailsModal,
-    ProviderProfileModal,
     Toast
   },
   data() {
@@ -57,7 +104,6 @@ export default {
       },
       service: null,
       modalImageIndex: 0,
-      providerProfileModal: null,
       showToast: false,
       toastMessage: ''
     }
@@ -114,7 +160,11 @@ export default {
       }, 2000);
     },
     handleViewProvider(providerName) {
-      this.providerProfileModal = providerName;
+      this.showToast = true;
+      this.toastMessage = '📁 Профиль исполнителя: ' + providerName;
+      setTimeout(() => {
+        this.showToast = false;
+      }, 2000);
     },
     nextImage() {
       if (!this.service || !this.service.images) return;
