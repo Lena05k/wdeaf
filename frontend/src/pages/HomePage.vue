@@ -133,7 +133,7 @@ export default {
           id: 1,
           name: 'Услуга сантехника',
           provider: 'Олег М.',
-          category: '🏠 Ремонт',
+          category: 'Ремонт',
           description: 'Профессиональный ремонт и монтаж сантехники',
           fullDescription: 'Профессиональный ремонт и монтаж сантехники с гарантией. Выполняю любые работы: замену кранов, чистку труб, установку полотенцесушителей. 10 лет опыта, работаю быстро и аккуратно.',
           price: 2500,
@@ -147,7 +147,7 @@ export default {
           id: 2,
           name: 'Консультация бухгалтера',
           provider: 'Мария С.',
-          category: '💼 Бизнес',
+          category: 'Бизнес',
           description: 'Налоговое планирование и бухгалтерская отчетность',
           fullDescription: 'Профессиональная консультация по налоговому планированию, ведение бухгалтерского учета, подготовка отчетности. Помогу оптимизировать налоги и разобраться в законодательстве.',
           price: 3000,
@@ -161,7 +161,7 @@ export default {
           id: 3,
           name: 'Пошив платья',
           provider: 'Анна Т.',
-          category: '👗 Мода',
+          category: 'Мода',
           description: 'Изготовление платьев и костюмов по индивидуальному заказу',
           fullDescription: 'Создам платье вашей мечты! Работаю с любыми тканями, помогу с выбором фасона. Изготовлю платье, юбку, костюм - все сшивается по вашим меркам и предпочтениям.',
           price: 5000,
@@ -175,7 +175,7 @@ export default {
           id: 4,
           name: 'Уроки английского',
           provider: 'Джон Д.',
-          category: '📚 Обучение',
+          category: 'Обучение',
           description: 'Индивидуальные занятия по английскому языку',
           fullDescription: 'Native speaker проводит индивидуальные занятия английским. Программа подбирается под ваш уровень и цели. Разговорный курс, подготовка к экзаменам, бизнес-английский.',
           price: 1500,
@@ -189,7 +189,7 @@ export default {
           id: 5,
           name: 'Web-дизайн сайта',
           provider: 'Артем К.',
-          category: '🎨 Дизайн',
+          category: 'Дизайн',
           description: 'Создание современного дизайна вашего сайта',
           fullDescription: 'Создам красивый и функциональный дизайн вашего сайта. Работаю в современных стилях, адаптирую под мобильные устройства, учитываю ваши пожелания и особенности бизнеса.',
           price: 15000,
@@ -203,7 +203,7 @@ export default {
           id: 6,
           name: 'Обслуживание ПК',
           provider: 'Вадим Н.',
-          category: '🏠 Ремонт',
+          category: 'Ремонт',
           description: 'Чистка, диагностика и ремонт компьютеров',
           fullDescription: 'Профессиональная диагностика и ремонт компьютеров. Чищу от пыли, устраняю ошибки, устанавливаю ПО, заменяю неисправные детали. Быстрая и качественная работа.',
           price: 1800,
@@ -236,12 +236,12 @@ export default {
   },
   methods: {
     selectService(service) {
-      this.selectedServiceModal = service;
-      this.modalImageIndex = 0;
+      this.selectedServiceModal = service
+      this.modalImageIndex = 0
     },
     orderService(service) {
-      this.selectedServiceModal = service;
-      this.modalImageIndex = 0;
+      this.selectedServiceModal = service
+      this.modalImageIndex = 0
     },
     orderServiceConfirm() {
       if (this.selectedServiceModal) {
@@ -252,51 +252,52 @@ export default {
           status: 'pending',
           price: this.selectedServiceModal.price,
           date: 'завтра в ' + new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' })
-        });
+        })
         
-        this.selectedServiceModal = null;
-        this.showToast = true;
-        this.toastMessage = '✓ Заказ создан! Исполнитель свяжется с вами';
+        this.selectedServiceModal = null
+        this.showToast = true
+        this.toastMessage = '✓ Заказ создан! Исполнитель свяжется с вами'
         setTimeout(() => {
-          this.showToast = false;
-        }, 3000);
+          this.showToast = false
+        }, 3000)
       }
     },
     viewProviderProfile(providerName) {
-      this.providerProfileModal = providerName;
+      this.providerProfileModal = providerName
     },
     onCategorySelected(category) {
-      this.selectedCategory = category.name;
-      this.currentTab = 'browse';
+      // Используем имя категории без эмодзи для фильтрации
+      this.selectedCategory = category.name
+      this.currentTab = 'browse'
     },
     cancelOrder(orderId) {
-      this.userOrders = this.userOrders.filter(order => order.id !== orderId);
-      this.showToast = true;
-      this.toastMessage = '✓ Заказ отменен';
+      this.userOrders = this.userOrders.filter(order => order.id !== orderId)
+      this.showToast = true
+      this.toastMessage = '✓ Заказ отменен'
       setTimeout(() => {
-        this.showToast = false;
-      }, 3000);
+        this.showToast = false
+      }, 3000)
     },
     becomeProvider() {
-      this.showToast = true;
-      this.toastMessage = 'Скоро вы сможете стать исполнителем!';
+      this.showToast = true
+      this.toastMessage = 'Скоро вы сможете стать исполнителем!'
       setTimeout(() => {
-        this.showToast = false;
-      }, 3000);
+        this.showToast = false
+      }, 3000)
     },
     openSettings() {
-      this.showToast = true;
-      this.toastMessage = 'Настройки откроются вскоре';
+      this.showToast = true
+      this.toastMessage = 'Настройки откроются вскоре'
       setTimeout(() => {
-        this.showToast = false;
-      }, 3000);
+        this.showToast = false
+      }, 3000)
     }
   },
   mounted() {
     if (window.Telegram?.WebApp) {
-      const tg = window.Telegram.WebApp;
-      tg.ready();
-      tg.setHeaderColor('#FFFFFF');
+      const tg = window.Telegram.WebApp
+      tg.ready()
+      tg.setHeaderColor('#FFFFFF')
     }
   }
 }
