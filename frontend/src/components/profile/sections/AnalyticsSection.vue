@@ -9,7 +9,7 @@
       <div class="bg-gradient-to-br from-green-900 to-green-800 border border-green-700 rounded-xl p-4">
         <p class="text-gray-300 text-sm">Заработано</p>
         <p class="text-2xl font-bold text-green-300 mt-2">
-          {{ formatPrice(providerInfo?.totalEarnings ?? 0) }}
+          {{ formatPrice(props.providerInfo?.totalEarnings ?? 0) }}
         </p>
         <p class="text-xs text-gray-400 mt-2">💰 Всё время</p>
       </div>
@@ -18,7 +18,7 @@
       <div class="bg-gradient-to-br from-blue-900 to-blue-800 border border-blue-700 rounded-xl p-4">
         <p class="text-gray-300 text-sm">Завершено заказов</p>
         <p class="text-2xl font-bold text-blue-300 mt-2">
-          {{ providerInfo?.completedOrders ?? 0 }}
+          {{ props.providerInfo?.completedOrders ?? 0 }}
         </p>
         <p class="text-xs text-gray-400 mt-2">✅ Выполнено</p>
       </div>
@@ -27,10 +27,10 @@
       <div class="bg-gradient-to-br from-yellow-900 to-yellow-800 border border-yellow-700 rounded-xl p-4">
         <p class="text-gray-300 text-sm">Ваш рейтинг</p>
         <p class="text-2xl font-bold text-yellow-300 mt-2">
-          {{ (providerInfo?.rating ?? 0).toFixed(1) }}
+          {{ (props.providerInfo?.rating ?? 0).toFixed(1) }}
         </p>
         <div class="flex gap-1 mt-2">
-          <span v-for="i in 5" :key="i" :class="i <= Math.round(providerInfo?.rating ?? 0) ? 'text-yellow-400' : 'text-gray-600'">
+          <span v-for="i in 5" :key="i" :class="i <= Math.round(props.providerInfo?.rating ?? 0) ? 'text-yellow-400' : 'text-gray-600'">
             ⭐
           </span>
         </div>
@@ -40,7 +40,7 @@
       <div class="bg-gradient-to-br from-purple-900 to-purple-800 border border-purple-700 rounded-xl p-4">
         <p class="text-gray-300 text-sm">Активные услуги</p>
         <p class="text-2xl font-bold text-purple-300 mt-2">
-          {{ providerInfo?.activeServices ?? 0 }}
+          {{ props.providerInfo?.activeServices ?? 0 }}
         </p>
         <p class="text-xs text-gray-400 mt-2">📋 Услуг</p>
       </div>
@@ -52,11 +52,11 @@
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <span class="text-gray-400">Заказов получено</span>
-          <span class="font-bold text-white">{{ providerInfo?.monthlyOrders ?? 0 }}</span>
+          <span class="font-bold text-white">{{ props.providerInfo?.monthlyOrders ?? 0 }}</span>
         </div>
         <div class="flex items-center justify-between">
           <span class="text-gray-400">Доход за месяц</span>
-          <span class="font-bold text-green-400">{{ formatPrice(providerInfo?.monthlyEarnings ?? 0) }}</span>
+          <span class="font-bold text-green-400">{{ formatPrice(props.providerInfo?.monthlyEarnings ?? 0) }}</span>
         </div>
         <div class="flex items-center justify-between">
           <span class="text-gray-400">Среднее за заказ</span>
@@ -102,7 +102,7 @@ interface ProviderInfo {
   monthlyEarnings: number
 }
 
-defineProps<{
+const props = defineProps<{
   providerInfo?: ProviderInfo
 }>()
 
@@ -119,8 +119,4 @@ const calculateAverageOrder = (): number => {
   const monthlyEarnings = props.providerInfo?.monthlyEarnings ?? 0
   return monthlyEarnings / monthlyOrders
 }
-
-const props = defineProps<{
-  providerInfo?: ProviderInfo
-}>()
 </script>
