@@ -70,14 +70,14 @@
         </div>
 
         <!-- Analytics Tab -->
-        <div v-if="activeTab === 'analytics'" class="px-4 pt-4">
-          <AnalyticsSection :provider-info="userStore.getProviderInfo()" />
+        <div v-if="activeTab === 'analytics' && providerInfo" class="px-4 pt-4">
+          <AnalyticsSection :provider-info="providerInfo" />
         </div>
 
         <!-- Profile Settings (provider) -->
-        <div v-if="activeTab === 'profile'" class="px-4 pt-4 pb-6">
+        <div v-if="activeTab === 'profile' && providerInfo" class="px-4 pt-4 pb-6">
           <ProviderProfileSection 
-            :provider-info="userStore.getProviderInfo()"
+            :provider-info="providerInfo"
             @edit="editProviderProfile"
           />
           <button
@@ -128,6 +128,33 @@ import ProviderProfileSection from '@/components/profile/sections/ProviderProfil
 import BecomeProviderModal from '@/components/profile/modals/BecomeProviderModal.vue'
 import ServiceModal from '@/components/profile/modals/ServiceModal.vue'
 
+interface Order {
+  id: string | number
+  clientName: string
+  serviceName: string
+  date: string
+  status: string
+  price: number
+}
+
+interface ProviderInfo {
+  id?: string | number
+  name?: string
+  bio?: string
+  location?: string
+  experience?: string
+  specializations?: string[]
+  email?: string
+  phone?: string
+  rating?: number
+  reviews?: number
+  completedOrders?: number
+  totalEarnings?: number
+  activeServices?: number
+  monthlyOrders?: number
+  monthlyEarnings?: number
+}
+
 const userStore = useUserStore()
 
 interface Props {
@@ -143,6 +170,7 @@ const activeTab = ref<string>(!userStore.isProvider ? 'orders' : 'services')
 const showBecomeProviderModal = ref(false)
 const showServiceModal = ref(false)
 const isEditingService = ref(false)
+const providerInfo = computed(() => userStore.getProviderInfo())
 
 // Mock data (будет заменено на API данные)
 const userOrders = ref([
@@ -200,7 +228,7 @@ const userReviews = ref([
   }
 ])
 
-const providerOrders = ref([
+const providerOrders = ref<Order[]>([
   {
     id: 101,
     clientName: 'Анна П.',
