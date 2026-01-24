@@ -1,12 +1,12 @@
 <template>
   <div class="user-header bg-gradient-to-br from-slate-800 to-slate-900 border-b border-slate-700 p-4 space-y-4">
-    <!-- User Avatar & Info -->
-    <div class="flex items-center gap-4">
-      <div class="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-3xl font-bold text-white shadow-lg">
+    <!-- User Avatar & Info (Centered) -->
+    <div class="flex flex-col items-center gap-3">
+      <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-5xl font-bold text-white shadow-lg">
         {{ user?.first_name?.charAt(0)?.toUpperCase() || '?' }}
       </div>
-      <div class="flex-1">
-        <h1 class="text-xl font-bold text-white">{{ user?.first_name || 'Пользователь' }}</h1>
+      <div class="text-center">
+        <h1 class="text-2xl font-bold text-white">{{ user?.first_name || 'Пользователь' }}</h1>
         <p class="text-sm text-gray-400">@{{ user?.username || 'user' }}</p>
         <p v-if="isProvider" class="text-xs text-blue-400 mt-1">✓ Исполнитель</p>
       </div>
