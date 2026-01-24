@@ -1,5 +1,5 @@
 <template>
-  <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
+  <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm" :style="headerStyle">
     <div class="max-w-md mx-auto px-4 py-2">
       <!-- Compact Header Layout -->
       <div class="flex items-center justify-between gap-3">
@@ -32,38 +32,55 @@
 
           <!-- Brand Text (Inline) -->
           <div class="flex flex-col gap-0.5">
-            <span class="font-bold text-sm text-gray-900 leading-none">Deaf</span>
-            <span class="text-xs text-gray-500 leading-none">услуги</span>
+            <span class="font-bold text-sm leading-none" :style="{ color: textColor }">Deaf</span>
+            <span class="text-xs leading-none" :style="{ color: hintColor }">услуги</span>
           </div>
         </a>
 
         <!-- Right Actions -->
         <div class="flex items-center gap-2">
           <!-- Status Indicator (optional online status) -->
-          <div class="hidden sm:flex items-center gap-1 px-2 py-1 rounded-full bg-green-50 border border-green-200">
+          <div class="hidden sm:flex items-center gap-1 px-2 py-1 rounded-full border" :style="statusStyle">
             <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span class="text-xs text-green-700 font-medium">Онлайн</span>
+            <span class="text-xs font-medium">Онлайн</span>
           </div>
+
+          <!-- Theme Toggle Button (Telegram-aware) -->
+          <button
+            @click="toggleTheme"
+            class="flex items-center justify-center w-9 h-9 rounded-lg hover:shadow-md transition-all active:scale-95"
+            :style="themeButtonStyle"
+            title="Переключить тему"
+            aria-label="Переключить тему"
+          >
+            <!-- Sun icon (light mode) -->
+            <svg v-if="isDarkMode" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <!-- Moon icon (dark mode) -->
+            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </button>
 
           <!-- Profile Quick Access -->
           <button
             v-if="userData?.username"
-            class="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 text-white text-xs font-bold hover:shadow-md transition-shadow active:scale-95"
+            @click="goToProfile"
+            class="flex items-center justify-center w-9 h-9 rounded-full text-white text-xs font-bold hover:shadow-md transition-all active:scale-95"
+            :style="avatarStyle"
             :title="userData.first_name"
-            aria-label="Профиль"
+            aria-label="Перейти в профиль"
           >
             {{ getUserInitials(userData.first_name) }}
-          </button>
-
-          <!-- Settings Icon (compact) -->
-          <button
-            class="flex items-center justify-center w-9 h-9 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors active:scale-95"
-            aria-label="Настройки"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="2"/>
-              <path d="M12 1V3M12 21V23M4.22 4.22L5.64 5.64M18.36 18.36L19.78 19.78M1 12H3M21 12H23M4.22 19.78L5.64 18.36M19.78 4.22L18.36 5.64" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
           </button>
         </div>
       </div>
@@ -72,6 +89,9 @@
 </template>
 
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+
 interface Props {
   userData?: {
     first_name?: string
@@ -80,7 +100,10 @@ interface Props {
   }
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+const router = useRouter()
+
+const isDarkMode = ref(false)
 
 const getUserInitials = (name?: string): string => {
   if (!name) return '?'
@@ -91,6 +114,82 @@ const getUserInitials = (name?: string): string => {
     .toUpperCase()
     .slice(0, 2)
 }
+
+const goToProfile = () => {
+  router.push({ name: 'profile' })
+}
+
+const toggleTheme = () => {
+  isDarkMode.value = !isDarkMode.value
+  applyTheme()
+}
+
+const applyTheme = () => {
+  // Sync with Telegram theme if available
+  if (window.Telegram?.WebApp) {
+    const colorScheme = window.Telegram.WebApp.colorScheme
+    isDarkMode.value = colorScheme === 'dark'
+  }
+  
+  // Apply to document
+  document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light')
+}
+
+const getTelegramThemeParams = () => {
+  if (!window.Telegram?.WebApp?.themeParams) {
+    return {
+      bg_color: '#ffffff',
+      text_color: '#000000',
+      hint_color: '#6b7280',
+      secondary_bg_color: '#f3f4f6',
+      button_color: '#2563eb'
+    }
+  }
+  return window.Telegram.WebApp.themeParams
+}
+
+const themeParams = computed(() => getTelegramThemeParams())
+
+const textColor = computed(() => themeParams.value.text_color || '#000000')
+const hintColor = computed(() => themeParams.value.hint_color || '#6b7280')
+const bgColor = computed(() => themeParams.value.bg_color || '#ffffff')
+const buttonColor = computed(() => themeParams.value.button_color || '#2563eb')
+
+const headerStyle = computed(() => ({
+  backgroundColor: bgColor.value,
+  color: textColor.value,
+  borderColor: isDarkMode.value ? '#374151' : '#e5e5e5'
+}))
+
+const statusStyle = computed(() => ({
+  backgroundColor: isDarkMode.value ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.08)',
+  borderColor: isDarkMode.value ? '#22c55e' : '#86efac',
+  color: isDarkMode.value ? '#86efac' : '#16a34a'
+}))
+
+const themeButtonStyle = computed(() => ({
+  backgroundColor: isDarkMode.value ? '#374151' : '#f3f4f6',
+  color: textColor.value
+}))
+
+const avatarStyle = computed(() => ({
+  background: `linear-gradient(135deg, ${buttonColor.value} 0%, rgba(37, 99, 235, 0.8) 100%)`
+}))
+
+onMounted(() => {
+  // Initialize Telegram WebApp
+  if (window.Telegram?.WebApp) {
+    window.Telegram.WebApp.ready()
+    
+    // Apply initial theme
+    applyTheme()
+    
+    // Listen for theme changes
+    window.Telegram.WebApp.onEvent('themeChanged', () => {
+      applyTheme()
+    })
+  }
+})
 </script>
 
 <style scoped>
