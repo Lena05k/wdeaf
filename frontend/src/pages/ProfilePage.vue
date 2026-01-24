@@ -43,25 +43,15 @@
 
           <!-- Become Provider Button -->
           <button
-            v-if="!userStore.isProvider"
-            @click="showBecomeProviderModal = true"
+            @click="handleBecomeProvider"
             class="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
           >
             📝 Стать исполнителем
           </button>
 
-          <!-- Provider Dashboard (if already provider) -->
-          <button
-            v-else
-            @click="goToProviderDashboard"
-            class="w-full bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
-          >
-            📊 Мои услуги
-          </button>
-
           <!-- Settings Button -->
           <button
-            @click="showSettingsModal = true"
+            @click="handleOpenSettings"
             class="w-full bg-slate-800 hover:bg-slate-700 border border-blue-900 text-white font-semibold py-3 rounded-lg transition flex items-center justify-center gap-2"
           >
             ⚙️ Настройки
@@ -69,21 +59,6 @@
         </div>
       </div>
     </main>
-
-    <!-- Become Provider Modal -->
-    <BecomeProviderModal
-      v-if="showBecomeProviderModal"
-      @close="showBecomeProviderModal = false"
-      @confirm="handleBecomeProvider"
-    />
-
-    <!-- Settings Modal -->
-    <SettingsModal
-      v-if="showSettingsModal"
-      :userData="userData"
-      @close="showSettingsModal = false"
-      @save="handleSettingsSave"
-    />
   </div>
 </template>
 
@@ -91,8 +66,6 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/userStore'
-import BecomeProviderModal from '@/components/modals/BecomeProviderModal.vue'
-import SettingsModal from '@/components/modals/SettingsModal.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -108,25 +81,12 @@ const userStats = ref({
   rating: 4.8
 })
 
-const showBecomeProviderModal = ref(false)
-const showSettingsModal = ref(false)
-
-const handleBecomeProvider = async (providerData) => {
-  // Сохраняем данные провайдера в store
-  userStore.setProviderInfo(providerData)
-  showBecomeProviderModal.value = false
-  
-  // Переходим на профиль исполнителя
-  router.push({ name: 'provider-dashboard' })
+const handleBecomeProvider = () => {
+  alert('📝 Функциональность "Стать исполнителем" в арраировании')
 }
 
-const handleSettingsSave = (settings) => {
-  Object.assign(userData.value, settings)
-  showSettingsModal.value = false
-}
-
-const goToProviderDashboard = () => {
-  router.push({ name: 'provider-dashboard' })
+const handleOpenSettings = () => {
+  alert('⚙️ Настройки в арраировании')
 }
 
 onMounted(() => {
