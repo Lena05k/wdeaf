@@ -116,6 +116,7 @@ const getUserInitials = (name?: string): string => {
 }
 
 const goToProfile = () => {
+  console.log('Navigating to profile...')
   router.push({ name: 'profile' })
 }
 
