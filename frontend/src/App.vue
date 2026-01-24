@@ -51,6 +51,74 @@
       />
     </main>
 
+    <!-- Order Modal -->
+    <Modal
+      :is-open="showOrderModal"
+      :title="selectedService?.name"
+      :large="true"
+      @close="closeOrderModal"
+    >
+      <template v-if="selectedService">
+        <!-- Service Image -->
+        <img
+          v-if="selectedService.images?.[0]"
+          :src="selectedService.images[0]"
+          :alt="selectedService.name"
+          class="service-image"
+        />
+
+        <!-- Provider Info -->
+        <div class="provider-info">
+          <div class="avatar" :style="avatarStyle">{{ getInitials(selectedService.provider) }}</div>
+          <div class="provider-details">
+            <p class="provider-name">{{ selectedService.provider }}</p>
+            <p class="rating">★ {{ selectedService.providerRating }} ({{ selectedService.reviews }} отзывов)</p>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="description">
+          <h3 class="description-title">Описание</h3>
+          <p class="description-text">{{ selectedService.fullDescription }}</p>
+        </div>
+
+        <!-- Details -->
+        <div class="details-grid">
+          <div class="detail-item">
+            <span class="detail-label">Цена</span>
+            <span class="detail-value">{{ formatPrice(selectedService.price) }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Ответит в</span>
+            <span class="detail-value">{{ selectedService.response_time }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Категория</span>
+            <span class="detail-value">{{ selectedService.category }}</span>
+          </div>
+          <div class="detail-item">
+            <span class="detail-label">Отзывов</span>
+            <span class="detail-value">{{ selectedService.reviews }}</span>
+          </div>
+        </div>
+      </template>
+
+      <template #footer>
+        <button
+          class="btn btn-secondary"
+          @click="closeOrderModal"
+        >
+          Назад
+        </button>
+        <button
+          class="btn btn-primary"
+          @click="confirmOrder"
+        >
+          Подтвердить заказ
+        </button>
+      </template>
+    </Modal>
+
     <!-- Toast Notification -->
     <Toast
       v-if="showToast"
@@ -62,6 +130,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import Header from '@/components/layout/Header.vue'
+import Modal from '@/components/shared/Modal.vue'
 import Toast from '@/components/shared/Toast.vue'
 import BrowseServices from '@/views/BrowseServices.vue'
 import CatalogView from '@/views/CatalogView.vue'
@@ -75,6 +144,8 @@ const showToast = ref(false)
 const toastMessage = ref('')
 const isProvider = ref(true)
 const isDarkMode = ref(false)
+const showOrderModal = ref(false)
+const selectedService = ref<any>(null)
 
 const userData = ref({
   first_name: 'Иван',
@@ -217,6 +288,11 @@ const hintColor = computed(() => themeParams.value.hint_color || '#6b7280')
 const bgColor = computed(() => themeParams.value.bg_color || '#ffffff')
 const buttonColor = computed(() => themeParams.value.button_color || '#2563eb')
 
+const avatarStyle = computed(() => ({
+  backgroundColor: '#2563eb',
+  borderColor: '#2563eb'
+}))
+
 const getUserInitials = (name?: string): string => {
   if (!name) return '?'
   return name
@@ -225,6 +301,25 @@ const getUserInitials = (name?: string): string => {
     .join('')
     .toUpperCase()
     .slice(0, 2)
+}
+
+const getInitials = (name?: string): string => {
+  if (!name) return '?'
+  return name
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
+}
+
+const formatPrice = (price?: number) => {
+  if (!price) return '—'
+  return new Intl.NumberFormat('ru-RU', {
+    style: 'currency',
+    currency: 'RUB',
+    minimumFractionDigits: 0
+  }).format(price)
 }
 
 const goHome = () => {
@@ -236,7 +331,36 @@ const selectService = (service: any) => {
 }
 
 const orderService = (service: any) => {
-  console.log('Заказ услуги:', service.name)
+  selectedService.value = service
+  showOrderModal.value = true
+}
+
+const closeOrderModal = () => {
+  showOrderModal.value = false
+  selectedService.value = null
+}
+
+const confirmOrder = () => {
+  if (!selectedService.value) return
+
+  // Add to user orders
+  userOrders.value.push({
+    id: Math.max(...userOrders.value.map(o => o.id), 0) + 1,
+    service: selectedService.value.name,
+    provider: selectedService.value.provider,
+    status: 'pending',
+    price: selectedService.value.price,
+    date: 'ожидание подтверждения'
+  })
+
+  // Show success message
+  showToast.value = true
+  toastMessage.value = `✓ Заказ "${selectedService.value.name}" создан!`
+  setTimeout(() => {
+    showToast.value = false
+  }, 3000)
+
+  closeOrderModal()
 }
 
 const onCategorySelected = (category: any) => {
@@ -290,5 +414,142 @@ onMounted(() => {
 .home-page {
   width: 100%;
   height: 100%;
+}
+
+/* Modal Styles */
+.service-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 0;
+  margin: -16px -16px 16px -16px;
+}
+
+.provider-info {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  flex-shrink: 0;
+}
+
+.provider-details {
+  flex: 1;
+}
+
+.provider-name {
+  font-weight: 600;
+  color: #000;
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+}
+
+.rating {
+  font-size: 0.8rem;
+  color: #666;
+  margin: 0;
+}
+
+.description {
+  margin-bottom: 16px;
+}
+
+.description-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #000;
+  margin: 0 0 8px 0;
+}
+
+.description-text {
+  font-size: 0.875rem;
+  color: #666;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.detail-item {
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+}
+
+.detail-label {
+  font-size: 0.75rem;
+  color: #999;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.detail-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #000;
+}
+
+/* Buttons */
+.btn {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: #f0f0f0;
+  color: #000;
+}
+
+.btn-secondary:hover {
+  background: #e0e0e0;
+  transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
 }
 </style>
