@@ -4,7 +4,7 @@
       <!-- Compact Header Layout -->
       <div class="flex items-center justify-between gap-3">
         <!-- Logo & Branding (Compact) -->
-        <a href="#" class="flex items-center gap-2 flex-shrink-0 group">
+        <a href="#" @click.prevent="goHome" class="flex items-center gap-2 flex-shrink-0 group">
           <!-- Logo SVG (Smaller) -->
           <div class="w-10 h-10 flex-shrink-0 transition-transform group-hover:scale-105">
             <svg
@@ -90,7 +90,6 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 
 interface Props {
   userData?: {
@@ -100,8 +99,11 @@ interface Props {
   }
 }
 
+const emit = defineEmits<{
+  'update:currentTab': [value: string]
+}>()
+
 const props = defineProps<Props>()
-const router = useRouter()
 
 const isDarkMode = ref(false)
 
@@ -115,9 +117,14 @@ const getUserInitials = (name?: string): string => {
     .slice(0, 2)
 }
 
+const goHome = () => {
+  console.log('Going to home (browse tab)')
+  emit('update:currentTab', 'browse')
+}
+
 const goToProfile = () => {
-  console.log('Navigating to profile...')
-  router.push({ name: 'profile' })
+  console.log('Going to profile tab')
+  emit('update:currentTab', 'profile')
 }
 
 const toggleTheme = () => {
