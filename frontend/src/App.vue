@@ -1,9 +1,10 @@
 <template>
   <div id="app" class="bg-slate-900 min-h-screen">
-    <!-- Header Component -->
+    <!-- Header Component with tab update listener -->
     <Header 
       :userData="userData"
       class="sticky top-0 z-50"
+      @update:currentTab="currentTab = $event"
     />
 
     <!-- Tab Navigation Component -->
