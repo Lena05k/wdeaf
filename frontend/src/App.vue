@@ -149,38 +149,32 @@
     <!-- Main Content -->
     <main class="max-w-md mx-auto pb-20">
       <!-- Browse Services View -->
-      <div id="panel-browse" role="tabpanel" :aria-labelledby="'browse-tab'">
-        <BrowseServices
-          v-if="currentTab === 'browse'"
-          :services="services"
-          :searchQuery="searchQuery"
-          :selectedCategory="selectedCategory"
-          :categories="categories"
-          @update:searchQuery="searchQuery = $event"
-          @update:selectedCategory="selectedCategory = $event"
-          @select-service="selectService"
-          @order-service="orderService"
-        />
-      </div>
+      <BrowseServices
+        v-if="currentTab === 'browse'"
+        :services="services"
+        :searchQuery="searchQuery"
+        :selectedCategory="selectedCategory"
+        :categories="categories"
+        @update:searchQuery="searchQuery = $event"
+        @update:selectedCategory="selectedCategory = $event"
+        @select-service="selectService"
+        @order-service="orderService"
+      />
 
       <!-- Catalog View -->
-      <div id="panel-catalog" role="tabpanel" :aria-labelledby="'catalog-tab'">
-        <CatalogView
-          v-else-if="currentTab === 'catalog'"
-          :catalogCategories="catalogCategories"
-          @category-selected="onCategorySelected"
-        />
-      </div>
+      <CatalogView
+        v-else-if="currentTab === 'catalog'"
+        :catalogCategories="catalogCategories"
+        @category-selected="onCategorySelected"
+      />
 
       <!-- Orders View -->
-      <div id="panel-orders" role="tabpanel" :aria-labelledby="'orders-tab'">
-        <OrdersView
-          v-else-if="currentTab === 'orders'"
-          :userOrders="userOrders"
-          @browse-services="currentTab = 'browse'"
-          @cancel-order="cancelOrder"
-        />
-      </div>
+      <OrdersView
+        v-else-if="currentTab === 'orders'"
+        :userOrders="userOrders"
+        @browse-services="currentTab = 'browse'"
+        @cancel-order="cancelOrder"
+      />
 
       <!-- Profile View -->
       <ProfileView
