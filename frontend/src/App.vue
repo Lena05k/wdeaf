@@ -1,154 +1,64 @@
 <template>
   <div class="home-page">
-    <!-- Improved Header: Logo + Beautiful Navigation -->
-    <header class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm" :style="headerStyle">
-      <div class="max-w-md mx-auto px-3 py-2.5">
-        <!-- Header Row: Logo + Tabs + Actions -->
-        <div class="flex items-center justify-between gap-3">
-          <!-- Logo & Branding -->
-          <a href="#" @click.prevent="goHome" class="flex items-center gap-2 flex-shrink-0 group">
-            <!-- Logo SVG -->
-            <div class="w-10 h-10 flex-shrink-0 transition-transform group-hover:scale-105">
-              <svg
-                  viewBox="0 0 220 220"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-              >
-                <g clip-path="url(#clip0_4001_20)">
-                  <path d="M1.52588e-05 47.2652C1.52588e-05 21.1613 21.1614 0 47.2652 0L173.306 1.81017e-10C199.41 2.08283e-10 220.571 21.1613 220.571 47.2652L220.571 173.306C220.571 199.41 199.41 220.571 173.306 220.571L47.2652 220.571C21.1614 220.571 1.5259e-05 199.41 1.5259e-05 173.306L1.52588e-05 47.2652Z" fill="#0E1117"/>
-                  <mask id="mask0_4001_20" style="mask-type:alpha" maskUnits="userSpaceOnUse" x="0" y="0" width="221" height="221">
-                    <path d="M1.52588e-05 47.2652C1.52588e-05 21.1613 21.1614 -1.52588e-05 47.2652 -1.52587e-05L173.306 -1.52586e-05C199.41 -1.52586e-05 220.571 21.1613 220.571 47.2652L220.571 173.306C220.571 199.409 199.41 220.571 173.306 220.571L47.2652 220.571C21.1614 220.571 1.5259e-05 199.409 1.5259e-05 173.306L1.52588e-05 47.2652Z" fill="#4747A6"/>
-                  </mask>
-                  <g mask="url(#mask0_4001_20)">
-                    <path d="M114.697 114.224C51.3516 114.224 3.4062e-05 62.8727 2.02174e-05 -0.472626L1.52589e-05 -23.1599C1.41428e-06 -86.5052 51.3516 -137.857 114.697 -137.857L168.894 -137.857C232.24 -137.857 283.591 -86.5053 283.591 -23.1599L283.591 -0.472687C283.591 62.8726 232.24 114.224 168.894 114.224L114.697 114.224Z" fill="#155DFC"/>
-                    <path d="M88.3104 181.183C85.198 181.183 82.4546 179.127 81.5624 176.126L43.6266 48.5098C42.2747 43.962 45.6584 39.3877 50.3745 39.3877L83.7892 39.3877C87.0614 39.3877 89.9027 41.6561 90.6477 44.8633L102.578 96.2214C104.251 103.427 114.396 103.557 116.252 96.3963L129.649 44.6883C130.458 41.5662 133.259 39.3877 136.464 39.3877L172.51 39.3877C175.723 39.3877 178.529 41.5761 179.331 44.7076L192.477 96.0354C194.317 103.222 204.502 103.092 206.16 95.8601L217.85 44.8829C218.587 41.6662 221.433 39.3876 224.713 39.3876L256.849 39.3876C261.565 39.3876 264.949 43.9619 263.597 48.5098L225.661 176.126C224.769 179.127 222.026 181.183 218.913 181.183L181.333 181.183C178.155 181.183 175.37 179.041 174.536 175.954L160.36 123.484C158.47 116.491 148.606 116.52 146.756 123.523L132.918 175.915C132.098 179.021 129.304 181.183 126.111 181.183L88.3104 181.183Z" fill="white"/>
-                  </g>
-                </g>
-                <defs>
-                  <clipPath id="clip0_4001_20">
-                    <rect width="220.571" height="220.571" fill="white" transform="translate(1.52588e-05 220.571) rotate(-90)"/>
-                  </clipPath>
-                </defs>
-              </svg>
-            </div>
-          </a>
+    <!-- Header with Logo and Avatar -->
+    <Header
+      :user-name="userData?.first_name"
+      :user-initials="getUserInitials(userData?.first_name)"
+      :button-color="buttonColor"
+      @go-home="goHome"
+      @open-profile="currentTab = 'profile'"
+    />
 
-          <!-- Navigation Tabs (Center) - Beautiful Rounded Buttons -->
-          <div class="flex gap-2.5 flex-1 justify-center items-center flex-wrap">
-            <!-- Обзор Tab -->
-            <button
-                @click="currentTab = 'browse'"
-                class="nav-tab"
-                :class="{ 'nav-tab-active': currentTab === 'browse', 'nav-tab-inactive': currentTab !== 'browse' }"
-                title="Обзор"
-            >
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <circle cx="11" cy="11" r="8"></circle>
-                <path d="m21 21-4.35-4.35"></path>
-              </svg>
-              <span>Обзор</span>
-            </button>
-
-            <!-- Каталог Tab -->
-            <button
-                @click="currentTab = 'catalog'"
-                class="nav-tab"
-                :class="{ 'nav-tab-active': currentTab === 'catalog', 'nav-tab-inactive': currentTab !== 'catalog' }"
-                title="Каталог"
-            >
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-              </svg>
-              <span>Каталог</span>
-            </button>
-
-            <!-- Заказы Tab -->
-            <button
-                @click="currentTab = 'orders'"
-                class="nav-tab"
-                :class="{ 'nav-tab-active': currentTab === 'orders', 'nav-tab-inactive': currentTab !== 'orders' }"
-                title="Заказы"
-            >
-              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                <path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
-                <line x1="6" y1="6" x2="18" y2="6"></line>
-                <line x1="6" y1="10" x2="18" y2="10"></line>
-                <line x1="6" y1="14" x2="18" y2="14"></line>
-              </svg>
-              <span>Заказы</span>
-            </button>
-
-            <!-- Add Service Button (для исполнителей) -->
-            <button
-                v-if="isProvider"
-                @click="addService"
-                class="nav-tab nav-tab-add"
-                title="Добавить услугу"
-            >
-              <span class="text-base font-semibold">+</span>
-            </button>
-          </div>
-
-          <!-- Right Actions -->
-          <div class="flex items-center gap-2.5 flex-shrink-0">
-            <!-- Profile Button - Smooth Gradient Circle -->
-            <button
-                v-if="userData?.username"
-                @click="currentTab = 'profile'"
-                class="profile-btn"
-                :title="userData.first_name"
-            >
-              {{ getUserInitials(userData.first_name) }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </header>
+    <!-- Tab Navigation -->
+    <TabNavigation
+      :current-tab="currentTab"
+      @update:current-tab="currentTab = $event"
+    />
 
     <!-- Main Content -->
     <main class="max-w-md mx-auto pb-20">
       <!-- Browse Services View -->
       <BrowseServices
-          v-if="currentTab === 'browse'"
-          :services="services"
-          :searchQuery="searchQuery"
-          :selectedCategory="selectedCategory"
-          :categories="categories"
-          @update:searchQuery="searchQuery = $event"
-          @update:selectedCategory="selectedCategory = $event"
-          @select-service="selectService"
-          @order-service="orderService"
+        v-if="currentTab === 'browse'"
+        :services="services"
+        :searchQuery="searchQuery"
+        :selectedCategory="selectedCategory"
+        :categories="categories"
+        @update:searchQuery="searchQuery = $event"
+        @update:selectedCategory="selectedCategory = $event"
+        @select-service="selectService"
+        @order-service="orderService"
       />
 
       <!-- Catalog View -->
       <CatalogView
-          v-else-if="currentTab === 'catalog'"
-          :catalogCategories="catalogCategories"
-          @category-selected="onCategorySelected"
+        v-else-if="currentTab === 'catalog'"
+        :catalogCategories="catalogCategories"
+        @category-selected="onCategorySelected"
       />
 
       <!-- Orders View -->
       <OrdersView
-          v-else-if="currentTab === 'orders'"
-          :userOrders="userOrders"
-          @browse-services="currentTab = 'browse'"
-          @cancel-order="cancelOrder"
+        v-else-if="currentTab === 'orders'"
+        :userOrders="userOrders"
+        @browse-services="currentTab = 'browse'"
+        @cancel-order="cancelOrder"
       />
 
       <!-- Profile View -->
       <ProfileView
-          v-else-if="currentTab === 'profile'"
-          :userData="userData"
-          :ordersCount="userOrders.length"
-          @become-provider="becomeProvider"
-          @open-settings="openSettings"
+        v-else-if="currentTab === 'profile'"
+        :userData="userData"
+        :ordersCount="userOrders.length"
+        @become-provider="becomeProvider"
+        @open-settings="openSettings"
       />
     </main>
 
     <!-- Toast Notification -->
     <Toast
-        v-if="showToast"
-        :message="toastMessage"
+      v-if="showToast"
+      :message="toastMessage"
     />
   </div>
 </template>
@@ -156,6 +66,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import Header from '@/components/layout/Header.vue'
+import TabNavigation from '@/components/layout/TabNavigation.vue'
 import Toast from '@/components/shared/Toast.vue'
 import BrowseServices from '@/views/BrowseServices.vue'
 import CatalogView from '@/views/CatalogView.vue'
@@ -311,24 +222,14 @@ const hintColor = computed(() => themeParams.value.hint_color || '#6b7280')
 const bgColor = computed(() => themeParams.value.bg_color || '#ffffff')
 const buttonColor = computed(() => themeParams.value.button_color || '#2563eb')
 
-const headerStyle = computed(() => ({
-  backgroundColor: bgColor.value,
-  color: textColor.value,
-  borderColor: isDarkMode.value ? '#2d3748' : '#f3f4f6'
-}))
-
-const avatarStyle = computed(() => ({
-  background: `linear-gradient(135deg, ${buttonColor.value} 0%, rgba(37, 99, 235, 0.8) 100%)`
-}))
-
 const getUserInitials = (name?: string): string => {
   if (!name) return '?'
   return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2)
+    .split(' ')
+    .map(word => word[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2)
 }
 
 const goHome = () => {
@@ -391,126 +292,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Smooth Animations */
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-header {
-  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Navigation Tab Styles */
-.nav-tab {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  border: 1.5px solid transparent;
-  font-size: 0.75rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  white-space: nowrap;
-  color: #6b7280;
-  background: #f3f4f6;
-  transform: translateZ(0);
-}
-
-.nav-tab:hover:not(.nav-tab-active) {
-  background: #e5e7eb;
-  transform: translateY(-1px);
-}
-
-.nav-tab:active {
-  transform: scale(0.96);
-}
-
-/* Active Tab Style */
-.nav-tab-active {
-  background: #ffffff;
-  color: #000000;
-  border-color: #000000;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-  font-weight: 600;
-}
-
-/* Inactive Tab (lighter) */
-.nav-tab-inactive {
-  opacity: 0.7;
-}
-
-/* Add Service Button */
-.nav-tab-add {
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border-radius: 50%;
-  background: #f3f4f6;
-  border: 1.5px solid #d1d5db;
-  color: #374151;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.nav-tab-add:hover {
-  background: #e5e7eb;
-  border-color: #9ca3af;
-}
-
-/* Profile Button */
-.profile-btn {
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  border: none;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 0.875rem;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
-}
-
-.profile-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
-}
-
-.profile-btn:active {
-  transform: translateY(0) scale(0.95);
-  box-shadow: 0 1px 4px rgba(59, 130, 246, 0.3);
-}
-
-/* Focus States */
-button:focus-visible {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-/* Smooth general button transitions */
-button {
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* SVG Icon Styling */
-svg {
-  stroke-linecap: round;
-  stroke-linejoin: round;
+.home-page {
+  width: 100%;
+  height: 100%;
 }
 </style>
