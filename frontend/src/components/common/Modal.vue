@@ -1,78 +1,94 @@
 <template>
-  <!-- Backdrop -->
-  <Teleport to="body">
+  <!-- Fixed backdrop + modal at bottom -->
+  <div 
+    class="fixed inset-0 z-50 flex flex-col items-center justify-end"
+    @click="closeOnBackdrop"
+  >
+    <!-- Dark overlay -->
     <div 
-      class="fixed inset-0 z-50 transition-opacity duration-300"
-      :class="visible ? 'opacity-100 bg-black/50' : 'opacity-0 pointer-events-none'"
-      @click="emit('close')"
+      class="absolute inset-0 bg-black/50 transition-opacity"
+      :class="isOpen ? 'opacity-100' : 'opacity-0'"
+    />
+
+    <!-- Modal content -->
+    <div 
+      class="relative w-full bg-slate-900 border-t border-slate-700 rounded-t-3xl shadow-2xl max-h-[90vh] overflow-y-auto transition-transform duration-300"
+      :class="isOpen ? 'translate-y-0' : 'translate-y-full'"
+      @click.stop
     >
-      <!-- Modal Container -->
-      <div 
-        class="fixed inset-0 z-50 flex items-end"
-        @click.stop
-      >
-        <!-- Slide-up Animation -->
-        <div 
-          class="w-full bg-slate-900 border-t border-slate-700 rounded-t-3xl overflow-y-auto max-h-[90vh] transition-transform duration-300"
-          :class="visible ? 'translate-y-0' : 'translate-y-full'"
-          @click.stop
+      <!-- Header (sticky) -->
+      <div class="sticky top-0 z-50 bg-slate-900 border-b border-slate-700 px-4 py-4 flex items-center justify-between">
+        <h2 class="text-lg font-semibold text-white">{{ title }}</h2>
+        <button 
+          @click="closeModal"
+          class="text-gray-400 hover:text-white text-3xl leading-none transition hover:bg-slate-800 w-10 h-10 flex items-center justify-center rounded-full"
+          aria-label="Close"
         >
-          <!-- Header -->
-          <div class="sticky top-0 z-50 bg-slate-900 border-b border-slate-700 px-4 py-3 flex items-center justify-between">
-            <h2 class="text-lg font-semibold text-white">{{ title }}</h2>
-            <button 
-              @click="emit('close')"
-              class="text-gray-400 hover:text-white text-2xl leading-none transition"
-              aria-label="Close modal"
-            >
-              ×
-            </button>
-          </div>
-
-          <!-- Content -->
-          <div class="px-4 py-4 space-y-4">
-            <slot />
-          </div>
-
-          <!-- Bottom Padding -->
-          <div class="h-8"></div>
-        </div>
+          ×
+        </button>
       </div>
+
+      <!-- Content -->
+      <div class="px-4 py-4">
+        <slot />
+      </div>
+
+      <!-- Padding at bottom -->
+      <div class="h-6"></div>
     </div>
-  </Teleport>
+  </div>
 </template>
 
-<script setup lang="ts" generic="T">
-import { ref, onMounted, onUnmounted } from 'vue'
+<script setup lang="ts">
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 
 interface Props {
   title: string
+  isOpen?: boolean
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  isOpen: true
+})
 
 const emit = defineEmits<{
   close: []
 }>()
 
-const visible = ref(false)
+const isOpen = ref(true)
+
+const closeModal = () => {
+  isOpen.value = false
+  setTimeout(() => {
+    emit('close')
+  }, 150)
+}
+
+const closeOnBackdrop = (e: MouseEvent) => {
+  if (e.target === e.currentTarget) {
+    closeModal()
+  }
+}
 
 onMounted(() => {
-  // Trigger animation
-  visible.value = true
-  // Disable body scroll
+  // Prevent body scroll
+  const originalOverflow = document.body.style.overflow
   document.body.style.overflow = 'hidden'
-})
 
-onUnmounted(() => {
-  // Enable body scroll
-  document.body.style.overflow = 'auto'
+  // Cleanup on unmount
+  onBeforeUnmount(() => {
+    document.body.style.overflow = originalOverflow
+  })
 })
 </script>
 
 <style scoped>
-/* Ensure modal appears on top */
-:deep(body) {
-  overflow: hidden;
+/* Smooth animations */
+.transition-transform {
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.transition-opacity {
+  transition: opacity 0.3s ease;
 }
 </style>
