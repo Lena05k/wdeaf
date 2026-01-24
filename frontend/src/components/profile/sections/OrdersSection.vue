@@ -1,8 +1,8 @@
 <template>
   <div class="space-y-3 pb-4">
     <div v-if="orders.length === 0" class="text-center py-12 text-gray-400">
-      <p class="text-4xl mb-2📦</p>
-      <p class="text-sm font-semibold">У вас ещё нет заказов</p>
+      <p class="text-4xl mb-2"> 📦</p>
+      <p class="text-sm font-semibold" >У вас ещё нет заказов</p>
       <p class="text-xs text-gray-500 mt-1">Начните с просмотра доступных услуг</p>
     </div>
 
