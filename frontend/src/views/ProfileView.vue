@@ -72,8 +72,8 @@
         <div class="space-y-2 text-sm">
           <p><span class="text-gray-400">О себе:</span> {{ userStore.getProviderInfo()?.description }}</p>
           <div class="flex gap-2 flex-wrap">
-            <span 
-              v-for="cat in userStore.getProviderInfo()?.categories" 
+            <span
+              v-for="cat in userStore.getProviderInfo()?.categories"
               :key="cat"
               class="bg-blue-600 text-white px-2 py-1 rounded text-xs"
             >
@@ -203,8 +203,8 @@
                 <label class="block text-sm font-semibold mb-3">Категории работ</label>
                 <p class="text-xs text-gray-400 mb-2">Выберите все подходящие категории</p>
                 <div class="space-y-2 bg-slate-700 rounded-lg p-3 border border-blue-900 max-h-48 overflow-y-auto">
-                  <label 
-                    v-for="cat in availableCategories" 
+                  <label
+                    v-for="cat in availableCategories"
                     :key="cat.value"
                     class="flex items-center gap-2 cursor-pointer hover:bg-slate-600 p-2 rounded transition"
                   >
@@ -667,21 +667,21 @@ const userStore = useUserStore()
 
 // Category mapping
 const categoryMap: Record<string, string> = {
-  repair: '🏠 Ремонт',
-  business: '💼 Бизнес',
-  fashion: '👗 Мода',
-  education: '📚 Обучение',
-  design: '🎨 Дизайн',
-  it: '💻 IT'
+  repair: 'Ремонт',
+  business: 'Бизнес',
+  fashion: 'Мода',
+  education: 'Обучение',
+  design: 'Дизайн',
+  it: 'IT'
 }
 
 const availableCategories = [
-  { value: 'repair', label: '🏠 Ремонт' },
-  { value: 'business', label: '💼 Бизнес' },
-  { value: 'fashion', label: '👗 Мода' },
-  { value: 'education', label: '📚 Обучение' },
-  { value: 'design', label: '🎨 Дизайн' },
-  { value: 'it', label: '💻 IT' }
+  { value: 'repair', label: 'Ремонт' },
+  { value: 'business', label: 'Бизнес' },
+  { value: 'fashion', label: 'Мода' },
+  { value: 'education', label: 'Обучение' },
+  { value: 'design', label: 'Дизайн' },
+  { value: 'it', label: 'IT' }
 ]
 
 // Props

@@ -119,14 +119,14 @@ export default {
       modalImageIndex: 0,
       showToast: false,
       toastMessage: '',
-      categories: ['🏠 Ремонт', '💼 Бизнес', '👗 Мода', '📚 Обучение', '🎨 Дизайн'],
+      categories: ['Ремонт', 'Бизнес', 'Мода', 'Обучение', 'Дизайн'],
       catalogCategories: [
-        { id: 1, name: '🏠 Ремонт', icon: '🔧', count: 23 },
-        { id: 2, name: '💼 Бизнес', icon: '📊', count: 18 },
-        { id: 3, name: '👗 Мода', icon: '✂️', count: 34 },
-        { id: 4, name: '📚 Обучение', icon: '📖', count: 45 },
-        { id: 5, name: '🎨 Дизайн', icon: '🎭', count: 29 },
-        { id: 6, name: '💻 IT', icon: '💻', count: 56 }
+        { id: 1, name: 'Ремонт', icon: '🔧', count: 23 },
+        { id: 2, name: 'Бизнес', icon: '📊', count: 18 },
+        { id: 3, name: 'Мода', icon: '✂️', count: 34 },
+        { id: 4, name: 'Обучение', icon: '📖', count: 45 },
+        { id: 5, name: 'Дизайн', icon: '🎭', count: 29 },
+        { id: 6, name: 'IT', icon: '💻', count: 56 }
       ],
       services: [
         {
