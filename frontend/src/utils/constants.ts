@@ -1,10 +1,10 @@
 export const CATEGORIES = [
-    { id: 1, name: '🏠 Ремонт', slug: 'repair', icon: '🔧' },
-    { id: 2, name: '💼 Бизнес', slug: 'business', icon: '📊' },
-    { id: 3, name: '👗 Мода', slug: 'fashion', icon: '✂️' },
-    { id: 4, name: '📚 Обучение', slug: 'education', icon: '📖' },
-    { id: 5, name: '🎨 Дизайн', slug: 'design', icon: '🎭' },
-    { id: 6, name: '💻 IT', slug: 'it', icon: '💻' }
+    { id: 1, name: 'Ремонт', slug: 'repair', icon: '🔧' },
+    { id: 2, name: 'Бизнес', slug: 'business', icon: '📊' },
+    { id: 3, name: 'Мода', slug: 'fashion', icon: '✂️' },
+    { id: 4, name: 'Обучение', slug: 'education', icon: '📖' },
+    { id: 5, name: 'Дизайн', slug: 'design', icon: '🎭' },
+    { id: 6, name: 'IT', slug: 'it', icon: '💻' }
 ] as const
 
 export const PAGINATION = {

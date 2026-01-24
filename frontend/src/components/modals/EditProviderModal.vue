@@ -46,12 +46,12 @@
                   v-model="editedService.category"
                   class="w-full bg-slate-700 border border-blue-900 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500"
               >
-                <option value="repair">🏠 Ремонт</option>
-                <option value="business">💼 Бизнес</option>
-                <option value="fashion">👗 Мода</option>
-                <option value="education">📚 Обучение</option>
-                <option value="design">🎨 Дизайн</option>
-                <option value="it">💻 IT</option>
+                <option value="repair">Ремонт</option>
+                <option value="business">Бизнес</option>
+                <option value="fashion">Мода</option>
+                <option value="education">Обучение</option>
+                <option value="design">Дизайн</option>
+                <option value="it">IT</option>
               </select>
             </div>
             <div>
