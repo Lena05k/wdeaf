@@ -1,294 +1,475 @@
 <template>
   <div class="user-header">
-    <!-- Sticky Header Only (No Tabs) -->
-    <div class="header-sticky">
-      <!-- Logo -->
-      <div class="logo-section">
-        <div class="logo">W</div>
+    <!-- Hero Section: Avatar + Name (iOS 18 style) -->
+    <div class="hero-section">
+      <!-- Avatar -->
+      <div class="avatar-container">
+        <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-5xl font-bold text-white shadow-lg">
+          Л
+        </div>
       </div>
 
-      <!-- Brand Text -->
-      <div class="brand-text">
-        <span class="brand-name">Деаф</span>
-        <span class="brand-hint">услуги</span>
+      <!-- Name & Username -->
+      <div class="user-info-center">
+        <h1 class="text-2xl font-bold text-white">Лена</h1>
+        <p class="text-sm text-gray-400">@lena_user</p>
+        <p class="text-xs text-blue-400 mt-1.5">✓ Исполнитель</p>
       </div>
-
-      <!-- Profile Button -->
-      <button class="profile-btn" @click="toggleProfile">
-        {{ userInitial }}
-      </button>
     </div>
 
-    <!-- Profile Modal -->
-    <Modal v-if="showProfileModal" title="👤 Мой профиль" @close="toggleProfile">
-      <div class="profile-modal-content">
-        <!-- Avatar Section -->
-        <div class="profile-header">
-          <div class="avatar-circle">{{ userInitial }}</div>
-          <h2 class="profile-name">{{ userData.first_name }}</h2>
-          <p class="profile-username">@{{ userData.username }}</p>
-          <p v-if="isProvider" class="profile-badge">✓ Исполнитель</p>
-        </div>
+    <!-- Settings Sections (iOS 18 style) -->
+    <div class="settings-container">
+      <!-- Мои заказы -->
+      <div class="settings-section">
+        <h2 class="settings-section-title">ИСТОРИЯ</h2>
 
-        <!-- Stats -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <p class="stat-value">4.9</p>
-            <p class="stat-label">Рейтинг</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-value">28</p>
-            <p class="stat-label">Заказов</p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-value">124</p>
-            <p class="stat-label">Отзывов</p>
-          </div>
-        </div>
+        <div class="settings-cell-group">
+          <button
+              @click="showModal('orders')"
+              class="settings-cell border-b border-slate-700"
+          >
+            <div class="cell-icon bg-blue-500">📋</div>
+            <div class="cell-content">
+              <p class="cell-label">Мои заказы</p>
+              <p class="cell-value">{{ orders.length }} активных</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
 
-        <!-- Action Buttons -->
-        <div class="action-buttons">
-          <button class="btn btn-primary">Редактировать</button>
-          <button class="btn btn-secondary">Настройки</button>
-        </div>
+          <!-- Reviews -->
+          <button
+              @click="showModal('reviews')"
+              class="settings-cell border-b border-slate-700"
+          >
+            <div class="cell-icon bg-yellow-500">⭐</div>
+            <div class="cell-content">
+              <p class="cell-label">Оставленные отзывы</p>
+              <p class="cell-value">{{ reviews.length }} отзывов</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
 
-        <!-- Logout -->
-        <button class="btn btn-danger">Выход</button>
+          <!-- Saved Services -->
+          <button
+              @click="showModal('saved')"
+              class="settings-cell"
+          >
+            <div class="cell-icon bg-red-500">❤️</div>
+            <div class="cell-content">
+              <p class="cell-label">Сохраненные услуги</p>
+              <p class="cell-value">{{ savedServices.length }} услуг</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Статистика -->
+      <div class="settings-section">
+        <h2 class="settings-section-title">СТАТИСТИКА</h2>
+
+        <div class="settings-cell-group">
+          <button
+              @click="showModal('analytics')"
+              class="settings-cell border-b border-slate-700"
+          >
+            <div class="cell-icon bg-purple-500">📊</div>
+            <div class="cell-content">
+              <p class="cell-label">Аналитика</p>
+              <p class="cell-value">425,000 ₽ доход</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+
+          <button
+              @click="showModal('notifications')"
+              class="settings-cell"
+          >
+            <div class="cell-icon bg-orange-500">🔔</div>
+            <div class="cell-content">
+              <p class="cell-label">Уведомления</p>
+              <p class="cell-value">Включены</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Профиль -->
+      <div class="settings-section">
+        <h2 class="settings-section-title">ПРОФИЛЬ</h2>
+
+        <div class="settings-cell-group">
+          <button
+              @click="showModal('edit-profile')"
+              class="settings-cell"
+          >
+            <div class="cell-icon bg-blue-500">✏️</div>
+            <div class="cell-content">
+              <p class="cell-label">Редактировать профиль</p>
+              <p class="cell-value">Лена</p>
+            </div>
+            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="settings-section">
+        <div class="settings-cell-group">
+          <button
+              @click="handleLogout"
+              class="settings-cell-danger"
+          >
+            <div class="cell-icon-danger">🚪</div>
+            <div class="cell-content">
+              <p class="cell-label-danger">Выйти из аккаунта</p>
+            </div>
+          </button>
+        </div>
+        <p class="section-footer">Вы выдете из своего аккаунта на этом устройстве</p>
+      </div>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Orders Modal -->
+    <Modal v-if="activeModal === 'orders'" title="📋 Мои заказы" @close="closeModal">
+      <OrdersTab :orders="orders" />
+    </Modal>
+
+    <!-- Reviews Modal -->
+    <Modal v-if="activeModal === 'reviews'" title="⭐ Оставленные отзывы" @close="closeModal">
+      <ReviewsTab :reviews="reviews" />
+    </Modal>
+
+    <!-- Saved Services Modal -->
+    <Modal v-if="activeModal === 'saved'" title="❤️ Сохраненные услуги" @close="closeModal">
+      <SavedTab :services="savedServices" />
+    </Modal>
+
+    <!-- Analytics Modal -->
+    <Modal v-if="activeModal === 'analytics'" title="📊 Аналитика" @close="closeModal">
+      <AnalyticsTab />
+    </Modal>
+
+    <!-- Notifications Modal -->
+    <Modal v-if="activeModal === 'notifications'" title="🔔 Уведомления" @close="closeModal">
+      <NotificationsTab />
+    </Modal>
+
+    <!-- Edit Profile Modal -->
+    <Modal v-if="activeModal === 'edit-profile'" title="✏️ Редактировать профиль" @close="closeModal">
+      <div class="space-y-4">
+        <div>
+          <label class="block text-sm text-gray-400 mb-2">Имя</label>
+          <input v-model="userData.first_name" type="text" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <div>
+          <label class="block text-sm text-gray-400 mb-2">Юзернейм</label>
+          <input v-model="userData.username" type="text" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" />
+        </div>
+        <button @click="saveProfile" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg transition">
+          Сохранить
+        </button>
       </div>
     </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import Modal from '@/components/common/Modal.vue'
+import OrdersTab from '@/components/profile/OrdersTab.vue'
+import ReviewsTab from '@/components/profile/ReviewsTab.vue'
+import SavedTab from '@/components/profile/SavedTab.vue'
+import AnalyticsTab from '@/components/profile/AnalyticsTab.vue'
+import NotificationsTab from '@/components/profile/NotificationsTab.vue'
 
-const isProvider = ref(true)
-const showProfileModal = ref(false)
+const activeModal = ref<string | null>(null)
 
 const userData = ref({
   first_name: 'Лена',
-  username: 'lena_user'
+  username: 'lena_user',
+  id: '123456789'
 })
 
-const userInitial = computed(() => userData.value.first_name.charAt(0).toUpperCase())
+// Mock data
+const orders = ref([
+  {
+    id: 1,
+    serviceName: 'Уроки английского',
+    provider: 'Джон Д.',
+    date: '12 янв 2025',
+    status: 'completed'
+  },
+  {
+    id: 2,
+    serviceName: 'Консультация бухгалтера',
+    provider: 'Мария С.',
+    date: '8 янв 2025',
+    status: 'active'
+  },
+  {
+    id: 3,
+    serviceName: 'Web-дизайн',
+    provider: 'Артем К.',
+    date: '5 янв 2025',
+    status: 'completed'
+  }
+])
+
+const reviews = ref([
+  {
+    id: 1,
+    serviceName: 'Уроки английского',
+    provider: 'Джон Д.',
+    text: 'Отличный преподаватель, очень доволен результатом! Рекомендую всем.',
+    rating: 5,
+    date: '12 янв 2025'
+  },
+  {
+    id: 2,
+    serviceName: 'Консультация бухгалтера',
+    provider: 'Мария С.',
+    text: 'Помогла разобраться с налогами, спасибо!',
+    rating: 5,
+    date: '8 янв 2025'
+  }
+])
+
+const savedServices = ref([
+  {
+    id: 1,
+    name: 'Web-дизайн сайта',
+    provider: 'Артем К.',
+    price: 15000,
+    rating: 4.9
+  },
+  {
+    id: 2,
+    name: 'Продвижение в соцсетях',
+    provider: 'Виктория Л.',
+    price: 5000,
+    rating: 4.8
+  }
+])
 
 // Functions
-const toggleProfile = () => {
-  showProfileModal.value = !showProfileModal.value
+const showModal = (modal: string) => {
+  console.log('📱 Открываю модаль:', modal)
+  activeModal.value = modal
+}
+
+const closeModal = () => {
+  console.log('❌ Закрываю модаль')
+  activeModal.value = null
+}
+
+const saveProfile = () => {
+  alert('✅ Профиль сохранен!')
+  closeModal()
+}
+
+const handleLogout = () => {
+  alert('👋 Вы вышли из аккаунта')
 }
 </script>
 
 <style scoped>
 .user-header {
   background: linear-gradient(to bottom, #0f1319, #0f1319);
+  min-height: 100vh;
+  padding-bottom: 40px;
 }
 
-/* Header Sticky */
-.header-sticky {
-  position: sticky;
-  top: 0;
-  z-index: 40;
+/* Hero Section */
+.hero-section {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem 1rem;
-  background: #ffffff;
-  border-bottom: 1px solid #e5e7eb;
-  max-width: 768px;
-  margin: 0 auto;
-  width: 100%;
-  box-sizing: border-box;
+  gap: 1rem;
+  padding: 2rem 1rem 1.5rem;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.logo-section {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
-
-.logo {
-  width: 2.5rem;
-  height: 2.5rem;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
-  color: white;
-  border-radius: 0.5rem;
+.avatar-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 1.25rem;
 }
 
-/* Brand Text */
-.brand-text {
+.user-info-center {
+  text-align: center;
+}
+
+/* Settings Container */
+.settings-container {
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Section Title (iOS 18 style) */
+.settings-section-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: rgba(148, 163, 184, 0.6);
+  margin-bottom: 0.75rem;
+  padding: 0 0.5rem;
+  text-transform: uppercase;
+}
+
+/* Section */
+.settings-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Cell Group (iOS 18 style) */
+.settings-cell-group {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 0.875rem;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+/* Settings Cell */
+.settings-cell {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-cell:hover {
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.settings-cell:active {
+  background: rgba(59, 130, 246, 0.1);
+}
+
+/* Cell Icon */
+.cell-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+/* Cell Content */
+.cell-content {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  flex-shrink: 0;
+  flex: 1;
+  text-align: left;
 }
 
-.brand-name {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #000000;
-  line-height: 1;
+.cell-label {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin: 0;
 }
 
-.brand-hint {
-  font-size: 0.75rem;
-  color: #6b7280;
-  line-height: 1;
+.cell-value {
+  font-size: 0.8125rem;
+  color: rgba(148, 163, 184, 0.7);
+  margin: 0;
 }
 
-/* Profile Button */
-.profile-btn {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 50%;
-  background: #3b82f6;
-  color: white;
+/* Danger Zone */
+.settings-cell-danger {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  background: transparent;
   border: none;
   cursor: pointer;
-  font-weight: bold;
-  font-size: 1rem;
   transition: all 0.2s ease;
-  flex-shrink: 0;
-  margin-left: auto;
 }
 
-.profile-btn:hover {
-  background: #2563eb;
+.settings-cell-danger:hover {
+  background: rgba(239, 68, 68, 0.05);
 }
 
-.profile-btn:active {
-  background: #1d4ed8;
+.settings-cell-danger:active {
+  background: rgba(239, 68, 68, 0.1);
 }
 
-/* Profile Modal Content */
-.profile-modal-content {
-  padding: 1rem 0;
-}
-
-.profile-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  padding: 1.5rem 0;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-  margin-bottom: 1.5rem;
-}
-
-.avatar-circle {
-  width: 4rem;
-  height: 4rem;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+.cell-icon-danger {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: white;
-  margin-bottom: 1rem;
-}
-
-.profile-name {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: white;
-  margin: 0.5rem 0 0.25rem;
-}
-
-.profile-username {
-  color: #a0aec0;
-  font-size: 0.875rem;
-  margin: 0.25rem 0;
-}
-
-.profile-badge {
-  color: #3b82f6;
-  font-size: 0.875rem;
-  font-weight: 500;
-  margin-top: 0.5rem;
-}
-
-/* Stats Grid */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.stat-card {
-  background: rgba(30, 41, 59, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.1);
-  border-radius: 0.75rem;
-  padding: 1rem;
-  text-align: center;
-}
-
-.stat-value {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
   font-size: 1.25rem;
-  font-weight: bold;
-  color: #3b82f6;
-  margin: 0 0 0.25rem;
+  background: rgba(239, 68, 68, 0.2);
+  flex-shrink: 0;
 }
 
-.stat-label {
-  font-size: 0.75rem;
-  color: #a0aec0;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
-}
-
-/* Action Buttons */
-.action-buttons {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  margin-bottom: 1.5rem;
-}
-
-.btn {
-  padding: 0.75rem 1rem;
-  border-radius: 0.75rem;
-  border: none;
+.cell-label-danger {
+  font-size: 0.9375rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 0.875rem;
-}
-
-.btn-primary {
-  background: #3b82f6;
-  color: white;
-}
-
-.btn-primary:hover {
-  background: #2563eb;
-}
-
-.btn-secondary {
-  background: rgba(148, 163, 184, 0.1);
-  color: #e2e8f0;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-}
-
-.btn-secondary:hover {
-  background: rgba(148, 163, 184, 0.15);
-}
-
-.btn-danger {
-  background: rgba(239, 68, 68, 0.1);
   color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  margin: 0;
 }
 
-.btn-danger:hover {
-  background: rgba(239, 68, 68, 0.15);
+/* Section Footer */
+.section-footer {
+  font-size: 0.75rem;
+  color: rgba(148, 163, 184, 0.5);
+  padding: 0.5rem 1rem;
+  text-align: center;
+  margin-top: -0.5rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .settings-container {
+    padding: 1rem 0.75rem;
+    gap: 1.5rem;
+  }
+
+  .settings-cell,
+  .settings-cell-danger {
+    padding: 0.875rem;
+  }
+
+  .cell-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    font-size: 1rem;
+  }
 }
 </style>

@@ -1,23 +1,15 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
 
-import HomePage from '../pages/HomePage.vue'
 import CatalogPage from '../pages/CatalogPage.vue'
 import OrdersPage from '../pages/OrdersPage.vue'
-import ProfilePage from '../pages/ProfilePage.vue'
 import ServiceDetailPage from '../pages/ServiceDetailPage.vue'
 import ProviderProfilePage from '../pages/ProviderProfilePage.vue'
-import ProviderDashboardPage from '../pages/ProviderDashboardPage.vue'
 import LoginPage from '../pages/auth/LoginPage.vue'
 import SignupPage from '../pages/auth/SignupPage.vue'
 import ForgotPasswordPage from '../pages/auth/ForgotPasswordPage.vue'
 import NotFoundPage from '../pages/NotFoundPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
-  {
-    path: '/',
-    name: 'home',
-    component: HomePage
-  },
   {
     path: '/catalog',
     name: 'catalog',
@@ -27,11 +19,6 @@ const routes: Array<RouteRecordRaw> = [
     path: '/orders',
     name: 'orders',
     component: OrdersPage
-  },
-  {
-    path: '/profile',
-    name: 'profile',
-    component: ProfilePage
   },
   // Маршруты для обычного пользователя
   {
