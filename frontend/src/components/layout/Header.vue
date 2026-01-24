@@ -1,16 +1,24 @@
 <template>
-  <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm" :style="headerStyle">
-    <div class="max-w-md mx-auto px-4 py-2">
-      <!-- Compact Header Layout -->
-      <div class="flex items-center justify-between gap-3">
-        <!-- Logo & Branding (Compact) -->
-        <a href="#" @click.prevent="goHome" class="flex items-center gap-2 flex-shrink-0 group">
-          <!-- Logo SVG (Smaller) -->
-          <div class="w-10 h-10 flex-shrink-0 transition-transform group-hover:scale-105">
+  <header class="sticky top-0 z-50 bg-white border-b border-gray-200" :style="headerStyle">
+    <div class="max-w-md mx-auto px-4 py-3">
+      <!-- Header Row: Logo + Tabs + Profile -->
+      <div class="flex items-center justify-between gap-4">
+        <!-- Logo & Brand -->
+        <button
+          @click="goHome"
+          @keydown.enter="goHome"
+          @keydown.space="goHome"
+          class="logo-btn flex items-center gap-2 flex-shrink-0 group"
+          title="На главную"
+          aria-label="WDEAF Главная"
+        >
+          <!-- SVG Logo -->
+          <div class="w-9 h-9 flex-shrink-0 transition-transform group-hover:scale-110 group-focus-visible:scale-110">
             <svg
               viewBox="0 0 220 220"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
+              class="w-full h-full"
             >
               <g clip-path="url(#clip0_4001_20)">
                 <path d="M1.52588e-05 47.2652C1.52588e-05 21.1613 21.1614 0 47.2652 0L173.306 1.81017e-10C199.41 2.08283e-10 220.571 21.1613 220.571 47.2652L220.571 173.306C220.571 199.41 199.41 220.571 173.306 220.571L47.2652 220.571C21.1614 220.571 1.5259e-05 199.41 1.5259e-05 173.306L1.52588e-05 47.2652Z" fill="#0E1117"/>
@@ -29,127 +37,58 @@
               </defs>
             </svg>
           </div>
+          <!-- Brand Text (hidden on mobile) -->
+          <span class="hidden sm:inline text-sm font-bold">WDEAF</span>
+        </button>
 
-          <!-- Brand Text (Inline) -->
-          <div class="flex flex-col gap-0.5">
-            <span class="font-bold text-sm leading-none" :style="{ color: textColor }">Deaf</span>
-            <span class="text-xs leading-none" :style="{ color: hintColor }">услуги</span>
-          </div>
-        </a>
+        <!-- Spacer -->
+        <div class="flex-1"></div>
 
-        <!-- Right Actions -->
-        <div class="flex items-center gap-2">
-          <!-- Status Indicator (optional online status) -->
-          <div class="hidden sm:flex items-center gap-1 px-2 py-1 rounded-full border" :style="statusStyle">
-            <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-            <span class="text-xs font-medium">Онлайн</span>
-          </div>
-
-          <!-- Theme Toggle Button (Telegram-aware) -->
-          <button
-            @click="toggleTheme"
-            class="flex items-center justify-center w-9 h-9 rounded-lg hover:shadow-md transition-all active:scale-95"
-            :style="themeButtonStyle"
-            title="Переключить тему"
-            aria-label="Переключить тему"
-          >
-            <!-- Sun icon (light mode) -->
-            <svg v-if="isDarkMode" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="12" cy="12" r="5"></circle>
-              <line x1="12" y1="1" x2="12" y2="3"></line>
-              <line x1="12" y1="21" x2="12" y2="23"></line>
-              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-              <line x1="1" y1="12" x2="3" y2="12"></line>
-              <line x1="21" y1="12" x2="23" y2="12"></line>
-              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-            </svg>
-            <!-- Moon icon (dark mode) -->
-            <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-          </button>
-
-          <!-- Profile Quick Access -->
-          <button
-            v-if="userData?.username"
-            @click="goToProfile"
-            class="flex items-center justify-center w-9 h-9 rounded-full text-white text-xs font-bold hover:shadow-md transition-all active:scale-95"
-            :style="avatarStyle"
-            :title="userData.first_name"
-            aria-label="Перейти в профиль"
-          >
-            {{ getUserInitials(userData.first_name) }}
-          </button>
-        </div>
+        <!-- Profile Avatar -->
+        <button
+          v-if="userInitials"
+          @click="openProfile"
+          @keydown.enter="openProfile"
+          class="profile-avatar"
+          :title="`Профиль ${userName}`"
+          :aria-label="`Профиль пользователя ${userName}`"
+          :style="avatarStyle"
+        >
+          <span class="font-bold text-sm">{{ userInitials }}</span>
+        </button>
       </div>
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 
 interface Props {
-  userData?: {
-    first_name?: string
-    id?: string | number
-    username?: string
-  }
+  userName?: string
+  userInitials?: string
+  buttonColor?: string
 }
+
+const props = withDefaults(defineProps<Props>(), {
+  userName: 'User',
+  userInitials: 'U',
+  buttonColor: '#2563eb'
+})
 
 const emit = defineEmits<{
-  'update:currentTab': [value: string]
+  'open-profile': []
+  'go-home': []
 }>()
 
-const props = defineProps<Props>()
-
 const isDarkMode = ref(false)
-
-const getUserInitials = (name?: string): string => {
-  if (!name) return '?'
-  return name
-    .split(' ')
-    .map(word => word[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2)
-}
-
-const goHome = () => {
-  console.log('Going to home (browse tab)')
-  emit('update:currentTab', 'browse')
-}
-
-const goToProfile = () => {
-  console.log('Going to profile tab')
-  emit('update:currentTab', 'profile')
-}
-
-const toggleTheme = () => {
-  isDarkMode.value = !isDarkMode.value
-  applyTheme()
-}
-
-const applyTheme = () => {
-  // Sync with Telegram theme if available
-  if (window.Telegram?.WebApp) {
-    const colorScheme = window.Telegram.WebApp.colorScheme
-    isDarkMode.value = colorScheme === 'dark'
-  }
-  
-  // Apply to document
-  document.documentElement.setAttribute('data-theme', isDarkMode.value ? 'dark' : 'light')
-}
 
 const getTelegramThemeParams = () => {
   if (!window.Telegram?.WebApp?.themeParams) {
     return {
-      bg_color: '#ffffff',
       text_color: '#000000',
       hint_color: '#6b7280',
-      secondary_bg_color: '#f3f4f6',
+      bg_color: '#ffffff',
       button_color: '#2563eb'
     }
   }
@@ -158,91 +97,142 @@ const getTelegramThemeParams = () => {
 
 const themeParams = computed(() => getTelegramThemeParams())
 
-const textColor = computed(() => themeParams.value.text_color || '#000000')
-const hintColor = computed(() => themeParams.value.hint_color || '#6b7280')
-const bgColor = computed(() => themeParams.value.bg_color || '#ffffff')
-const buttonColor = computed(() => themeParams.value.button_color || '#2563eb')
-
 const headerStyle = computed(() => ({
-  backgroundColor: bgColor.value,
-  color: textColor.value,
+  backgroundColor: themeParams.value.bg_color || '#ffffff',
+  color: themeParams.value.text_color || '#000000',
   borderColor: isDarkMode.value ? '#374151' : '#e5e5e5'
 }))
 
-const statusStyle = computed(() => ({
-  backgroundColor: isDarkMode.value ? 'rgba(34, 197, 94, 0.1)' : 'rgba(34, 197, 94, 0.08)',
-  borderColor: isDarkMode.value ? '#22c55e' : '#86efac',
-  color: isDarkMode.value ? '#86efac' : '#16a34a'
-}))
-
-const themeButtonStyle = computed(() => ({
-  backgroundColor: isDarkMode.value ? '#374151' : '#f3f4f6',
-  color: textColor.value
-}))
-
 const avatarStyle = computed(() => ({
-  background: `linear-gradient(135deg, ${buttonColor.value} 0%, rgba(37, 99, 235, 0.8) 100%)`
+  backgroundColor: props.buttonColor || themeParams.value.button_color || '#2563eb',
+  borderColor: props.buttonColor || themeParams.value.button_color || '#2563eb'
 }))
+
+const goHome = () => {
+  emit('go-home')
+}
+
+const openProfile = () => {
+  emit('open-profile')
+}
 
 onMounted(() => {
-  // Initialize Telegram WebApp
   if (window.Telegram?.WebApp) {
-    window.Telegram.WebApp.ready()
-    
-    // Apply initial theme
-    applyTheme()
-    
-    // Listen for theme changes
+    isDarkMode.value = window.Telegram.WebApp.colorScheme === 'dark'
+
     window.Telegram.WebApp.onEvent('themeChanged', () => {
-      applyTheme()
+      isDarkMode.value = window.Telegram.WebApp.colorScheme === 'dark'
     })
   }
 })
 </script>
 
 <style scoped>
-/* Smooth animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-2px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Logo Button */
+.logo-btn {
+  background: none;
+  border: none;
+  padding: 0.25rem;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease-out;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  position: relative;
 }
 
-header {
-  animation: fadeIn 0.3s ease-out;
+.logo-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04);
 }
 
-/* Focus states for accessibility */
-button:focus-visible {
-  outline: 2px solid #0055ff;
+.logo-btn:focus-visible {
+  outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }
 
-/* Smooth hover transitions */
+/* Profile Avatar - Circular */
+.profile-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  color: white;
+  border: 2px solid currentColor;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.875rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  position: relative;
+}
+
+.profile-avatar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+  pointer-events: none;
+}
+
+.profile-avatar:hover {
+  transform: translateY(-2px) scale(1.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.profile-avatar:active {
+  transform: translateY(0) scale(0.95);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+.profile-avatar:focus-visible {
+  outline: 2px solid white;
+  outline-offset: 2px;
+}
+
+/* Smooth transitions */
 button {
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+  font-size: inherit;
 }
 
-button:active {
-  transition: transform 0.1s ease;
+/* SVG Icon styling */
+svg {
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-/* Pulse animation for online indicator */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
+/* Responsive */
+@media (max-width: 640px) {
+  .logo-btn {
+    padding: 0.25rem;
   }
-  50% {
-    opacity: 0.5;
+}
+
+/* Focus states */
+button:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: more) {
+  .profile-avatar {
+    border-width: 3px;
   }
 }
 
-.animate-pulse {
-  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 </style>
