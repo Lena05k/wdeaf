@@ -1,27 +1,21 @@
 <template>
-  <nav class="tab-nav fixed bottom-0 inset-x-0 z-40 bg-slate-900 border-t border-slate-800">
-    <div class="max-w-md mx-auto flex">
+  <nav class="sticky top-14 z-40 bg-white border-b border-gray-200">
+    <div class="max-w-md mx-auto flex h-12">
       <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          @click="emit('update:currentTab', tab.id)"
-          :class="[
-          'tab-btn flex-1 flex flex-col items-center justify-center py-2 text-xs',
-          currentTab === tab.id ? 'text-sky-400' : 'text-slate-500'
+        v-for="tab in tabs"
+        :key="tab.id"
+        @click="emit('update:currentTab', tab.id)"
+        :class="[
+          'flex-1 flex flex-col items-center justify-center text-xs font-medium transition-all',
+          currentTab === tab.id
+            ? 'text-blue-600 border-b-2 border-blue-600'
+            : 'text-gray-600 hover:text-gray-900 border-b-2 border-transparent hover:border-gray-300'
         ]"
-          :title="tab.label"
+        :title="tab.label"
+        aria-label="tab.label"
       >
-        <span class="text-base leading-none mb-0.5">
-          {{ tab.icon }}
-        </span>
-        <span class="leading-none">
-          {{ tab.label }}
-        </span>
-
-        <span
-            v-if="currentTab === tab.id"
-            class="mt-1 h-0.5 w-8 rounded-full bg-sky-400"
-        />
+        <span class="text-base leading-none">{{ tab.icon }}</span>
+        <span class="text-xs mt-0.5 font-medium leading-none">{{ tab.label }}</span>
       </button>
     </div>
   </nav>
@@ -45,32 +39,30 @@ const emit = defineEmits<{
 }>()
 
 const tabs: Tab[] = [
-  { id: 'browse', label: 'Обзор', labelShort: 'Обзор',} as any,
-  { id: 'catalog', label: 'Каталог',},
-  { id: 'orders', label: 'Заказы',},
-  { id: 'profile', label: 'Профиль' }
+  { id: 'browse', label: 'Обзор', icon: '🔍' },
+  { id: 'catalog', label: 'Каталог', icon: '📂' },
+  { id: 'orders', label: 'Заказы', icon: '📑' },
+  { id: 'profile', label: 'Профиль', icon: '👤' }
 ]
 </script>
 
 <style scoped>
-.tab-nav {
-  padding: 0;
+/* Smooth transitions */
+button {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.tab-btn {
-  border: none;
-  background: transparent;
-  cursor: pointer;
-  transition: background-color 0.15s ease, color 0.15s ease;
+button:hover {
+  background-color: rgba(59, 130, 246, 0.05);
 }
 
-.tab-btn:hover {
-  background: rgba(15, 23, 42, 0.9);
+button:active {
+  transform: scale(0.98);
 }
 
-/* Accessibility */
-.tab-btn:focus-visible {
-  outline: 2px solid #60a5fa;
+/* Focus states */
+button:focus-visible {
+  outline: 2px solid #3b82f6;
   outline-offset: -2px;
 }
 </style>
