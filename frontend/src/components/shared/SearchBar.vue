@@ -1,30 +1,36 @@
 <template>
-  <div class="space-y-3">
+  <div class="search-container">
     <!-- Search Input -->
-    <input
+    <div class="search-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.2"/>
+        <path d="M10.5 10.5L14 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+      </svg>
+      <input
         :value="searchQuery"
         @input="$emit('update:searchQuery', $event.target.value)"
         type="text"
-        placeholder="🔍 Поиск услуг..."
-        class="search-input w-full px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-    >
+        placeholder="Поиск услуг..."
+        class="search-input"
+      />
+    </div>
 
     <!-- Categories Filter -->
-    <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+    <div class="categories-scroll">
       <!-- All Button (Show all services) -->
       <button
-          @click="$emit('update:selectedCategory', '')"
-          :class="['catalog-btn', selectedCategory === '' ? 'active' : '']"
+        @click="$emit('update:selectedCategory', '')"
+        :class="['category-btn', selectedCategory === '' ? 'active' : '']"
       >
-        🌟 Все
+        Все
       </button>
 
       <!-- Category Buttons -->
       <button
-          v-for="cat in categories"
-          :key="cat"
-          @click="toggleCategory(cat)"
-          :class="['catalog-btn', selectedCategory === cat ? 'active' : '']"
+        v-for="cat in categories"
+        :key="cat"
+        @click="toggleCategory(cat)"
+        :class="['category-btn', selectedCategory === cat ? 'active' : '']"
       >
         {{ cat }}
       </button>
@@ -52,65 +58,147 @@ export default {
   emits: ['update:searchQuery', 'update:selectedCategory'],
   methods: {
     toggleCategory(cat) {
-      const newCategory = this.selectedCategory === cat ? '' : cat;
-      this.$emit('update:selectedCategory', newCategory);
+      const newCategory = this.selectedCategory === cat ? '' : cat
+      this.$emit('update:selectedCategory', newCategory)
     }
   }
 }
 </script>
 
 <style scoped>
-.search-input {
-  background: rgba(255, 255, 255, 0.1);
-  color: #FFFFFF;
-  border: 1px solid #0055FF;
-  font-size: 14px;
+.search-container {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.search-input::placeholder {
-  color: rgba(255, 255, 255, 0.5);
+/* Search Wrapper */
+.search-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
 }
 
-.search-input:focus {
-  background: rgba(255, 255, 255, 0.12);
-  border-color: #0077ff;
-}
-
-.catalog-btn {
-  padding: 8px 16px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 500;
-  border: 1px solid #0055FF;
-  background: transparent;
-  color: #0055FF;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+.search-icon {
+  position: absolute;
+  left: 12px;
+  color: var(--color-text-secondary, #999);
+  pointer-events: none;
   flex-shrink: 0;
 }
 
-.catalog-btn:active {
-  transform: scale(0.95);
+.search-input {
+  width: 100%;
+  padding: 10px 12px 10px 36px;
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #000);
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: 8px;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-.catalog-btn.active {
-  background: #0055FF;
-  color: #FFFFFF;
-  box-shadow: 0 0 12px rgba(0, 85, 255, 0.4);
+.search-input::placeholder {
+  color: var(--color-text-secondary, #999);
 }
 
-.catalog-btn:hover {
-  background: rgba(0, 85, 255, 0.15);
+.search-input:focus {
+  outline: none;
+  border-color: var(--color-primary, #0055FF);
+  background: var(--color-surface, #fff);
+  box-shadow: 0 0 0 3px rgba(0, 85, 255, 0.1);
 }
 
-/* Smooth scrolling */
-.scrollbar-hide {
+.search-input:hover {
+  border-color: var(--color-primary, #0055FF);
+}
+
+/* Categories Scroll */
+.categories-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 4px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.categories-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.categories-scroll {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-.scrollbar-hide::-webkit-scrollbar {
-  display: none;
+/* Category Button */
+.category-btn {
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid var(--color-border, #e5e5e5);
+  background: var(--color-surface, #fff);
+  color: var(--color-text, #000);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.category-btn:hover {
+  border-color: var(--color-primary, #0055FF);
+  background: var(--color-bg-1, #f0f5ff);
+  color: var(--color-primary, #0055FF);
+}
+
+.category-btn:active {
+  transform: scale(0.95);
+}
+
+.category-btn.active {
+  background: var(--color-primary, #0055FF);
+  color: white;
+  border-color: var(--color-primary, #0055FF);
+  box-shadow: 0 2px 8px rgba(0, 85, 255, 0.3);
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .search-input {
+    background: #2a2a2a;
+    border-color: #444;
+    color: #fff;
+  }
+  
+  .search-input::placeholder {
+    color: #888;
+  }
+  
+  .search-input:focus {
+    border-color: #0055FF;
+    background: #2a2a2a;
+    box-shadow: 0 0 0 3px rgba(0, 85, 255, 0.2);
+  }
+  
+  .category-btn {
+    background: #2a2a2a;
+    border-color: #444;
+    color: #e0e0e0;
+  }
+  
+  .category-btn:hover {
+    border-color: #0055FF;
+    background: rgba(0, 85, 255, 0.15);
+    color: #60a5fa;
+  }
+  
+  .category-btn.active {
+    background: #0055FF;
+    color: #fff;
+  }
 }
 </style>
