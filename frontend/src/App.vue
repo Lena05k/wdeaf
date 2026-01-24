@@ -1,10 +1,10 @@
 <template>
   <div class="home-page">
-    <!-- Header + TabNavigation Combined -->
-    <header class="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm" :style="headerStyle">
-      <div class="max-w-md mx-auto px-4 py-2">
+    <!-- Improved Header: Logo + Beautiful Navigation -->
+    <header class="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm" :style="headerStyle">
+      <div class="max-w-md mx-auto px-3 py-2.5">
         <!-- Header Row: Logo + Tabs + Actions -->
-        <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center justify-between gap-3">
           <!-- Logo & Branding -->
           <a href="#" @click.prevent="goHome" class="flex items-center gap-2 flex-shrink-0 group">
             <!-- Logo SVG -->
@@ -33,39 +33,69 @@
             </div>
           </a>
 
-          <!-- Navigation Tabs (Center) -->
-          <div class="flex gap-2 flex-1 justify-center">
+          <!-- Navigation Tabs (Center) - Beautiful Rounded Buttons -->
+          <div class="flex gap-2.5 flex-1 justify-center items-center flex-wrap">
+            <!-- Обзор Tab -->
             <button
-                v-for="tab in tabs"
-                :key="tab.id"
-                @click="currentTab = tab.id"
-                class="flex items-center justify-center px-2 py-1 rounded-md text-xs font-medium transition-all"
-                :class="currentTab === tab.id ? 'bg-white border border-black text-black' : 'bg-gray-100 border border-gray-200 text-gray-600 hover:bg-gray-200'"
-                :title="tab.label"
+                @click="currentTab = 'browse'"
+                class="nav-tab"
+                :class="{ 'nav-tab-active': currentTab === 'browse', 'nav-tab-inactive': currentTab !== 'browse' }"
+                title="Обзор"
             >
-              <component :is="getTabIcon(tab.id)" class="w-4 h-4" />
-              <span class="hidden sm:inline ml-1">{{ tab.label }}</span>
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <span>Обзор</span>
+            </button>
+
+            <!-- Каталог Tab -->
+            <button
+                @click="currentTab = 'catalog'"
+                class="nav-tab"
+                :class="{ 'nav-tab-active': currentTab === 'catalog', 'nav-tab-inactive': currentTab !== 'catalog' }"
+                title="Каталог"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+              </svg>
+              <span>Каталог</span>
+            </button>
+
+            <!-- Заказы Tab -->
+            <button
+                @click="currentTab = 'orders'"
+                class="nav-tab"
+                :class="{ 'nav-tab-active': currentTab === 'orders', 'nav-tab-inactive': currentTab !== 'orders' }"
+                title="Заказы"
+            >
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path>
+                <line x1="6" y1="6" x2="18" y2="6"></line>
+                <line x1="6" y1="10" x2="18" y2="10"></line>
+                <line x1="6" y1="14" x2="18" y2="14"></line>
+              </svg>
+              <span>Заказы</span>
             </button>
 
             <!-- Add Service Button (для исполнителей) -->
             <button
                 v-if="isProvider"
                 @click="addService"
-                class="flex items-center justify-center px-2 py-1 rounded-md text-xs font-medium bg-gray-100 border border-gray-200 text-gray-600 hover:bg-gray-200 transition-all"
+                class="nav-tab nav-tab-add"
                 title="Добавить услугу"
             >
-              <span class="text-lg">+</span>
+              <span class="text-base font-semibold">+</span>
             </button>
           </div>
 
           <!-- Right Actions -->
-          <div class="flex items-center gap-2 flex-shrink-0">
-            <!-- Profile Button -->
+          <div class="flex items-center gap-2.5 flex-shrink-0">
+            <!-- Profile Button - Smooth Gradient Circle -->
             <button
                 v-if="userData?.username"
                 @click="currentTab = 'profile'"
-                class="flex items-center justify-center w-9 h-9 rounded-full text-white text-xs font-bold hover:shadow-md transition-all active:scale-95"
-                :style="avatarStyle"
+                class="profile-btn"
                 :title="userData.first_name"
             >
               {{ getUserInitials(userData.first_name) }}
@@ -145,12 +175,6 @@ const userData = ref({
   id: '123456789',
   username: 'ivan_user'
 })
-
-const tabs = [
-  { id: 'browse', label: 'Обзор', icon: 'IconSearch' },
-  { id: 'catalog', label: 'Каталог', icon: 'IconFolder' },
-  { id: 'orders', label: 'Заказы', icon: 'IconOrders' }
-]
 
 const categories = ['Ремонт', 'Бизнес', 'Мода', 'Обучение', 'Дизайн']
 const catalogCategories = [
@@ -290,7 +314,7 @@ const buttonColor = computed(() => themeParams.value.button_color || '#2563eb')
 const headerStyle = computed(() => ({
   backgroundColor: bgColor.value,
   color: textColor.value,
-  borderColor: isDarkMode.value ? '#374151' : '#e5e5e5'
+  borderColor: isDarkMode.value ? '#2d3748' : '#f3f4f6'
 }))
 
 const avatarStyle = computed(() => ({
@@ -305,15 +329,6 @@ const getUserInitials = (name?: string): string => {
       .join('')
       .toUpperCase()
       .slice(0, 2)
-}
-
-const getTabIcon = (tabId: string) => {
-  const icons: Record<string, any> = {
-    browse: { template: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>' },
-    catalog: { template: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>' },
-    orders: { template: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2h12a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path><line x1="6" y1="6" x2="18" y2="6"></line><line x1="6" y1="10" x2="18" y2="10"></line><line x1="6" y1="14" x2="18" y2="14"></line></svg>' }
-  }
-  return icons[tabId] || { template: '' }
 }
 
 const goHome = () => {
@@ -376,10 +391,11 @@ onMounted(() => {
 </script>
 
 <style scoped>
-@keyframes fadeIn {
+/* Smooth Animations */
+@keyframes slideDown {
   from {
     opacity: 0;
-    transform: translateY(-2px);
+    transform: translateY(-8px);
   }
   to {
     opacity: 1;
@@ -388,19 +404,113 @@ onMounted(() => {
 }
 
 header {
-  animation: fadeIn 0.3s ease-out;
+  animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Navigation Tab Styles */
+.nav-tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  border: 1.5px solid transparent;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  white-space: nowrap;
+  color: #6b7280;
+  background: #f3f4f6;
+  transform: translateZ(0);
+}
+
+.nav-tab:hover:not(.nav-tab-active) {
+  background: #e5e7eb;
+  transform: translateY(-1px);
+}
+
+.nav-tab:active {
+  transform: scale(0.96);
+}
+
+/* Active Tab Style */
+.nav-tab-active {
+  background: #ffffff;
+  color: #000000;
+  border-color: #000000;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  font-weight: 600;
+}
+
+/* Inactive Tab (lighter) */
+.nav-tab-inactive {
+  opacity: 0.7;
+}
+
+/* Add Service Button */
+.nav-tab-add {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border-radius: 50%;
+  background: #f3f4f6;
+  border: 1.5px solid #d1d5db;
+  color: #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-tab-add:hover {
+  background: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+/* Profile Button */
+.profile-btn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+  font-size: 0.875rem;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+.profile-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.profile-btn:active {
+  transform: translateY(0) scale(0.95);
+  box-shadow: 0 1px 4px rgba(59, 130, 246, 0.3);
+}
+
+/* Focus States */
 button:focus-visible {
-  outline: 2px solid #0055ff;
+  outline: 2px solid #3b82f6;
   outline-offset: 2px;
 }
 
+/* Smooth general button transitions */
 button {
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-button:active {
-  transition: transform 0.1s ease;
+/* SVG Icon Styling */
+svg {
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 </style>
