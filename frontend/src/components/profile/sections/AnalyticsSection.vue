@@ -18,7 +18,7 @@
       <div class="bg-gradient-to-br from-blue-900 to-blue-800 border border-blue-700 rounded-xl p-4">
         <p class="text-gray-300 text-sm">Завершено заказов</p>
         <p class="text-2xl font-bold text-blue-300 mt-2">
-          {{ props.providerInfo?.completedOrders ?? 0 }}
+          {{ (props.providerInfo?.completedOrders as number) ?? 0 }}
         </p>
         <p class="text-xs text-gray-400 mt-2">✅ Выполнено</p>
       </div>
@@ -27,10 +27,10 @@
       <div class="bg-gradient-to-br from-yellow-900 to-yellow-800 border border-yellow-700 rounded-xl p-4">
         <p class="text-gray-300 text-sm">Ваш рейтинг</p>
         <p class="text-2xl font-bold text-yellow-300 mt-2">
-          {{ (props.providerInfo?.rating ?? 0).toFixed(1) }}
+          {{ ((props.providerInfo?.rating as number) ?? 0).toFixed(1) }}
         </p>
         <div class="flex gap-1 mt-2">
-          <span v-for="i in 5" :key="i" :class="i <= Math.round(props.providerInfo?.rating ?? 0) ? 'text-yellow-400' : 'text-gray-600'">
+          <span v-for="i in 5" :key="i" :class="i <= Math.round((props.providerInfo?.rating as number) ?? 0) ? 'text-yellow-400' : 'text-gray-600'">
             ⭐
           </span>
         </div>
@@ -40,7 +40,7 @@
       <div class="bg-gradient-to-br from-purple-900 to-purple-800 border border-purple-700 rounded-xl p-4">
         <p class="text-gray-300 text-sm">Активные услуги</p>
         <p class="text-2xl font-bold text-purple-300 mt-2">
-          {{ props.providerInfo?.activeServices ?? 0 }}
+          {{ (props.providerInfo?.activeServices as number) ?? 0 }}
         </p>
         <p class="text-xs text-gray-400 mt-2">📋 Услуг</p>
       </div>
@@ -52,11 +52,11 @@
       <div class="space-y-3">
         <div class="flex items-center justify-between">
           <span class="text-gray-400">Заказов получено</span>
-          <span class="font-bold text-white">{{ props.providerInfo?.monthlyOrders ?? 0 }}</span>
+          <span class="font-bold text-white">{{ (props.providerInfo?.monthlyOrders as number) ?? 0 }}</span>
         </div>
         <div class="flex items-center justify-between">
           <span class="text-gray-400">Доход за месяц</span>
-          <span class="font-bold text-green-400">{{ formatPrice(props.providerInfo?.monthlyEarnings ?? 0) }}</span>
+          <span class="font-bold text-green-400">{{ formatPrice((props.providerInfo?.monthlyEarnings as number) ?? 0) }}</span>
         </div>
         <div class="flex items-center justify-between">
           <span class="text-gray-400">Среднее за заказ</span>
@@ -94,16 +94,17 @@
 
 <script setup lang="ts">
 interface ProviderInfo {
-  totalEarnings: number
-  completedOrders: number
-  rating: number
-  activeServices: number
-  monthlyOrders: number
-  monthlyEarnings: number
+  totalEarnings?: number
+  completedOrders?: number
+  rating?: number
+  activeServices?: number
+  monthlyOrders?: number
+  monthlyEarnings?: number
+  [key: string]: any
 }
 
 const props = defineProps<{
-  providerInfo?: ProviderInfo
+  providerInfo?: ProviderInfo | null
 }>()
 
 const formatPrice = (price: number): string => {
@@ -115,8 +116,8 @@ const formatPrice = (price: number): string => {
 }
 
 const calculateAverageOrder = (): number => {
-  const monthlyOrders = (props.providerInfo?.monthlyOrders ?? 0) || 1
-  const monthlyEarnings = props.providerInfo?.monthlyEarnings ?? 0
+  const monthlyOrders = ((props.providerInfo?.monthlyOrders as number) ?? 0) || 1
+  const monthlyEarnings = (props.providerInfo?.monthlyEarnings as number) ?? 0
   return monthlyEarnings / monthlyOrders
 }
 </script>
