@@ -6,7 +6,7 @@
         <div>
           <h3 class="text-2xl font-bold text-white">{{ providerInfo?.name ?? 'Профиль' }}</h3>
           <p class="text-gray-400 mt-1">
-            🌟 {{ providerInfo?.rating ?? 0 }} рейтинг · {{ providerInfo?.reviews ?? 0 }} отзывов
+            🌟 {{ ((providerInfo?.rating as number) ?? 0).toFixed(1) }} рейтинг · {{ (providerInfo?.reviews as number) ?? 0 }} отзывов
           </p>
         </div>
         <button
@@ -38,8 +38,8 @@
         <label class="block text-sm font-semibold text-gray-300 mb-3">🌟 Специализация</label>
         <div class="flex flex-wrap gap-2">
           <span
-            v-if="providerInfo?.specializations && providerInfo.specializations.length > 0"
-            v-for="spec in providerInfo.specializations"
+            v-if="(providerInfo?.specializations as string[])?.length"
+            v-for="spec in (providerInfo?.specializations as string[])"
             :key="spec"
             class="bg-blue-900 text-blue-300 px-3 py-1 rounded-full text-sm font-medium"
           >
@@ -78,19 +78,19 @@
       <div class="grid grid-cols-3 gap-3 border-t border-slate-700 pt-4">
         <div class="text-center">
           <p class="text-2xl font-bold text-blue-400">
-            {{ providerInfo?.completedOrders ?? 0 }}
+            {{ (providerInfo?.completedOrders as number) ?? 0 }}
           </p>
           <p class="text-xs text-gray-400 mt-1">Заказов</p>
         </div>
         <div class="text-center">
           <p class="text-2xl font-bold text-yellow-400">
-            {{ (providerInfo?.rating ?? 0).toFixed(1) }}
+            {{ ((providerInfo?.rating as number) ?? 0).toFixed(1) }}
           </p>
           <p class="text-xs text-gray-400 mt-1">Рейтинг</p>
         </div>
         <div class="text-center">
           <p class="text-2xl font-bold text-green-400">
-            {{ providerInfo?.reviews ?? 0 }}
+            {{ (providerInfo?.reviews as number) ?? 0 }}
           </p>
           <p class="text-xs text-gray-400 mt-1">Отзывов</p>
         </div>
@@ -112,10 +112,11 @@ interface ProviderInfo {
   rating?: number
   reviews?: number
   completedOrders?: number
+  [key: string]: any
 }
 
 defineProps<{
-  providerInfo?: ProviderInfo
+  providerInfo?: ProviderInfo | null
 }>()
 
 const emit = defineEmits<{
