@@ -146,7 +146,7 @@
               :key="service.id"
               :service="service"
               :is-saved="true"
-              @click="openServiceDetails(service)"
+              @click="openSavedServiceDetail(service)"
               @save="handleServiceSave(service)"
               @unsave="handleServiceUnsave(service)"
             />
@@ -350,8 +350,16 @@
       </div>
     </div>
 
+    <!-- Saved Service Detail Modal (Using ServiceDetailModal Component) -->
+    <ServiceDetailModal
+      :is-open="showSavedServiceDetail"
+      :service="selectedSavedServiceForDetail"
+      @close="closeSavedServiceDetail"
+      @contact-provider="handleContactProvider"
+    />
+
     <!-- Service Details Modal -->
-    <div v-if="selectedService" class="modal-overlay" @click="closeServiceDetails">
+    <div v-if="selectedService && !showSavedServiceDetail" class="modal-overlay" @click="closeServiceDetails">
       <div class="modal-content detail-modal" @click.stop>
         <div class="modal-header">
           <button @click="closeServiceDetails" class="back-btn">←</button>
@@ -422,6 +430,7 @@ import BecomeProviderModal from '@/components/profile/modals/BecomeProviderModal
 import ServiceModal from '@/components/profile/modals/ServiceModal.vue'
 import EditProfileModal from '@/components/profile/modals/EditProfileModal.vue'
 import ServiceCard from '@/components/profile/ServiceCard.vue'
+import ServiceDetailModal from '@/components/modals/ServiceDetailModal.vue'
 
 // ======================== INTERFACES ========================
 interface Service {
@@ -466,6 +475,8 @@ const activeTabModal = ref<string | null>(null)
 const selectedOrder = ref<Order | null>(null)
 const selectedService = ref<Service | null>(null)
 const selectedReview = ref<Review | null>(null)
+const showSavedServiceDetail = ref(false)
+const selectedSavedServiceForDetail = ref<any>(null)
 
 // ======================== CUSTOMER DATA ========================
 const customerOrders = ref<Order[]>([
@@ -517,14 +528,29 @@ const savedServices = ref<Service[]>([
     name: 'Web-дизайн',
     price: 15000,
     description: 'Профессиональный дизайн сайта',
-    category: 'Дизайн'
+    category: 'Дизайн',
+    provider: 'Дизайн Студия',
+    providerRating: 4.9,
+    reviews: 45,
+    images: [
+      'https://via.placeholder.com/400x300?text=Design+1',
+      'https://via.placeholder.com/400x300?text=Design+2'
+    ],
+    fullDescription: 'Профессиональный дизайн сайта, включающий UX/UI, прототипы и макеты высокого качества.'
   },
   {
     id: 2,
     name: 'Пошив платья',
     price: 5000,
     description: 'Изготовление платьев по заказу',
-    category: 'Одежда'
+    category: 'Одежда',
+    provider: 'Портной Иван',
+    providerRating: 4.8,
+    reviews: 32,
+    images: [
+      'https://via.placeholder.com/400x300?text=Dress+1'
+    ],
+    fullDescription: 'Изготовление платьев по заказу с учетом всех ваших пожеланий.'
   }
 ])
 
@@ -642,6 +668,21 @@ const openServiceDetails = (service: Service) => {
 
 const closeServiceDetails = () => {
   selectedService.value = null
+}
+
+const openSavedServiceDetail = (service: any) => {
+  selectedSavedServiceForDetail.value = service
+  showSavedServiceDetail.value = true
+}
+
+const closeSavedServiceDetail = () => {
+  showSavedServiceDetail.value = false
+  selectedSavedServiceForDetail.value = null
+}
+
+const handleContactProvider = (service: any) => {
+  console.log('📞 Связаться с исполнителем:', service.name)
+  closeSavedServiceDetail()
 }
 
 const openReviewDetails = (review: Review) => {
