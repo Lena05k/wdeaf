@@ -42,7 +42,7 @@
       </div>
     </div>
 
-    <!-- ======================== CUSTOMER TABS ======================== -->
+    <!-- ======================== ТОЛЬКО КЛИЕНТ (Нет исполнителя) ======================== -->
     <template v-if="!isProvider">
       <div class="settings-container">
         <!-- История заказов -->
@@ -90,12 +90,12 @@
       </div>
     </template>
 
-    <!-- ======================== PROVIDER TABS ======================== -->
+    <!-- ======================== ИСПОЛНИТЕЛЬ (может быть одновременно клиентом) ======================== -->
     <template v-else>
       <div class="settings-container">
-        <!-- Входящие заказы -->
+        <!-- РАЗДЕЛ: Входящие заказы (только исполнитель) -->
         <div class="settings-section">
-          <h2 class="settings-section-title">ЗАКАЗЫ</h2>
+          <h2 class="settings-section-title">ЗАКАЗЫ ДЛЯ ВАС</h2>
 
           <div class="settings-cell-group">
             <!-- Incoming Orders -->
@@ -123,7 +123,7 @@
             </button>
 
             <!-- Completed Orders -->
-            <button class="settings-cell border-b border-slate-700">
+            <button class="settings-cell">
               <div class="cell-icon bg-green-500">✅</div>
               <div class="cell-content">
                 <p class="cell-label">Завершенные</p>
@@ -136,7 +136,7 @@
           </div>
         </div>
 
-        <!-- Мои услуги -->
+        <!-- РАЗДЕЛ: Мои услуги -->
         <div class="settings-section">
           <h2 class="settings-section-title">УСЛУГИ</h2>
 
@@ -155,13 +155,13 @@
           </div>
         </div>
 
-        <!-- Статистика исполнителя -->
+        <!-- РАЗДЕЛ: Репутация исполнителя -->
         <div class="settings-section">
-          <h2 class="settings-section-title">МОЙЯ РЕПУТАЦИЯ</h2>
+          <h2 class="settings-section-title">МОЯ РЕПУТАЦИЯ</h2>
 
           <div class="settings-cell-group">
             <!-- Rating -->
-            <button class="settings-cell border-b border-slate-700">
+            <button class="settings-cell">
               <div class="cell-icon bg-yellow-500">⭐</div>
               <div class="cell-content">
                 <p class="cell-label">Рейтинг</p>
@@ -171,13 +171,44 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
               </svg>
             </button>
+          </div>
+        </div>
 
-            <!-- Earnings -->
-            <button class="settings-cell">
-              <div class="cell-icon bg-green-500">💰</div>
+        <!-- РАЗДЕЛ: Заказы как покупатель (исполнитель тоже может быть клиентом) -->
+        <div class="settings-section">
+          <h2 class="settings-section-title">ВЫ ТАКЖЕ МОЖЕТЕ ПОКУПАТЬ</h2>
+
+          <div class="settings-cell-group">
+            <!-- My Orders as Customer -->
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-blue-500">📋</div>
               <div class="cell-content">
-                <p class="cell-label">Заработок</p>
-                <p class="cell-value">{{ totalEarnings.toLocaleString() }} ₽</p>
+                <p class="cell-label">Мои заказы (как покупатель)</p>
+                <p class="cell-value">{{ ordersCount }} заказов</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <!-- My Reviews as Customer -->
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-yellow-500">⭐</div>
+              <div class="cell-content">
+                <p class="cell-label">Мои отзывы</p>
+                <p class="cell-value">{{ reviewsCount }} отзывов</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <!-- Saved Services -->
+            <button class="settings-cell">
+              <div class="cell-icon bg-red-500">❤️</div>
+              <div class="cell-content">
+                <p class="cell-label">Сохраненные услуги</p>
+                <p class="cell-value">{{ savedCount }} услуг</p>
               </div>
               <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
@@ -203,6 +234,23 @@
             </div>
           </button>
         </div>
+      </div>
+
+      <!-- Stop Being Provider (only for providers) -->
+      <div v-if="isProvider" class="settings-section">
+        <div class="settings-cell-group">
+          <button
+            @click="$emit('stop-being-provider')"
+            class="settings-cell-warning hover:bg-orange-950/30"
+          >
+            <div class="cell-icon-warning">🔄</div>
+            <div class="cell-content">
+              <p class="cell-label-warning">Стать обычным пользователем</p>
+              <p class="cell-value" style="color: rgba(248, 113, 113, 0.7); font-size: 0.75rem; margin-top: 0.25rem">Вы перестанете быть исполнителем</p>
+            </div>
+          </button>
+        </div>
+        <p class="section-footer">После этого ваши услуги будут скрыты, но вы сможете покупать услуги других</p>
       </div>
 
       <!-- Danger Zone: Logout -->
@@ -244,7 +292,6 @@ interface Props {
   servicesCount?: number
   providerRating?: number
   providerReviews?: number
-  totalEarnings?: number
 }
 
 defineProps<Props>()
@@ -253,6 +300,7 @@ defineEmits<{
   'become-provider': []
   'add-service': []
   'edit-profile': []
+  'stop-being-provider': []
   'logout': []
 }>()
 </script>
@@ -414,6 +462,46 @@ defineEmits<{
   margin: 0;
 }
 
+/* Warning Zone (Stop Being Provider) */
+.settings-cell-warning {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-cell-warning:hover {
+  background: rgba(251, 146, 60, 0.05);
+}
+
+.settings-cell-warning:active {
+  background: rgba(251, 146, 60, 0.1);
+}
+
+.cell-icon-warning {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.625rem;
+  font-size: 1.25rem;
+  background: rgba(251, 146, 60, 0.2);
+  flex-shrink: 0;
+}
+
+.cell-label-warning {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: #fb923c;
+  margin: 0;
+}
+
 /* Section Footer */
 .section-footer {
   font-size: 0.75rem;
@@ -431,7 +519,8 @@ defineEmits<{
   }
 
   .settings-cell,
-  .settings-cell-danger {
+  .settings-cell-danger,
+  .settings-cell-warning {
     padding: 0.875rem;
   }
 
