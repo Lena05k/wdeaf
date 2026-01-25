@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="sticky top-0 bg-gradient-to-b from-slate-800 to-slate-900 border-b border-slate-700 p-4 flex justify-between items-center">
         <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <span>📝</span> Стать исполнителем
+          <span>📋</span> Стать исполнителем
         </h2>
         <button @click="$emit('close')" class="text-gray-400 hover:text-white text-2xl">
           ✕
@@ -38,6 +38,7 @@
                 placeholder="Например: Иван Петров"
                 class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
               />
+              <p v-if="errors.name" class="text-xs text-red-500 mt-1">{{ errors.name }}</p>
             </div>
 
             <div>
@@ -48,6 +49,7 @@
                 rows="4"
                 class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 resize-none"
               />
+              <p v-if="errors.description" class="text-xs text-red-500 mt-1">{{ errors.description }}</p>
               <p class="text-xs text-gray-500 mt-1">Мин. 20 символов</p>
             </div>
 
@@ -68,6 +70,7 @@
                   <span class="text-sm">{{ cat }}</span>
                 </label>
               </div>
+              <p v-if="errors.categories" class="text-xs text-red-500 mt-1">{{ errors.categories }}</p>
               <p class="text-xs text-gray-500 mt-1">Выберите минимум 1</p>
             </div>
           </div>
@@ -119,6 +122,7 @@
                   <span class="text-sm">Вечерние часы (18:00-23:00)</span>
                 </label>
               </div>
+              <p v-if="errors.availability" class="text-xs text-red-500 mt-1">{{ errors.availability }}</p>
               <p class="text-xs text-gray-500 mt-1">Выберите минимум 1</p>
             </div>
 
@@ -137,6 +141,7 @@
                   и полностью ознаком с политикой конфиденциальности
                 </span>
               </label>
+              <p v-if="errors.agreeDataProcessing" class="text-xs text-red-500">{{ errors.agreeDataProcessing }}</p>
             </div>
           </div>
         </div>
@@ -166,7 +171,7 @@
         </button>
         <button
           v-else
-          @click="$emit('submit')"
+          @click="handleSubmit"
           :disabled="!isStep2Valid"
           :class="[
             'flex-1 font-semibold py-3 rounded-lg transition active:scale-95',
@@ -185,6 +190,19 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 
+interface ProviderForm {
+  name: string
+  description: string
+  categories: string[]
+  timezone: string
+  availability: {
+    weekdays: boolean
+    weekends: boolean
+    evenings: boolean
+  }
+  agreeDataProcessing: boolean
+}
+
 const currentStep = ref(1)
 
 const categories = [
@@ -198,10 +216,10 @@ const categories = [
   'Творчество'
 ]
 
-const form = ref({
+const form = ref<ProviderForm>({
   name: '',
   description: '',
-  categories: [] as string[],
+  categories: [],
   timezone: 'UTC+3',
   availability: {
     weekdays: true,
@@ -210,6 +228,47 @@ const form = ref({
   },
   agreeDataProcessing: false
 })
+
+const errors = ref<Record<string, string>>({})
+
+// Validation for Step 1
+const validateStep1 = (): boolean => {
+  errors.value = {}
+
+  if (!form.value.name.trim()) {
+    errors.value.name = 'Имя обязательно'
+  } else if (form.value.name.trim().length < 2) {
+    errors.value.name = 'Имя должно быть не менее 2 символов'
+  }
+
+  if (!form.value.description.trim()) {
+    errors.value.description = 'Описание обязательно'
+  } else if (form.value.description.trim().length < 20) {
+    errors.value.description = 'Описание должно быть минимум 20 символов'
+  }
+
+  if (form.value.categories.length === 0) {
+    errors.value.categories = 'Выберите хотя бы одну категорию'
+  }
+
+  return Object.keys(errors.value).length === 0
+}
+
+// Validation for Step 2
+const validateStep2 = (): boolean => {
+  errors.value = {}
+
+  const hasAvailability = Object.values(form.value.availability).some(v => v)
+  if (!hasAvailability) {
+    errors.value.availability = 'Выберите хотя бы один день/время'
+  }
+
+  if (!form.value.agreeDataProcessing) {
+    errors.value.agreeDataProcessing = 'Необходимо согласие на обработку данных'
+  }
+
+  return Object.keys(errors.value).length === 0
+}
 
 const isStep1Valid = computed(() => {
   return (
@@ -233,8 +292,18 @@ const toggleCategory = (category: string) => {
   }
 }
 
+const handleSubmit = () => {
+  // Validate step 2
+  if (!validateStep2()) {
+    return
+  }
+
+  // Emit form data to parent
+  emit('submit', form.value)
+}
+
 defineEmits<{
-  submit: []
+  submit: [data: ProviderForm]
   close: []
 }>()
 </script>
