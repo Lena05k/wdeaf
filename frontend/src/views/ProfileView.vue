@@ -13,12 +13,12 @@
       :completed-orders-count="providerCompletedOrders.length"
       :provider-rating="providerRating"
       :provider-reviews="providerReviews"
-      :total-earnings="totalEarnings"
       @become-provider="showBecomeProviderModal = true"
       @add-service="openAddService"
       @edit-service="openEditService"
       @delete-service="deleteServiceConfirm"
       @edit-profile="openEditProfile"
+      @stop-being-provider="handleStopBeingProvider"
       @logout="handleLogout"
     />
 
@@ -250,7 +250,6 @@ const providerServices = ref<Service[]>([
 const completedOrders = computed(() => providerCompletedOrders.value.length)
 const providerRating = ref(4.9)
 const providerReviews = ref(124)
-const totalEarnings = ref(425000)
 
 // ======================== METHODS ========================
 
@@ -347,6 +346,26 @@ const submitEditProfile = (profileData: any) => {
   })
   showEditProfileModal.value = false
   console.log('✅ Профиль обновлен')
+}
+
+/**
+ * НОВО: Отказ от роли исполнителя
+ * Можно покупать, но не подавать услуги
+ */
+const handleStopBeingProvider = () => {
+  const confirmed = confirm(
+    'Вы действительно хотите прекратить быть исполнителем?\n\nПосле этого:\n- Ваши услуги будут скрыты\n- Клиенты не смогут платить вам\n- Вы останетесь обычным пользователем\n- Вы сможете купить услуги других'
+  )
+  
+  if (confirmed) {
+    // Убрание роли исполнителя
+    userStore.removeProviderRole()
+    providerServices.value = []
+    incomingOrders.value = []
+    providerActiveOrders.value = []
+    providerCompletedOrders.value = []
+    console.log('🚪 Вы прекратили быть исполнителем')
+  }
 }
 
 const handleLogout = () => {
