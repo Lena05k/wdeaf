@@ -51,7 +51,10 @@
 
           <div class="settings-cell-group">
             <!-- My Orders -->
-            <button class="settings-cell border-b border-slate-700">
+            <button 
+              @click="$emit('view-orders')"
+              class="settings-cell border-b border-slate-700 hover-cell"
+            >
               <div class="cell-icon bg-blue-500">📋</div>
               <div class="cell-content">
                 <p class="cell-label">Мои заказы</p>
@@ -63,7 +66,10 @@
             </button>
 
             <!-- My Reviews -->
-            <button class="settings-cell border-b border-slate-700">
+            <button 
+              @click="$emit('view-reviews')"
+              class="settings-cell border-b border-slate-700 hover-cell"
+            >
               <div class="cell-icon bg-yellow-500">⭐</div>
               <div class="cell-content">
                 <p class="cell-label">Мои отзывы</p>
@@ -75,7 +81,10 @@
             </button>
 
             <!-- Saved Services -->
-            <button class="settings-cell">
+            <button 
+              @click="$emit('view-saved')"
+              class="settings-cell hover-cell"
+            >
               <div class="cell-icon bg-red-500">❤️</div>
               <div class="cell-content">
                 <p class="cell-label">Сохраненные услуги</p>
@@ -99,7 +108,10 @@
 
           <div class="settings-cell-group">
             <!-- Incoming Orders -->
-            <button class="settings-cell border-b border-slate-700">
+            <button 
+              @click="$emit('view-incoming-orders')"
+              class="settings-cell border-b border-slate-700 hover-cell"
+            >
               <div class="cell-icon bg-orange-500">📬</div>
               <div class="cell-content">
                 <p class="cell-label">Входящие заказы</p>
@@ -111,7 +123,10 @@
             </button>
 
             <!-- Active Orders -->
-            <button class="settings-cell border-b border-slate-700">
+            <button 
+              @click="$emit('view-active-orders')"
+              class="settings-cell border-b border-slate-700 hover-cell"
+            >
               <div class="cell-icon bg-blue-500">⚡</div>
               <div class="cell-content">
                 <p class="cell-label">Активные заказы</p>
@@ -123,7 +138,10 @@
             </button>
 
             <!-- Completed Orders -->
-            <button class="settings-cell">
+            <button 
+              @click="$emit('view-completed-orders')"
+              class="settings-cell hover-cell"
+            >
               <div class="cell-icon bg-green-500">✅</div>
               <div class="cell-content">
                 <p class="cell-label">Завершенные</p>
@@ -142,7 +160,10 @@
 
           <div class="settings-cell-group">
             <!-- My Services -->
-            <button class="settings-cell">
+            <button 
+              @click="$emit('view-services')"
+              class="settings-cell hover-cell"
+            >
               <div class="cell-icon bg-purple-500">📦</div>
               <div class="cell-content">
                 <p class="cell-label">Мои услуги</p>
@@ -161,7 +182,10 @@
 
           <div class="settings-cell-group">
             <!-- Rating -->
-            <button class="settings-cell">
+            <button 
+              @click="$emit('view-rating')"
+              class="settings-cell hover-cell"
+            >
               <div class="cell-icon bg-yellow-500">⭐</div>
               <div class="cell-content">
                 <p class="cell-label">Рейтинг</p>
@@ -180,7 +204,10 @@
 
           <div class="settings-cell-group">
             <!-- My Orders as Customer -->
-            <button class="settings-cell border-b border-slate-700">
+            <button 
+              @click="$emit('view-orders')"
+              class="settings-cell border-b border-slate-700 hover-cell"
+            >
               <div class="cell-icon bg-blue-500">📋</div>
               <div class="cell-content">
                 <p class="cell-label">Мои заказы (как покупатель)</p>
@@ -192,7 +219,10 @@
             </button>
 
             <!-- My Reviews as Customer -->
-            <button class="settings-cell border-b border-slate-700">
+            <button 
+              @click="$emit('view-reviews')"
+              class="settings-cell border-b border-slate-700 hover-cell"
+            >
               <div class="cell-icon bg-yellow-500">⭐</div>
               <div class="cell-content">
                 <p class="cell-label">Мои отзывы</p>
@@ -204,7 +234,10 @@
             </button>
 
             <!-- Saved Services -->
-            <button class="settings-cell">
+            <button 
+              @click="$emit('view-saved')"
+              class="settings-cell hover-cell"
+            >
               <div class="cell-icon bg-red-500">❤️</div>
               <div class="cell-content">
                 <p class="cell-label">Сохраненные услуги</p>
@@ -301,6 +334,14 @@ defineEmits<{
   'add-service': []
   'edit-profile': []
   'stop-being-provider': []
+  'view-orders': []
+  'view-reviews': []
+  'view-saved': []
+  'view-incoming-orders': []
+  'view-active-orders': []
+  'view-completed-orders': []
+  'view-services': []
+  'view-rating': []
   'logout': []
 }>()
 </script>
@@ -386,6 +427,14 @@ defineEmits<{
 
 .settings-cell:active {
   background: rgba(59, 130, 246, 0.1);
+}
+
+.hover-cell:hover {
+  background: rgba(59, 130, 246, 0.05) !important;
+}
+
+.hover-cell:active {
+  background: rgba(59, 130, 246, 0.1) !important;
 }
 
 /* Cell Icon */
