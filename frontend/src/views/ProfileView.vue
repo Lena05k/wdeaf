@@ -61,7 +61,7 @@
     <div v-if="activeTabModal === 'orders'" class="modal-overlay" @click="closeTabModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>📋 Мои заказы</h2>
+          <h2>Мои заказы</h2>
           <button @click="closeTabModal" class="close-btn">✕</button>
         </div>
         <div class="modal-body">
@@ -97,7 +97,7 @@
     <div v-if="activeTabModal === 'reviews'" class="modal-overlay" @click="closeTabModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>⭐ Мои отзывы</h2>
+          <h2>Мои отзывы</h2>
           <button @click="closeTabModal" class="close-btn">✕</button>
         </div>
         <div class="modal-body">
@@ -115,7 +115,7 @@
             >
               <div class="item-header">
                 <h3>{{ review.serviceName }}</h3>
-                <span class="rating">{{ review.rating }}⭐</span>
+                <span class="rating">{{ review.rating }}★</span>
               </div>
               <p><strong>Мастер:</strong> {{ review.provider }}</p>
               <p>{{ review.text }}</p>
@@ -133,7 +133,7 @@
     <div v-if="activeTabModal === 'saved'" class="modal-overlay" @click="closeTabModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>❤️ Сохраненные услуги</h2>
+          <h2>Сохраненные услуги</h2>
           <button @click="closeTabModal" class="close-btn">✕</button>
         </div>
         <div class="modal-body">
@@ -159,7 +159,7 @@
     <div v-if="activeTabModal === 'incoming'" class="modal-overlay" @click="closeTabModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>📬 Входящие заказы</h2>
+          <h2>Входящие заказы</h2>
           <button @click="closeTabModal" class="close-btn">✕</button>
         </div>
         <div class="modal-body">
@@ -194,7 +194,7 @@
     <div v-if="activeTabModal === 'activeProvider'" class="modal-overlay" @click="closeTabModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>⚡ Активные заказы</h2>
+          <h2>Активные заказы</h2>
           <button @click="closeTabModal" class="close-btn">✕</button>
         </div>
         <div class="modal-body">
@@ -229,7 +229,7 @@
     <div v-if="activeTabModal === 'completedProvider'" class="modal-overlay" @click="closeTabModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>✅ Завершенные заказы</h2>
+          <h2>Завершенные заказы</h2>
           <button @click="closeTabModal" class="close-btn">✕</button>
         </div>
         <div class="modal-body">
@@ -247,7 +247,7 @@
             >
               <div class="item-header">
                 <h3>{{ order.service }}</h3>
-                <span class="badge-completed">{{ order.rating }}⭐</span>
+                <span class="badge-completed">{{ order.rating }}★</span>
               </div>
               <p><strong>Цена:</strong> {{ order.price }} ₽</p>
               <p><strong>Дата:</strong> {{ order.date }}</p>
@@ -264,7 +264,7 @@
     <div v-if="activeTabModal === 'services'" class="modal-overlay" @click="closeTabModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>📦 Мои услуги</h2>
+          <h2>Мои услуги</h2>
           <button @click="closeTabModal" class="close-btn">✕</button>
         </div>
         <div class="modal-body">
@@ -288,7 +288,7 @@
     <div v-if="activeTabModal === 'rating'" class="modal-overlay" @click="closeTabModal">
       <div class="modal-content" @click.stop>
         <div class="modal-header">
-          <h2>⭐ Моя репутация</h2>
+          <h2>Моя репутация</h2>
           <button @click="closeTabModal" class="close-btn">✕</button>
         </div>
         <div class="modal-body">
@@ -323,25 +323,25 @@
 
           <div class="detail-grid">
             <div class="detail-item">
-              <p class="detail-label">👤 Мастер</p>
+              <p class="detail-label">Мастер</p>
               <p class="detail-value">{{ selectedOrder.provider }}</p>
             </div>
             <div class="detail-item">
-              <p class="detail-label">📅 Дата</p>
+              <p class="detail-label">Дата</p>
               <p class="detail-value">{{ selectedOrder.date }}</p>
             </div>
             <div class="detail-item">
-              <p class="detail-label">💵 Стоимость</p>
+              <p class="detail-label">Стоимость</p>
               <p class="detail-value price">{{ selectedOrder.price }} ₽</p>
             </div>
             <div v-if="selectedOrder.rating" class="detail-item">
-              <p class="detail-label">⭐ Оценка</p>
+              <p class="detail-label">Оценка</p>
               <p class="detail-value">{{ selectedOrder.rating }} из 5</p>
             </div>
           </div>
 
           <div class="detail-section mt-4">
-            <p class="detail-label">📄 Описание заказа</p>
+            <p class="detail-label">Описание заказа</p>
             <p class="detail-description">{{ selectedOrder.service }} - полная реализация высококачественных услуг.</p>
           </div>
         </div>
@@ -383,13 +383,13 @@
 
           <div class="detail-grid">
             <div class="detail-item">
-              <p class="detail-label">💵 Цена</p>
+              <p class="detail-label">Цена</p>
               <p class="detail-value price">{{ selectedService.price }} ₽</p>
             </div>
           </div>
 
           <div class="detail-section mt-4">
-            <p class="detail-label">📄 Описание</p>
+            <p class="detail-label">Описание</p>
             <p class="detail-description">{{ selectedService.description }}</p>
           </div>
         </div>
@@ -407,22 +407,22 @@
         <div class="modal-body detail-body">
           <div class="detail-section">
             <h3 class="detail-title">{{ selectedReview.serviceName }}</h3>
-            <p class="detail-rating">{{ selectedReview.rating }} ⭐</p>
+            <p class="detail-rating">{{ selectedReview.rating }} ★</p>
           </div>
 
           <div class="detail-grid">
             <div class="detail-item">
-              <p class="detail-label">👤 Мастер</p>
+              <p class="detail-label">Мастер</p>
               <p class="detail-value">{{ selectedReview.provider }}</p>
             </div>
             <div class="detail-item">
-              <p class="detail-label">📅 Дата</p>
+              <p class="detail-label">Дата</p>
               <p class="detail-value">{{ selectedReview.date }}</p>
             </div>
           </div>
 
           <div class="detail-section mt-4">
-            <p class="detail-label">📄 Ваш отзыв</p>
+            <p class="detail-label">Ваш отзыв</p>
             <p class="detail-description">{{ selectedReview.text }}</p>
           </div>
         </div>
@@ -539,29 +539,14 @@ const savedServices = ref<Service[]>([
     name: 'Web-дизайн',
     price: 15000,
     description: 'Профессиональный дизайн сайта',
-    category: 'Дизайн',
-    provider: 'Дизайн Студия',
-    providerRating: 4.9,
-    reviews: 45,
-    images: [
-      'https://via.placeholder.com/400x300?text=Design+1',
-      'https://via.placeholder.com/400x300?text=Design+2'
-    ],
-    fullDescription: 'Профессиональный дизайн сайта, включающий UX/UI, прототипы и макеты высокого качества.'
+    category: 'Дизайн'
   },
   {
     id: 2,
     name: 'Пошив платья',
     price: 5000,
     description: 'Изготовление платьев по заказу',
-    category: 'Одежда',
-    provider: 'Портной Иван',
-    providerRating: 4.8,
-    reviews: 32,
-    images: [
-      'https://via.placeholder.com/400x300?text=Dress+1'
-    ],
-    fullDescription: 'Изготовление платьев по заказу с учетом всех ваших пожеланий.'
+    category: 'Одежда'
   }
 ])
 
@@ -633,27 +618,21 @@ const providerServices = ref<Service[]>([
     name: 'Web-дизайн сайта',
     price: 15000,
     description: 'Профессиональный дизайн сайта',
-    category: 'Дизайн',
-    images: ['https://via.placeholder.com/400x300?text=Service+1'],
-    fullDescription: 'Полный дизайн веб-сайта с учетом всех современных тенденций'
+    category: 'Дизайн'
   },
   {
     id: 2,
     name: 'Дизайн логотипа',
     price: 3000,
     description: 'Креативные логотипы',
-    category: 'Дизайн',
-    images: ['https://via.placeholder.com/400x300?text=Service+2'],
-    fullDescription: 'Создание уникального логотипа для вашего бренда'
+    category: 'Дизайн'
   },
   {
     id: 3,
     name: 'Мокеты и прототипы',
     price: 8000,
     description: 'Прототипы и макеты интерфейсов',
-    category: 'Дизайн',
-    images: ['https://via.placeholder.com/400x300?text=Service+3'],
-    fullDescription: 'Интерактивные макеты и прототипы приложений'
+    category: 'Дизайн'
   }
 ])
 
@@ -698,7 +677,7 @@ const closeSavedServiceDetail = () => {
 }
 
 const handleContactProvider = (service: any) => {
-  console.log('📞 Связаться с исполнителем:', service.name)
+  console.log('Связаться с исполнителем:', service.name)
   closeSavedServiceDetail()
 }
 
@@ -716,14 +695,14 @@ const handleEditService = (editedService: any) => {
   const index = providerServices.value.findIndex(s => s.id === editedService.id)
   if (index !== -1) {
     providerServices.value[index] = editedService
-    console.log('✅ Услуга обновлена:', editedService.name)
+    console.log('Обновлена услуга:', editedService.name)
   }
   closeProviderServiceDetail()
 }
 
 const handleDeleteProviderService = (serviceId: string | number) => {
   providerServices.value = providerServices.value.filter(s => s.id !== serviceId)
-  console.log('🗑️ Услуга удалена')
+  console.log('Удалена услуга')
   closeProviderServiceDetail()
 }
 
@@ -747,7 +726,7 @@ const submitProviderProfile = (profileData: any) => {
   })
 
   showBecomeProviderModal.value = false
-  console.log('✅ Профиль исполнителя создан успешно!', profileData)
+  console.log('Профиль исполнителя создан успешно!', profileData)
 }
 
 const openAddService = () => {
@@ -793,7 +772,7 @@ const submitService = (service: Service) => {
 }
 
 const handleServiceSave = (service: Service) => {
-  console.log('❤️ Услуга сохранена:', service.name)
+  console.log('Услуга сохранена:', service.name)
 }
 
 const handleServiceUnsave = (service: Service) => {
@@ -801,7 +780,7 @@ const handleServiceUnsave = (service: Service) => {
   if (index !== -1) {
     savedServices.value.splice(index, 1)
   }
-  console.log('♥ Услуга удалена из сохраненных:', service.name)
+  console.log('Услуга удалена из сохраненных:', service.name)
 }
 
 const openEditProfile = () => {
@@ -815,12 +794,12 @@ const submitEditProfile = (profileData: any) => {
     username: profileData.username
   })
   showEditProfileModal.value = false
-  console.log('✅ Профиль обновлен')
+  console.log('Профиль обновлен')
 }
 
 const handleStopBeingProvider = () => {
   const confirmed = confirm(
-    'Вы действительно хотите прекратить быть исполнителем?\n\nПосле этого:\n- Ваши услуги будут скрыты\n- Клиенты не смогут платить вам\n- Вы останетесь обычным пользователем\n- Вы сможете купить услуги других'
+    'Вы действительно хотите прекратить быть исполнителем?\n\nПосле этого:\n- Ваши услуги будут скрыты\n- Клиенты не смогут тнать вам\n- Вы останетесь обычным пользователем\n- Вы сможете купить услуги других'
   )
   
   if (confirmed) {
@@ -829,14 +808,14 @@ const handleStopBeingProvider = () => {
     incomingOrders.value = []
     providerActiveOrders.value = []
     providerCompletedOrders.value = []
-    console.log('🚪 Вы прекратили быть исполнителем')
+    console.log('Вы прекратили быть исполнителем')
   }
 }
 
 const handleLogout = () => {
   if (confirm('Вы уверены что выходите?')) {
     userStore.logout()
-    console.log('👋 Выход из аккаунта')
+    console.log('Выход из аккаунта')
   }
 }
 </script>
