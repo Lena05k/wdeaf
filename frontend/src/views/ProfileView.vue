@@ -68,7 +68,14 @@
             <p>Нет заказов</p>
           </div>
           <div v-else class="items-list">
-            <div v-for="order in customerOrders" :key="order.id" class="item-card">
+            <div 
+              v-for="order in customerOrders" 
+              :key="order.id" 
+              class="item-card"
+              @click="openOrderDetails(order)"
+              role="button"
+              tabindex="0"
+            >
               <div class="item-header">
                 <h3>{{ order.service }}</h3>
                 <span class="status-badge" :class="`status-${order.status}`">{{ order.status }}</span>
@@ -76,6 +83,9 @@
               <p><strong>Мастер:</strong> {{ order.provider }}</p>
               <p><strong>Цена:</strong> {{ order.price }} ₽</p>
               <p><strong>Дата:</strong> {{ order.date }}</p>
+              <div class="card-footer">
+                <span class="view-more">Подробно →</span>
+              </div>
             </div>
           </div>
         </div>
@@ -94,7 +104,14 @@
             <p>Нет отзывов</p>
           </div>
           <div v-else class="items-list">
-            <div v-for="review in userReviews" :key="review.id" class="item-card">
+            <div 
+              v-for="review in userReviews" 
+              :key="review.id" 
+              class="item-card"
+              @click="openReviewDetails(review)"
+              role="button"
+              tabindex="0"
+            >
               <div class="item-header">
                 <h3>{{ review.serviceName }}</h3>
                 <span class="rating">{{ review.rating }}⭐</span>
@@ -102,6 +119,9 @@
               <p><strong>Мастер:</strong> {{ review.provider }}</p>
               <p>{{ review.text }}</p>
               <p class="date">{{ review.date }}</p>
+              <div class="card-footer">
+                <span class="view-more">Подробно →</span>
+              </div>
             </div>
           </div>
         </div>
@@ -120,10 +140,20 @@
             <p>Нет сохраненных услуг</p>
           </div>
           <div v-else class="items-list">
-            <div v-for="service in savedServices" :key="service.id" class="item-card">
+            <div 
+              v-for="service in savedServices" 
+              :key="service.id" 
+              class="item-card"
+              @click="openServiceDetails(service)"
+              role="button"
+              tabindex="0"
+            >
               <h3>{{ service.name }}</h3>
               <p>{{ service.description }}</p>
               <p><strong>Цена:</strong> {{ service.price }} ₽</p>
+              <div class="card-footer">
+                <span class="view-more">Подробно →</span>
+              </div>
             </div>
           </div>
         </div>
@@ -142,13 +172,23 @@
             <p>Нет входящих заказов</p>
           </div>
           <div v-else class="items-list">
-            <div v-for="order in incomingOrders" :key="order.id" class="item-card">
+            <div 
+              v-for="order in incomingOrders" 
+              :key="order.id" 
+              class="item-card"
+              @click="openOrderDetails(order)"
+              role="button"
+              tabindex="0"
+            >
               <div class="item-header">
                 <h3>{{ order.service }}</h3>
                 <span class="badge-pending">Пендинг</span>
               </div>
               <p><strong>Цена:</strong> {{ order.price }} ₽</p>
               <p><strong>Дата:</strong> {{ order.date }}</p>
+              <div class="card-footer">
+                <span class="view-more">Подробно →</span>
+              </div>
             </div>
           </div>
         </div>
@@ -167,13 +207,23 @@
             <p>Нет активных заказов</p>
           </div>
           <div v-else class="items-list">
-            <div v-for="order in providerActiveOrders" :key="order.id" class="item-card">
+            <div 
+              v-for="order in providerActiveOrders" 
+              :key="order.id" 
+              class="item-card"
+              @click="openOrderDetails(order)"
+              role="button"
+              tabindex="0"
+            >
               <div class="item-header">
                 <h3>{{ order.service }}</h3>
                 <span class="badge-active">В работе</span>
               </div>
               <p><strong>Цена:</strong> {{ order.price }} ₽</p>
               <p><strong>Дата:</strong> {{ order.date }}</p>
+              <div class="card-footer">
+                <span class="view-more">Подробно →</span>
+              </div>
             </div>
           </div>
         </div>
@@ -192,13 +242,23 @@
             <p>Нет завершенных заказов</p>
           </div>
           <div v-else class="items-list">
-            <div v-for="order in providerCompletedOrders" :key="order.id" class="item-card">
+            <div 
+              v-for="order in providerCompletedOrders" 
+              :key="order.id" 
+              class="item-card"
+              @click="openOrderDetails(order)"
+              role="button"
+              tabindex="0"
+            >
               <div class="item-header">
                 <h3>{{ order.service }}</h3>
                 <span class="badge-completed">{{ order.rating }}⭐</span>
               </div>
               <p><strong>Цена:</strong> {{ order.price }} ₽</p>
               <p><strong>Дата:</strong> {{ order.date }}</p>
+              <div class="card-footer">
+                <span class="view-more">Подробно →</span>
+              </div>
             </div>
           </div>
         </div>
@@ -217,11 +277,21 @@
             <p>Нет услуг</p>
           </div>
           <div v-else class="items-list">
-            <div v-for="service in providerServices" :key="service.id" class="item-card">
+            <div 
+              v-for="service in providerServices" 
+              :key="service.id" 
+              class="item-card"
+              @click="openServiceDetails(service)"
+              role="button"
+              tabindex="0"
+            >
               <h3>{{ service.name }}</h3>
               <p>{{ service.description }}</p>
               <p><strong>Цена:</strong> {{ service.price }} ₽</p>
               <p><strong>Категория:</strong> {{ service.category }}</p>
+              <div class="card-footer">
+                <span class="view-more">Подробно →</span>
+              </div>
             </div>
           </div>
         </div>
@@ -242,6 +312,127 @@
               <p><strong>{{ providerReviews }} отзывов</strong></p>
               <p>{{ providerCompletedOrders.length }} завершенных заказов</p>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================== DETAIL MODALS ======================== -->
+
+    <!-- Order Details Modal -->
+    <div v-if="selectedOrder" class="modal-overlay" @click="closeOrderDetails">
+      <div class="modal-content detail-modal" @click.stop>
+        <div class="modal-header">
+          <button @click="closeOrderDetails" class="back-btn">←</button>
+          <h2>Подробно о заказе</h2>
+          <button @click="closeOrderDetails" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body detail-body">
+          <div class="detail-section">
+            <h3 class="detail-title">{{ selectedOrder.service }}</h3>
+            <div class="detail-status" :class="`status-${selectedOrder.status}`">
+              {{ selectedOrder.status.toUpperCase() }}
+            </div>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-item">
+              <p class="detail-label">👤 Мастер</p>
+              <p class="detail-value">{{ selectedOrder.provider }}</p>
+            </div>
+            <div class="detail-item">
+              <p class="detail-label">📅 Дата</p>
+              <p class="detail-value">{{ selectedOrder.date }}</p>
+            </div>
+            <div class="detail-item">
+              <p class="detail-label">💵 Стоимость</p>
+              <p class="detail-value price">{{ selectedOrder.price }} ₽</p>
+            </div>
+            <div v-if="selectedOrder.rating" class="detail-item">
+              <p class="detail-label">⭐ Оценка</p>
+              <p class="detail-value">{{ selectedOrder.rating }} из 5</p>
+            </div>
+          </div>
+
+          <div class="detail-section mt-4">
+            <p class="detail-label">📄 Описание заказа</p>
+            <p class="detail-description">{{ selectedOrder.service }} - полная реализация высококачественных услуг.</p>
+          </div>
+
+          <div class="detail-actions">
+            <button class="btn btn-primary">Оставить результат</button>
+            <button class="btn btn-secondary">Отменить</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Service Details Modal -->
+    <div v-if="selectedService" class="modal-overlay" @click="closeServiceDetails">
+      <div class="modal-content detail-modal" @click.stop>
+        <div class="modal-header">
+          <button @click="closeServiceDetails" class="back-btn">←</button>
+          <h2>Подробно о услуге</h2>
+          <button @click="closeServiceDetails" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body detail-body">
+          <div class="detail-section">
+            <h3 class="detail-title">{{ selectedService.name }}</h3>
+            <p class="detail-category">{{ selectedService.category }}</p>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-item">
+              <p class="detail-label">💵 Цена</p>
+              <p class="detail-value price">{{ selectedService.price }} ₽</p>
+            </div>
+          </div>
+
+          <div class="detail-section mt-4">
+            <p class="detail-label">📄 Описание</p>
+            <p class="detail-description">{{ selectedService.description }}</p>
+          </div>
+
+          <div class="detail-actions">
+            <button class="btn btn-primary">Оставить заказ</button>
+            <button class="btn btn-secondary">Открыть чат</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Review Details Modal -->
+    <div v-if="selectedReview" class="modal-overlay" @click="closeReviewDetails">
+      <div class="modal-content detail-modal" @click.stop>
+        <div class="modal-header">
+          <button @click="closeReviewDetails" class="back-btn">←</button>
+          <h2>Подробно об отзыве</h2>
+          <button @click="closeReviewDetails" class="close-btn">✕</button>
+        </div>
+        <div class="modal-body detail-body">
+          <div class="detail-section">
+            <h3 class="detail-title">{{ selectedReview.serviceName }}</h3>
+            <p class="detail-rating">{{ selectedReview.rating }} ⭐</p>
+          </div>
+
+          <div class="detail-grid">
+            <div class="detail-item">
+              <p class="detail-label">👤 Мастер</p>
+              <p class="detail-value">{{ selectedReview.provider }}</p>
+            </div>
+            <div class="detail-item">
+              <p class="detail-label">📅 Дата</p>
+              <p class="detail-value">{{ selectedReview.date }}</p>
+            </div>
+          </div>
+
+          <div class="detail-section mt-4">
+            <p class="detail-label">📄 Ваш отзыв</p>
+            <p class="detail-description">{{ selectedReview.text }}</p>
+          </div>
+
+          <div class="detail-actions">
+            <button class="btn btn-secondary">Основное</button>
           </div>
         </div>
       </div>
@@ -297,12 +488,13 @@ const showEditProfileModal = ref(false)
 const isEditingService = ref(false)
 const currentService = ref<Service | null>(null)
 const activeTabModal = ref<string | null>(null)
+const selectedOrder = ref<Order | null>(null)
+const selectedService = ref<Service | null>(null)
+const selectedReview = ref<Review | null>(null)
 
 // ======================== CUSTOMER DATA ========================
 // Orders where user is a customer (buyer)
-const customerOrders = ref<Order[]>([
-  {
-    id: 1,
+const customerOrders = ref<Order[]>([\n  {\n    id: 1,
     service: 'Уроки английского',
     provider: 'Джон Д.',
     status: 'completed',
@@ -460,6 +652,30 @@ const closeTabModal = () => {
   activeTabModal.value = null
 }
 
+const openOrderDetails = (order: Order) => {
+  selectedOrder.value = order
+}
+
+const closeOrderDetails = () => {
+  selectedOrder.value = null
+}
+
+const openServiceDetails = (service: Service) => {
+  selectedService.value = service
+}
+
+const closeServiceDetails = () => {
+  selectedService.value = null
+}
+
+const openReviewDetails = (review: Review) => {
+  selectedReview.value = review
+}
+
+const closeReviewDetails = () => {
+  selectedReview.value = null
+}
+
 /**
  * КРИТИЧНОЕ ИСПРАВЛЕНИЕ: Правильное сохранение профиля провайдера
  */
@@ -614,6 +830,10 @@ const handleLogout = () => {
   overflow: hidden;
 }
 
+.modal-content.detail-modal {
+  max-height: 85vh;
+}
+
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -628,9 +848,12 @@ const handleLogout = () => {
   margin: 0;
   font-size: 1.25rem;
   color: white;
+  flex: 1;
+  text-align: center;
 }
 
-.close-btn {
+.close-btn,
+.back-btn {
   background: none;
   border: none;
   color: #94a3b8;
@@ -646,15 +869,24 @@ const handleLogout = () => {
   transition: all 0.2s ease;
 }
 
-.close-btn:hover {
+.close-btn:hover,
+.back-btn:hover {
   background: rgba(148, 163, 184, 0.1);
   color: white;
+}
+
+.back-btn {
+  font-size: 1.25rem;
 }
 
 .modal-body {
   flex: 1;
   overflow-y: auto;
   padding: 1.5rem;
+}
+
+.modal-body.detail-body {
+  padding: 2rem 1.5rem;
 }
 
 .empty-state {
@@ -683,6 +915,14 @@ const handleLogout = () => {
   border-radius: 12px;
   padding: 1rem;
   color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.item-card:hover {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(59, 130, 246, 0.3);
+  transform: translateY(-2px);
 }
 
 .item-header {
@@ -698,6 +938,153 @@ const handleLogout = () => {
   color: white;
 }
 
+.card-footer {
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.view-more {
+  font-size: 0.75rem;
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+/* Detail Modal Styles */
+.detail-section {
+  margin-bottom: 1.5rem;
+}
+
+.detail-section.mt-4 {
+  margin-top: 2rem;
+}
+
+.detail-title {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: white;
+}
+
+.detail-category,
+.detail-rating {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.detail-status {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.75rem;
+}
+
+.detail-status.status-pending {
+  background: rgba(251, 146, 60, 0.2);
+  color: #fb923c;
+}
+
+.detail-status.status-active {
+  background: rgba(59, 130, 246, 0.2);
+  color: #3b82f6;
+}
+
+.detail-status.status-completed {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.detail-item {
+  background: rgba(30, 41, 59, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.detail-label {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detail-value {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 500;
+  color: white;
+}
+
+.detail-value.price {
+  color: #fbbf24;
+  font-size: 1.25rem;
+}
+
+.detail-description {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: #e2e8f0;
+  line-height: 1.6;
+  background: rgba(30, 41, 59, 0.5);
+  border-left: 3px solid #3b82f6;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.detail-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.btn {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  color: white;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: rgba(30, 41, 59, 0.7);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.btn-secondary:hover {
+  background: rgba(30, 41, 59, 0.9);
+  color: white;
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+/* Status Badge Styles */
 .status-badge,
 .badge-pending,
 .badge-active,
@@ -789,5 +1176,20 @@ const handleLogout = () => {
 .rating-stats p:last-child {
   color: #94a3b8;
   font-size: 0.875rem;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-title {
+    font-size: 1.25rem;
+  }
+
+  .detail-actions {
+    flex-direction: column;
+  }
 }
 </style>
