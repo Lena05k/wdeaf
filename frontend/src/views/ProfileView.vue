@@ -14,7 +14,7 @@
       :provider-rating="providerRating"
       :provider-reviews="providerReviews"
       @become-provider="showBecomeProviderModal = true"
-      @add-service="handleAddService"
+      @add-service="openAddService"
       @edit-profile="openEditProfile"
       @view-orders="showTabModal('orders')"
       @view-reviews="showTabModal('reviews')"
@@ -36,6 +36,15 @@
       :user="userStore.user"
       @submit="submitProviderProfile"
       @close="showBecomeProviderModal = false"
+    />
+
+    <!-- Create/Edit Service Modal -->
+    <ServiceModal
+      v-if="showServiceModal"
+      :service="currentService"
+      :is-editing="isEditingService"
+      @submit="submitService"
+      @close="closeServiceModal"
     />
 
     <!-- Edit Profile Modal -->
@@ -427,6 +436,7 @@ import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 import UserHeader from '@/components/profile/UserHeader.vue'
 import BecomeProviderModal from '@/components/profile/modals/BecomeProviderModal.vue'
+import ServiceModal from '@/components/profile/modals/ServiceModal.vue'
 import EditProfileModal from '@/components/profile/modals/EditProfileModal.vue'
 import ServiceCard from '@/components/profile/ServiceCard.vue'
 import ServiceDetailModal from '@/components/modals/ServiceDetailModal.vue'
@@ -466,7 +476,10 @@ const userStore = useUserStore()
 
 // ======================== STATE ========================
 const showBecomeProviderModal = ref(false)
+const showServiceModal = ref(false)
 const showEditProfileModal = ref(false)
+const isEditingService = ref(false)
+const currentService = ref<Service | null>(null)
 const activeTabModal = ref<string | null>(null)
 const selectedOrder = ref<Order | null>(null)
 const selectedService = ref<Service | null>(null)
@@ -737,28 +750,46 @@ const submitProviderProfile = (profileData: any) => {
   console.log('✅ Профиль исполнителя создан успешно!', profileData)
 }
 
-const handleAddService = (service: Service) => {
-  const newService: Service = {
-    ...service,
-    id: Date.now()
-  }
-  providerServices.value.push(newService)
-  
-  userStore.addService({
-    name: service.name,
-    serviceName: service.name,
-    description: service.description || '',
-    category: service.category || '',
-    price: service.price,
-    timezone: userStore.providerInfo?.timezone || 'UTC+3',
-    availability: userStore.providerInfo?.availability || {
-      weekdays: true,
-      weekends: false,
-      evenings: true
+const openAddService = () => {
+  isEditingService.value = false
+  currentService.value = null
+  showServiceModal.value = true
+}
+
+const closeServiceModal = () => {
+  showServiceModal.value = false
+  currentService.value = null
+  isEditingService.value = false
+}
+
+const submitService = (service: Service) => {
+  if (isEditingService.value) {
+    const index = providerServices.value.findIndex(s => s.id === service.id)
+    if (index !== -1) {
+      providerServices.value[index] = service
     }
-  })
-  
-  console.log('✅ Услуга добавлена:', service.name)
+  } else {
+    const newService: Service = {
+      ...service,
+      id: Date.now()
+    }
+    providerServices.value.push(newService)
+    
+    userStore.addService({
+      name: service.name,
+      serviceName: service.name,
+      description: service.description || '',
+      category: service.category || '',
+      price: service.price,
+      timezone: userStore.providerInfo?.timezone || 'UTC+3',
+      availability: userStore.providerInfo?.availability || {
+        weekdays: true,
+        weekends: false,
+        evenings: true
+      }
+    })
+  }
+  closeServiceModal()
 }
 
 const handleServiceSave = (service: Service) => {
