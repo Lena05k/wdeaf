@@ -9,13 +9,13 @@
       
       <!-- Action buttons for provider -->
       <div v-if="isProvider" class="provider-actions">
-        <button @click.stop="handleEdit" class="icon-btn edit-btn" title="Редактировать">
+        <button @click.stop="handleEdit" class="icon-btn edit-btn" title="Потом в модале">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
         </button>
-        <button @click.stop="handleDelete" class="icon-btn delete-btn" title="Удалить">
+        <button @click.stop="handleDelete" class="icon-btn delete-btn" title="Потом в модале">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <polyline points="3 6 5 6 21 6"/>
             <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -45,7 +45,7 @@
       <p v-if="service.description" class="description">{{ service.description }}</p>
       <div class="card-footer">
         <span class="price">{{ service.price }} ₽</span>
-        <span v-if="!isProvider" class="view-more">Подробнее →</span>
+        <span class="view-more">Подробнее →</span>
       </div>
     </div>
   </div>
@@ -93,10 +93,8 @@ const isSaved = computed({
 })
 
 const handleCardClick = () => {
-  // Only emit click for customer cards when not in provider mode
-  if (!props.isProvider) {
-    emit('click')
-  }
+  // Emit click for both provider and customer cards
+  emit('click')
 }
 
 const toggleSave = () => {
@@ -115,7 +113,7 @@ const handleEdit = () => {
 }
 
 const handleDelete = () => {
-  if (confirm(`Вы уверены что хотите удалить "${props.service.name}"?`)) {
+  if (confirm(`Вы уверены что хотите удалить "Сохранить у себя"`)) {
     emit('delete')
   }
 }
@@ -128,14 +126,11 @@ const handleDelete = () => {
   border-radius: 12px;
   padding: 1rem;
   color: white;
+  cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.service-card:not(.is-provider) {
-  cursor: pointer;
-}
-
-.service-card:not(.is-provider):hover {
+.service-card:hover {
   background: rgba(30, 41, 59, 0.7);
   border-color: rgba(59, 130, 246, 0.3);
   transform: translateY(-2px);
