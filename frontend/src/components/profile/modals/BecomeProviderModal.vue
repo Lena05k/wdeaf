@@ -35,7 +35,7 @@
               <input
                 v-model="form.name"
                 type="text"
-                placeholder="Например: Иван Петров"
+                :placeholder="`Например: ${userFirstName || 'Иван Петров'}`"
                 class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
               />
               <p v-if="errors.name" class="text-xs text-red-500 mt-1">{{ errors.name }}</p>
@@ -51,6 +51,33 @@
               />
               <p v-if="errors.description" class="text-xs text-red-500 mt-1">{{ errors.description }}</p>
               <p class="text-xs text-gray-500 mt-1">Мин. 20 символов</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold mb-2 text-gray-300">Город</label>
+              <input
+                v-model="form.city"
+                type="text"
+                placeholder="Например: Москва"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
+              />
+              <p v-if="errors.city" class="text-xs text-red-500 mt-1">{{ errors.city }}</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold mb-2 text-gray-300">Страна</label>
+              <select
+                v-model="form.country"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+              >
+                <option value="">Выберите страну</option>
+                <option value="Russia">Россия</option>
+                <option value="Belarus">Беларусь</option>
+                <option value="Kazakhstan">Казахстан</option>
+                <option value="Ukraine">Украина</option>
+                <option value="Other">Другая</option>
+              </select>
+              <p v-if="errors.country" class="text-xs text-red-500 mt-1">{{ errors.country }}</p>
             </div>
 
             <div>
@@ -193,6 +220,8 @@ import { ref, computed } from 'vue'
 interface ProviderForm {
   name: string
   description: string
+  city: string
+  country: string
   categories: string[]
   timezone: string
   availability: {
@@ -202,6 +231,23 @@ interface ProviderForm {
   }
   agreeDataProcessing: boolean
 }
+
+interface Props {
+  user?: {
+    first_name?: string
+    last_name?: string
+  }
+}
+
+const props = withDefaults(defineProps<Props>(), {})
+
+// CRITICAL FIX: defineEmits BEFORE using emit
+const emit = defineEmits<{
+  submit: [data: ProviderForm]
+  close: []
+}>()
+
+const userFirstName = computed(() => props.user?.first_name || '')
 
 const currentStep = ref(1)
 
@@ -217,8 +263,10 @@ const categories = [
 ]
 
 const form = ref<ProviderForm>({
-  name: '',
+  name: userFirstName.value,
   description: '',
+  city: '',
+  country: 'Russia',
   categories: [],
   timezone: 'UTC+3',
   availability: {
@@ -245,6 +293,14 @@ const validateStep1 = (): boolean => {
     errors.value.description = 'Описание обязательно'
   } else if (form.value.description.trim().length < 20) {
     errors.value.description = 'Описание должно быть минимум 20 символов'
+  }
+
+  if (!form.value.city.trim()) {
+    errors.value.city = 'Город обязателен'
+  }
+
+  if (!form.value.country) {
+    errors.value.country = 'Выберите страну'
   }
 
   if (form.value.categories.length === 0) {
@@ -274,6 +330,8 @@ const isStep1Valid = computed(() => {
   return (
     form.value.name.trim().length > 2 &&
     form.value.description.trim().length >= 20 &&
+    form.value.city.trim().length > 0 &&
+    form.value.country.length > 0 &&
     form.value.categories.length > 0
   )
 })
@@ -293,19 +351,13 @@ const toggleCategory = (category: string) => {
 }
 
 const handleSubmit = () => {
-  // Validate step 2
   if (!validateStep2()) {
     return
   }
 
-  // Emit form data to parent
+  // CRITICAL FIX: emit is now properly defined
   emit('submit', form.value)
 }
-
-defineEmits<{
-  submit: [data: ProviderForm]
-  close: []
-}>()
 </script>
 
 <style scoped>
