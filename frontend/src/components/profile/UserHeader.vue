@@ -28,7 +28,7 @@
         </button>
         <button
           v-else
-          @click="$emit('add-service')"
+          @click="openAddServiceModal"
           class="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-semibold py-2.5 rounded-lg transition active:scale-95"
         >
           ➕ Добавить услугу
@@ -302,10 +302,22 @@
         <p class="section-footer">Вы выйдете из своего аккаунта на этом устройстве</p>
       </div>
     </div>
+
+    <!-- ======================== SERVICE MODAL ======================== -->
+    <ServiceModal
+      v-if="showServiceModal"
+      :service="null"
+      :is-editing="false"
+      @submit="handleAddService"
+      @close="showServiceModal = false"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+import ServiceModal from '@/components/profile/modals/ServiceModal.vue'
+
 interface User {
   id: string | number
   first_name: string
@@ -329,9 +341,9 @@ interface Props {
 
 defineProps<Props>()
 
-defineEmits<{
+const emit = defineEmits<{
   'become-provider': []
-  'add-service': []
+  'add-service': [service: any]
   'edit-profile': []
   'stop-being-provider': []
   'view-orders': []
@@ -344,6 +356,17 @@ defineEmits<{
   'view-rating': []
   'logout': []
 }>()
+
+const showServiceModal = ref(false)
+
+const openAddServiceModal = () => {
+  showServiceModal.value = true
+}
+
+const handleAddService = (service: any) => {
+  emit('add-service', service)
+  showServiceModal.value = false
+}
 </script>
 
 <style scoped>
