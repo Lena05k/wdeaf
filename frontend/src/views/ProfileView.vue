@@ -277,9 +277,7 @@
               :key="service.id"
               :service="service"
               :is-provider="true"
-              @click="openServiceDetails(service)"
-              @edit="openEditService(service)"
-              @delete="handleDeleteService(service.id)"
+              @click="openProviderServiceDetail(service)"
             />
           </div>
         </div>
@@ -354,8 +352,19 @@
     <ServiceDetailModal
       :is-open="showSavedServiceDetail"
       :service="selectedSavedServiceForDetail"
+      :is-provider-mode="false"
       @close="closeSavedServiceDetail"
       @contact-provider="handleContactProvider"
+    />
+
+    <!-- Provider Service Detail Modal -->
+    <ServiceDetailModal
+      :is-open="showProviderServiceDetail"
+      :service="selectedProviderServiceForDetail"
+      :is-provider-mode="true"
+      @close="closeProviderServiceDetail"
+      @edit="handleEditService"
+      @delete="handleDeleteProviderService"
     />
 
     <!-- Service Details Modal -->
@@ -477,6 +486,8 @@ const selectedService = ref<Service | null>(null)
 const selectedReview = ref<Review | null>(null)
 const showSavedServiceDetail = ref(false)
 const selectedSavedServiceForDetail = ref<any>(null)
+const showProviderServiceDetail = ref(false)
+const selectedProviderServiceForDetail = ref<any>(null)
 
 // ======================== CUSTOMER DATA ========================
 const customerOrders = ref<Order[]>([
@@ -622,21 +633,27 @@ const providerServices = ref<Service[]>([
     name: 'Web-дизайн сайта',
     price: 15000,
     description: 'Профессиональный дизайн сайта',
-    category: 'Дизайн'
+    category: 'Дизайн',
+    images: ['https://via.placeholder.com/400x300?text=Service+1'],
+    fullDescription: 'Полный дизайн веб-сайта с учетом всех современных тенденций'
   },
   {
     id: 2,
     name: 'Дизайн логотипа',
     price: 3000,
     description: 'Креативные логотипы',
-    category: 'Дизайн'
+    category: 'Дизайн',
+    images: ['https://via.placeholder.com/400x300?text=Service+2'],
+    fullDescription: 'Создание уникального логотипа для вашего бренда'
   },
   {
     id: 3,
     name: 'Мокеты и прототипы',
     price: 8000,
     description: 'Прототипы и макеты интерфейсов',
-    category: 'Дизайн'
+    category: 'Дизайн',
+    images: ['https://via.placeholder.com/400x300?text=Service+3'],
+    fullDescription: 'Интерактивные макеты и прототипы приложений'
   }
 ])
 
@@ -683,6 +700,31 @@ const closeSavedServiceDetail = () => {
 const handleContactProvider = (service: any) => {
   console.log('📞 Связаться с исполнителем:', service.name)
   closeSavedServiceDetail()
+}
+
+const openProviderServiceDetail = (service: any) => {
+  selectedProviderServiceForDetail.value = service
+  showProviderServiceDetail.value = true
+}
+
+const closeProviderServiceDetail = () => {
+  showProviderServiceDetail.value = false
+  selectedProviderServiceForDetail.value = null
+}
+
+const handleEditService = (editedService: any) => {
+  const index = providerServices.value.findIndex(s => s.id === editedService.id)
+  if (index !== -1) {
+    providerServices.value[index] = editedService
+    console.log('✅ Услуга обновлена:', editedService.name)
+  }
+  closeProviderServiceDetail()
+}
+
+const handleDeleteProviderService = (serviceId: string | number) => {
+  providerServices.value = providerServices.value.filter(s => s.id !== serviceId)
+  console.log('🗑️ Услуга удалена')
+  closeProviderServiceDetail()
 }
 
 const openReviewDetails = (review: Review) => {
