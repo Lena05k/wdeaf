@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse, Response
+from fastapi.middleware.cors import CORSMiddleware
 
 from telegram import Update, BotCommand
 from telegram.ext import (
@@ -14,8 +15,9 @@ from telegram.ext import (
     filters,
 )
 
-from config import BOT_TOKEN, WEBHOOK_URL
+from config import BOT_TOKEN, WEBHOOK_URL, ALLOWED_ORIGINS
 from handlers import WdeafHandlers, setup_menu_button
+from auth import router as auth_router
 
 # ============================================================================
 # LOGGING
@@ -94,6 +96,26 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+# ============================================================================
+# CORS MIDDLEWARE
+# ============================================================================
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+logger.info(f"✅ CORS configured for origins: {ALLOWED_ORIGINS}")
+
+# ============================================================================
+# INCLUDE ROUTERS
+# ============================================================================
+
+app.include_router(auth_router)
 
 # ============================================================================
 # ROUTES
