@@ -1,19 +1,21 @@
 <template>
   <div class="profile-view">
-    <!-- User Header (iOS 18 Settings Style) -->
+    <!-- Render based on user role -->
     <UserHeader 
       :user="userStore.user" 
       :is-provider="userStore.isProvider"
       :services="providerServices"
-      :orders-count="userOrders.length"
+      :orders-count="customerOrders.length"
       :reviews-count="userReviews.length"
       :saved-count="savedServices.length"
-      :completed-orders="completedOrders"
+      :incoming-orders-count="incomingOrders.length"
+      :active-orders-count="providerActiveOrders.length"
+      :completed-orders-count="providerCompletedOrders.length"
       :provider-rating="providerRating"
       :provider-reviews="providerReviews"
       :total-earnings="totalEarnings"
       @become-provider="showBecomeProviderModal = true"
-      @add-service="showServiceModal = true"
+      @add-service="openAddService"
       @edit-service="openEditService"
       @delete-service="deleteServiceConfirm"
       @edit-profile="openEditProfile"
@@ -38,6 +40,14 @@
       @submit="submitService"
       @close="closeServiceModal"
     />
+
+    <!-- Edit Profile Modal -->
+    <EditProfileModal
+      v-if="showEditProfileModal"
+      :user="userStore.user"
+      @submit="submitEditProfile"
+      @close="showEditProfileModal = false"
+    />
   </div>
 </template>
 
@@ -47,7 +57,9 @@ import { useUserStore } from '@/stores/userStore'
 import UserHeader from '@/components/profile/UserHeader.vue'
 import BecomeProviderModal from '@/components/profile/modals/BecomeProviderModal.vue'
 import ServiceModal from '@/components/profile/modals/ServiceModal.vue'
+import EditProfileModal from '@/components/profile/modals/EditProfileModal.vue'
 
+// ======================== INTERFACES ========================
 interface Service {
   id: string | number
   name: string
@@ -58,10 +70,13 @@ interface Service {
 
 interface Order {
   id: string | number
-  serviceName: string
+  service: string
   provider: string
+  status: 'pending' | 'active' | 'completed' | 'cancelled'
+  price: number
   date: string
-  status: string
+  customer_id?: string
+  provider_id?: string
   rating?: number
 }
 
@@ -74,31 +89,39 @@ interface Review {
   date: string
 }
 
+// ======================== STORE ========================
 const userStore = useUserStore()
 
 // ======================== STATE ========================
 const showBecomeProviderModal = ref(false)
 const showServiceModal = ref(false)
+const showEditProfileModal = ref(false)
 const isEditingService = ref(false)
 const currentService = ref<Service | null>(null)
 
-// Mock data for regular user
-const userOrders = ref<Order[]>([
+// ======================== CUSTOMER DATA ========================
+// Orders where user is a customer (buyer)
+const customerOrders = ref<Order[]>([
   {
     id: 1,
-    serviceName: 'Уроки английского',
+    service: 'Уроки английского',
     provider: 'Джон Д.',
-    date: '12 янв 2025',
     status: 'completed',
+    price: 1500,
+    date: '12 янв 2025',
+    customer_id: userStore.user.id,
+    provider_id: 'provider_4',
     rating: 5
   },
   {
     id: 2,
-    serviceName: 'Консультация бухгалтера',
+    service: 'Консультация бухгалтера',
     provider: 'Мария С.',
+    status: 'active',
+    price: 3000,
     date: '8 янв 2025',
-    status: 'completed',
-    rating: 4
+    customer_id: userStore.user.id,
+    provider_id: 'provider_2'
   }
 ])
 
@@ -125,48 +148,141 @@ const savedServices = ref<Service[]>([
   {
     id: 1,
     name: 'Web-дизайн',
-    provider: 'Артем К.',
-    price: 15000,
-    rating: 4.9
-  },
-  {
-    id: 2,
-    name: 'Пошив платья',
-    provider: 'Анна Т.',
-    price: 5000,
-    rating: 4.8
-  }
-])
-
-// Provider services
-const providerServices = ref<Service[]>([
-  {
-    id: 1,
-    name: 'Web-дизайн сайта',
     price: 15000,
     description: 'Профессиональный дизайн сайта'
   },
   {
     id: 2,
+    name: 'Пошив платья',
+    price: 5000,
+    description: 'Изготовление платьев по заказу'
+  }
+])
+
+// ======================== PROVIDER DATA ========================
+// Orders where user is a provider (seller)
+const incomingOrders = ref<Order[]>([
+  {
+    id: 101,
+    service: 'Веб-дизайн сайта',
+    provider: 'Мне',
+    status: 'pending',
+    price: 15000,
+    date: '25 янв 2025, 12:45',
+    customer_id: 'customer_1',
+    provider_id: userStore.user.id
+  },
+  {
+    id: 102,
+    service: 'Дизайн логотипа',
+    provider: 'Мне',
+    status: 'pending',
+    price: 3000,
+    date: '24 янв 2025, 18:30',
+    customer_id: 'customer_2',
+    provider_id: userStore.user.id
+  }
+])
+
+const providerActiveOrders = ref<Order[]>([
+  {
+    id: 201,
+    service: 'Дизайн интерфейса',
+    provider: 'Мне',
+    status: 'active',
+    price: 8000,
+    date: '20 янв 2025',
+    customer_id: 'customer_3',
+    provider_id: userStore.user.id
+  }
+])
+
+const providerCompletedOrders = ref<Order[]>([
+  {
+    id: 301,
+    service: 'Создание логотипа',
+    provider: 'Мне',
+    status: 'completed',
+    price: 5000,
+    date: '15 янв 2025',
+    customer_id: 'customer_4',
+    provider_id: userStore.user.id,
+    rating: 5
+  },
+  {
+    id: 302,
+    service: 'Макеты для мобильного',
+    provider: 'Мне',
+    status: 'completed',
+    price: 7000,
+    date: '10 янв 2025',
+    customer_id: 'customer_5',
+    provider_id: userStore.user.id,
+    rating: 4
+  }
+])
+
+const providerServices = ref<Service[]>([
+  {
+    id: 1,
+    name: 'Web-дизайн сайта',
+    price: 15000,
+    description: 'Профессиональный дизайн сайта',
+    category: 'Дизайн'
+  },
+  {
+    id: 2,
     name: 'Дизайн логотипа',
     price: 3000,
-    description: 'Креативные логотипы'
+    description: 'Креативные логотипы',
+    category: 'Дизайн'
   },
   {
     id: 3,
     name: 'Мокеты и прототипы',
     price: 8000,
-    description: 'Низковерные прототипы'
+    description: 'Прототипы и макеты интерфейсов',
+    category: 'Дизайн'
   }
 ])
 
-// Provider stats
-const completedOrders = ref(28)
+// Provider statistics
+const completedOrders = computed(() => providerCompletedOrders.value.length)
 const providerRating = ref(4.9)
 const providerReviews = ref(124)
 const totalEarnings = ref(425000)
 
 // ======================== METHODS ========================
+
+/**
+ * КРИТИЧНОЕ ИСПРАВЛЕНИЕ: Правильное сохранение профиля провайдера
+ * Раньше: userStore.isProvider = true (прямая запись)
+ * Теперь: userStore.setProviderInfo({...}) (через метод store)
+ */
+const submitProviderProfile = (profileData: any) => {
+  // Передаем полные данные в store
+  userStore.setProviderInfo({
+    serviceName: profileData.name || 'Мои услуги',
+    description: profileData.description,
+    categories: profileData.categories,
+    price: 0, // Будет задано при создании услуги
+    timezone: profileData.timezone,
+    availability: profileData.availability,
+    maxConcurrentOrders: 5
+  })
+
+  showBecomeProviderModal.value = false
+  
+  // Можно добавить toast уведомление
+  console.log('✅ Профиль исполнителя создан успешно!', profileData)
+}
+
+const openAddService = () => {
+  isEditingService.value = false
+  currentService.value = null
+  showServiceModal.value = true
+}
+
 const openEditService = (service: Service) => {
   isEditingService.value = true
   currentService.value = JSON.parse(JSON.stringify(service))
@@ -181,14 +297,33 @@ const closeServiceModal = () => {
 
 const submitService = (service: Service) => {
   if (isEditingService.value) {
-    // Обновить услугу
+    // Update existing service
     const index = providerServices.value.findIndex(s => s.id === service.id)
     if (index !== -1) {
       providerServices.value[index] = service
     }
   } else {
-    // Добавить новую
-    providerServices.value.push({ ...service, id: Date.now() })
+    // Add new service
+    const newService: Service = {
+      ...service,
+      id: Date.now()
+    }
+    providerServices.value.push(newService)
+    
+    // Also add to userStore
+    userStore.addService({
+      name: service.name,
+      serviceName: service.name,
+      description: service.description || '',
+      category: service.category || '',
+      price: service.price,
+      timezone: userStore.providerInfo?.timezone || 'UTC+3',
+      availability: userStore.providerInfo?.availability || {
+        weekdays: true,
+        weekends: false,
+        evenings: true
+      }
+    })
   }
   closeServiceModal()
 }
@@ -196,24 +331,29 @@ const submitService = (service: Service) => {
 const deleteServiceConfirm = (serviceId: string | number) => {
   if (confirm('Вы уверены? Услуга будет удалена.')) {
     providerServices.value = providerServices.value.filter(s => s.id !== serviceId)
+    userStore.deleteService(serviceId)
   }
 }
 
-const submitProviderProfile = (profileData: any) => {
-  // Сохранить профиль исполнителя
-  userStore.isProvider = true
-  showBecomeProviderModal.value = false
-  console.log('Профиль исполнителя сохранен:', profileData)
+const openEditProfile = () => {
+  showEditProfileModal.value = true
 }
 
-const openEditProfile = () => {
-  console.log('Открыть редактор профиля')
+const submitEditProfile = (profileData: any) => {
+  userStore.setUser({
+    ...userStore.user,
+    first_name: profileData.first_name,
+    username: profileData.username
+  })
+  showEditProfileModal.value = false
+  console.log('✅ Профиль обновлен')
 }
 
 const handleLogout = () => {
-  if (confirm('Вы суре что выходите?')) {
-    // Логика выхода
-    console.log('Выход')
+  if (confirm('Вы уверены что выходите?')) {
+    userStore.logout()
+    console.log('👋 Выход из аккаунта')
+    // Redirect to login/home would happen here
   }
 }
 </script>
