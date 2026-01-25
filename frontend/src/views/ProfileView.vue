@@ -55,7 +55,8 @@
       @close="showEditProfileModal = false"
     />
 
-    <!-- Tab Content Modals -->
+    <!-- ======================== TAB MODALS ======================== -->
+
     <!-- Orders Modal (Customer) -->
     <div v-if="activeTabModal === 'orders'" class="modal-overlay" @click="closeTabModal">
       <div class="modal-content" @click.stop>
@@ -140,21 +141,15 @@
             <p>Нет сохраненных услуг</p>
           </div>
           <div v-else class="items-list">
-            <div 
+            <ServiceCard
               v-for="service in savedServices" 
-              :key="service.id" 
-              class="item-card"
+              :key="service.id"
+              :service="service"
+              :is-saved="true"
               @click="openServiceDetails(service)"
-              role="button"
-              tabindex="0"
-            >
-              <h3>{{ service.name }}</h3>
-              <p>{{ service.description }}</p>
-              <p><strong>Цена:</strong> {{ service.price }} ₽</p>
-              <div class="card-footer">
-                <span class="view-more">Подробно →</span>
-              </div>
-            </div>
+              @save="handleServiceSave(service)"
+              @unsave="handleServiceUnsave(service)"
+            />
           </div>
         </div>
       </div>
@@ -277,22 +272,15 @@
             <p>Нет услуг</p>
           </div>
           <div v-else class="items-list">
-            <div 
+            <ServiceCard
               v-for="service in providerServices" 
-              :key="service.id" 
-              class="item-card"
+              :key="service.id"
+              :service="service"
+              :is-provider="true"
               @click="openServiceDetails(service)"
-              role="button"
-              tabindex="0"
-            >
-              <h3>{{ service.name }}</h3>
-              <p>{{ service.description }}</p>
-              <p><strong>Цена:</strong> {{ service.price }} ₽</p>
-              <p><strong>Категория:</strong> {{ service.category }}</p>
-              <div class="card-footer">
-                <span class="view-more">Подробно →</span>
-              </div>
-            </div>
+              @edit="openEditService(service)"
+              @delete="handleDeleteService(service.id)"
+            />
           </div>
         </div>
       </div>
@@ -358,11 +346,6 @@
             <p class="detail-label">📄 Описание заказа</p>
             <p class="detail-description">{{ selectedOrder.service }} - полная реализация высококачественных услуг.</p>
           </div>
-
-          <div class="detail-actions">
-            <button class="btn btn-primary">Оставить результат</button>
-            <button class="btn btn-secondary">Отменить</button>
-          </div>
         </div>
       </div>
     </div>
@@ -391,11 +374,6 @@
           <div class="detail-section mt-4">
             <p class="detail-label">📄 Описание</p>
             <p class="detail-description">{{ selectedService.description }}</p>
-          </div>
-
-          <div class="detail-actions">
-            <button class="btn btn-primary">Оставить заказ</button>
-            <button class="btn btn-secondary">Открыть чат</button>
           </div>
         </div>
       </div>
@@ -430,10 +408,6 @@
             <p class="detail-label">📄 Ваш отзыв</p>
             <p class="detail-description">{{ selectedReview.text }}</p>
           </div>
-
-          <div class="detail-actions">
-            <button class="btn btn-secondary">Основное</button>
-          </div>
         </div>
       </div>
     </div>
@@ -447,6 +421,7 @@ import UserHeader from '@/components/profile/UserHeader.vue'
 import BecomeProviderModal from '@/components/profile/modals/BecomeProviderModal.vue'
 import ServiceModal from '@/components/profile/modals/ServiceModal.vue'
 import EditProfileModal from '@/components/profile/modals/EditProfileModal.vue'
+import ServiceCard from '@/components/profile/ServiceCard.vue'
 
 // ======================== INTERFACES ========================
 interface Service {
@@ -493,7 +468,6 @@ const selectedService = ref<Service | null>(null)
 const selectedReview = ref<Review | null>(null)
 
 // ======================== CUSTOMER DATA ========================
-// Orders where user is a customer (buyer)
 const customerOrders = ref<Order[]>([
   {
     id: 1,
@@ -542,18 +516,19 @@ const savedServices = ref<Service[]>([
     id: 1,
     name: 'Web-дизайн',
     price: 15000,
-    description: 'Профессиональный дизайн сайта'
+    description: 'Профессиональный дизайн сайта',
+    category: 'Дизайн'
   },
   {
     id: 2,
     name: 'Пошив платья',
     price: 5000,
-    description: 'Изготовление платьев по заказу'
+    description: 'Изготовление платьев по заказу',
+    category: 'Одежда'
   }
 ])
 
 // ======================== PROVIDER DATA ========================
-// Orders where user is a provider (seller)
 const incomingOrders = ref<Order[]>([
   {
     id: 101,
@@ -639,7 +614,6 @@ const providerServices = ref<Service[]>([
   }
 ])
 
-// Provider statistics
 const completedOrders = computed(() => providerCompletedOrders.value.length)
 const providerRating = ref(4.9)
 const providerReviews = ref(124)
@@ -678,9 +652,6 @@ const closeReviewDetails = () => {
   selectedReview.value = null
 }
 
-/**
- * КРИТИЧНОЕ ИСПРАВЛЕНИЕ: Правильное сохранение профиля провайдера
- */
 const submitProviderProfile = (profileData: any) => {
   userStore.setProviderInfo({
     serviceName: profileData.name || 'Мои услуги',
@@ -744,11 +715,21 @@ const submitService = (service: Service) => {
   closeServiceModal()
 }
 
-const deleteServiceConfirm = (serviceId: string | number) => {
-  if (confirm('Вы уверены? Услуга будет удалена.')) {
-    providerServices.value = providerServices.value.filter(s => s.id !== serviceId)
-    userStore.deleteService(serviceId)
+const handleDeleteService = (serviceId: string | number) => {
+  providerServices.value = providerServices.value.filter(s => s.id !== serviceId)
+  userStore.deleteService(serviceId)
+}
+
+const handleServiceSave = (service: Service) => {
+  console.log('❤️ Услуга сохранена:', service.name)
+}
+
+const handleServiceUnsave = (service: Service) => {
+  const index = savedServices.value.findIndex(s => s.id === service.id)
+  if (index !== -1) {
+    savedServices.value.splice(index, 1)
   }
+  console.log('♥ Услуга удалена из сохраненных:', service.name)
 }
 
 const openEditProfile = () => {
@@ -970,8 +951,7 @@ const handleLogout = () => {
   color: white;
 }
 
-.detail-category,
-.detail-rating {
+.detail-category {
   margin: 0.5rem 0 0 0;
   font-size: 0.875rem;
   color: #94a3b8;
@@ -1047,43 +1027,42 @@ const handleLogout = () => {
   border-radius: 8px;
 }
 
-.detail-actions {
-  display: flex;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.btn {
-  flex: 1;
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 0.9375rem;
+.detail-rating {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.875rem;
+  color: #fbbf24;
   font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.btn-primary {
-  background: linear-gradient(to right, #3b82f6, #2563eb);
-  color: white;
+.rating-display {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding: 2rem;
+  background: rgba(30, 41, 59, 0.5);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
 }
 
-.btn-primary:hover {
-  background: linear-gradient(to right, #2563eb, #1d4ed8);
-  transform: translateY(-2px);
+.rating-big {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #fbbf24;
 }
 
-.btn-secondary {
-  background: rgba(30, 41, 59, 0.7);
+.rating-stats p {
+  margin: 0.5rem 0;
+  color: #e2e8f0;
+}
+
+.rating-stats p:first-child {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.rating-stats p:last-child {
   color: #94a3b8;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-}
-
-.btn-secondary:hover {
-  background: rgba(30, 41, 59, 0.9);
-  color: white;
-  border-color: rgba(148, 163, 184, 0.4);
+  font-size: 0.875rem;
 }
 
 /* Status Badge Styles */
@@ -1149,37 +1128,6 @@ const handleLogout = () => {
   font-size: 0.75rem;
 }
 
-.rating-display {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  padding: 2rem;
-  background: rgba(30, 41, 59, 0.5);
-  border-radius: 12px;
-  border: 1px solid rgba(148, 163, 184, 0.1);
-}
-
-.rating-big {
-  font-size: 3rem;
-  font-weight: bold;
-  color: #fbbf24;
-}
-
-.rating-stats p {
-  margin: 0.5rem 0;
-  color: #e2e8f0;
-}
-
-.rating-stats p:first-child {
-  font-size: 1.125rem;
-  font-weight: 600;
-}
-
-.rating-stats p:last-child {
-  color: #94a3b8;
-  font-size: 0.875rem;
-}
-
 /* Responsive */
 @media (max-width: 640px) {
   .detail-grid {
@@ -1188,10 +1136,6 @@ const handleLogout = () => {
 
   .detail-title {
     font-size: 1.25rem;
-  }
-
-  .detail-actions {
-    flex-direction: column;
   }
 }
 </style>
