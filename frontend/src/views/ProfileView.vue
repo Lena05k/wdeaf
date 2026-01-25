@@ -494,7 +494,9 @@ const selectedReview = ref<Review | null>(null)
 
 // ======================== CUSTOMER DATA ========================
 // Orders where user is a customer (buyer)
-const customerOrders = ref<Order[]>([\n  {\n    id: 1,
+const customerOrders = ref<Order[]>([
+  {
+    id: 1,
     service: 'Уроки английского',
     provider: 'Джон Д.',
     status: 'completed',
