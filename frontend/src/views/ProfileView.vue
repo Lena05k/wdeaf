@@ -55,6 +55,18 @@
       @close="showEditProfileModal = false"
     />
 
+    <!-- Service Detail Modal -->
+    <ServiceDetailModal
+      :is-open="showServiceDetailModal"
+      :service="selectedDetailService"
+      :is-provider="isProviderDetailModal"
+      :is-saved="isServiceSaved(selectedDetailService?.id)"
+      @close="closeServiceDetailModal"
+      @save="handleServiceSave(selectedDetailService)"
+      @unsave="handleServiceUnsave(selectedDetailService)"
+      @edit="openEditService(selectedDetailService)"
+    />
+
     <!-- ======================== TAB MODALS ======================== -->
 
     <!-- Orders Modal (Customer) -->
@@ -146,7 +158,7 @@
               :key="service.id"
               :service="service"
               :is-saved="true"
-              @click="openServiceDetails(service)"
+              @click="openServiceDetail(service, false)"
               @save="handleServiceSave(service)"
               @unsave="handleServiceUnsave(service)"
             />
@@ -277,7 +289,7 @@
               :key="service.id"
               :service="service"
               :is-provider="true"
-              @click="openServiceDetails(service)"
+              @click="openServiceDetail(service, true)"
               @edit="openEditService(service)"
               @delete="handleDeleteService(service.id)"
             />
@@ -350,35 +362,6 @@
       </div>
     </div>
 
-    <!-- Service Details Modal -->
-    <div v-if="selectedService" class="modal-overlay" @click="closeServiceDetails">
-      <div class="modal-content detail-modal" @click.stop>
-        <div class="modal-header">
-          <button @click="closeServiceDetails" class="back-btn">←</button>
-          <h2>Подробно о услуге</h2>
-          <button @click="closeServiceDetails" class="close-btn">✕</button>
-        </div>
-        <div class="modal-body detail-body">
-          <div class="detail-section">
-            <h3 class="detail-title">{{ selectedService.name }}</h3>
-            <p class="detail-category">{{ selectedService.category }}</p>
-          </div>
-
-          <div class="detail-grid">
-            <div class="detail-item">
-              <p class="detail-label">💵 Цена</p>
-              <p class="detail-value price">{{ selectedService.price }} ₽</p>
-            </div>
-          </div>
-
-          <div class="detail-section mt-4">
-            <p class="detail-label">📄 Описание</p>
-            <p class="detail-description">{{ selectedService.description }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Review Details Modal -->
     <div v-if="selectedReview" class="modal-overlay" @click="closeReviewDetails">
       <div class="modal-content detail-modal" @click.stop>
@@ -421,6 +404,7 @@ import UserHeader from '@/components/profile/UserHeader.vue'
 import BecomeProviderModal from '@/components/profile/modals/BecomeProviderModal.vue'
 import ServiceModal from '@/components/profile/modals/ServiceModal.vue'
 import EditProfileModal from '@/components/profile/modals/EditProfileModal.vue'
+import ServiceDetailModal from '@/components/profile/modals/ServiceDetailModal.vue'
 import ServiceCard from '@/components/profile/ServiceCard.vue'
 
 // ======================== INTERFACES ========================
@@ -430,6 +414,11 @@ interface Service {
   price: number
   description?: string
   category?: string
+  provider?: string
+  providerId?: string
+  images?: string[]
+  reviews?: number
+  currentImageIndex?: number
 }
 
 interface Order {
@@ -464,8 +453,12 @@ const isEditingService = ref(false)
 const currentService = ref<Service | null>(null)
 const activeTabModal = ref<string | null>(null)
 const selectedOrder = ref<Order | null>(null)
-const selectedService = ref<Service | null>(null)
 const selectedReview = ref<Review | null>(null)
+
+// Service Detail Modal State
+const showServiceDetailModal = ref(false)
+const selectedDetailService = ref<Service | null>(null)
+const isProviderDetailModal = ref(false)
 
 // ======================== CUSTOMER DATA ========================
 const customerOrders = ref<Order[]>([
@@ -517,14 +510,29 @@ const savedServices = ref<Service[]>([
     name: 'Web-дизайн',
     price: 15000,
     description: 'Профессиональный дизайн сайта',
-    category: 'Дизайн'
+    category: 'Дизайн',
+    provider: 'Дизайн студия',
+    providerId: 'provider_1',
+    images: [
+      'https://via.placeholder.com/400x300?text=Web+Design+1',
+      'https://via.placeholder.com/400x300?text=Web+Design+2',
+      'https://via.placeholder.com/400x300?text=Web+Design+3'
+    ],
+    reviews: 45
   },
   {
     id: 2,
     name: 'Пошив платья',
     price: 5000,
     description: 'Изготовление платьев по заказу',
-    category: 'Одежда'
+    category: 'Одежда',
+    provider: 'Портной Иван',
+    providerId: 'provider_3',
+    images: [
+      'https://via.placeholder.com/400x300?text=Dress+1',
+      'https://via.placeholder.com/400x300?text=Dress+2'
+    ],
+    reviews: 32
   }
 ])
 
@@ -596,21 +604,42 @@ const providerServices = ref<Service[]>([
     name: 'Web-дизайн сайта',
     price: 15000,
     description: 'Профессиональный дизайн сайта',
-    category: 'Дизайн'
+    category: 'Дизайн',
+    provider: 'Мне',
+    providerId: userStore.user.id,
+    images: [
+      'https://via.placeholder.com/400x300?text=My+Web+Design+1',
+      'https://via.placeholder.com/400x300?text=My+Web+Design+2'
+    ],
+    reviews: 12
   },
   {
     id: 2,
     name: 'Дизайн логотипа',
     price: 3000,
     description: 'Креативные логотипы',
-    category: 'Дизайн'
+    category: 'Дизайн',
+    provider: 'Мне',
+    providerId: userStore.user.id,
+    images: [
+      'https://via.placeholder.com/400x300?text=Logo+1',
+      'https://via.placeholder.com/400x300?text=Logo+2',
+      'https://via.placeholder.com/400x300?text=Logo+3'
+    ],
+    reviews: 8
   },
   {
     id: 3,
     name: 'Мокеты и прототипы',
     price: 8000,
     description: 'Прототипы и макеты интерфейсов',
-    category: 'Дизайн'
+    category: 'Дизайн',
+    provider: 'Мне',
+    providerId: userStore.user.id,
+    images: [
+      'https://via.placeholder.com/400x300?text=Mockup+1'
+    ],
+    reviews: 5
   }
 ])
 
@@ -636,20 +665,28 @@ const closeOrderDetails = () => {
   selectedOrder.value = null
 }
 
-const openServiceDetails = (service: Service) => {
-  selectedService.value = service
-}
-
-const closeServiceDetails = () => {
-  selectedService.value = null
-}
-
 const openReviewDetails = (review: Review) => {
   selectedReview.value = review
 }
 
 const closeReviewDetails = () => {
   selectedReview.value = null
+}
+
+const openServiceDetail = (service: Service, isProvider: boolean) => {
+  selectedDetailService.value = service
+  isProviderDetailModal.value = isProvider
+  showServiceDetailModal.value = true
+}
+
+const closeServiceDetailModal = () => {
+  showServiceDetailModal.value = false
+  selectedDetailService.value = null
+}
+
+const isServiceSaved = (serviceId: string | number | undefined): boolean => {
+  if (!serviceId) return false
+  return savedServices.value.some(s => s.id === serviceId)
 }
 
 const submitProviderProfile = (profileData: any) => {
@@ -673,10 +710,12 @@ const openAddService = () => {
   showServiceModal.value = true
 }
 
-const openEditService = (service: Service) => {
+const openEditService = (service: Service | null) => {
+  if (!service) return
   isEditingService.value = true
   currentService.value = JSON.parse(JSON.stringify(service))
   showServiceModal.value = true
+  closeServiceDetailModal()
 }
 
 const closeServiceModal = () => {
@@ -720,11 +759,16 @@ const handleDeleteService = (serviceId: string | number) => {
   userStore.deleteService(serviceId)
 }
 
-const handleServiceSave = (service: Service) => {
+const handleServiceSave = (service: Service | null) => {
+  if (!service) return
+  if (!isServiceSaved(service.id)) {
+    savedServices.value.push(service)
+  }
   console.log('❤️ Услуга сохранена:', service.name)
 }
 
-const handleServiceUnsave = (service: Service) => {
+const handleServiceUnsave = (service: Service | null) => {
+  if (!service) return
   const index = savedServices.value.findIndex(s => s.id === service.id)
   if (index !== -1) {
     savedServices.value.splice(index, 1)
@@ -949,12 +993,6 @@ const handleLogout = () => {
   font-size: 1.5rem;
   font-weight: 600;
   color: white;
-}
-
-.detail-category {
-  margin: 0.5rem 0 0 0;
-  font-size: 0.875rem;
-  color: #94a3b8;
 }
 
 .detail-status {
