@@ -36,6 +36,20 @@ ADMIN_CHAT_ID = os.getenv('ADMIN_CHAT_ID', '0')
 PORT = int(os.getenv('PORT', 8000))
 
 # ============================================================================
+# JWT CONFIGURATION
+# ============================================================================
+
+JWT_SECRET = os.getenv('JWT_SECRET', 'your-super-secret-key-change-in-production')
+JWT_ALGORITHM = os.getenv('JWT_ALGORITHM', 'HS256')
+JWT_EXPIRATION_HOURS = int(os.getenv('JWT_EXPIRATION_HOURS', '24'))
+
+# ============================================================================
+# CORS CONFIGURATION
+# ============================================================================
+
+ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3000').split(',')
+
+# ============================================================================
 # VALIDATION AND DEBUG INFO
 # ============================================================================
 
@@ -58,8 +72,16 @@ if MINI_APP_URL:
 else:
     print("❌ MINI_APP_URL: NOT SET!")
 
+if JWT_SECRET != 'your-super-secret-key-change-in-production':
+    print(f"✅ JWT_SECRET: {JWT_SECRET[:20]}...")
+else:
+    print("⚠️  JWT_SECRET: Using default (CHANGE IN PRODUCTION!)")
+
+print(f"✅ JWT_ALGORITHM: {JWT_ALGORITHM}")
+print(f"✅ JWT_EXPIRATION_HOURS: {JWT_EXPIRATION_HOURS}")
 print(f"✅ PORT: {PORT}")
 print(f"✅ ADMIN_CHAT_ID: {ADMIN_CHAT_ID}")
+print(f"✅ ALLOWED_ORIGINS: {ALLOWED_ORIGINS}")
 
 print("="*70 + "\n")
 
