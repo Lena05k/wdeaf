@@ -5,287 +5,256 @@
       <!-- Avatar -->
       <div class="avatar-container">
         <div class="w-24 h-24 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full flex items-center justify-center text-5xl font-bold text-white shadow-lg">
-          Л
+          {{ user.first_name?.charAt(0).toUpperCase() || 'У' }}
         </div>
       </div>
 
       <!-- Name & Username -->
       <div class="user-info-center">
-        <h1 class="text-2xl font-bold text-white">Лена</h1>
-        <p class="text-sm text-gray-400">@lena_user</p>
-        <p class="text-xs text-blue-400 mt-1.5">✓ Исполнитель</p>
+        <h1 class="text-2xl font-bold text-white">{{ user.first_name }}</h1>
+        <p class="text-sm text-gray-400">@{{ user.username }}</p>
+        <p v-if="isProvider" class="text-xs text-green-400 mt-1.5">✓ Исполнитель</p>
+        <p v-else class="text-xs text-blue-400 mt-1.5">✓ Клиент</p>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex gap-2 w-full px-2">
+        <button
+          v-if="!isProvider"
+          @click="$emit('become-provider')"
+          class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold py-2.5 rounded-lg transition active:scale-95"
+        >
+          💼 Стать исполнителем
+        </button>
+        <button
+          v-else
+          @click="$emit('add-service')"
+          class="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-semibold py-2.5 rounded-lg transition active:scale-95"
+        >
+          ➕ Добавить услугу
+        </button>
+        <button
+          @click="$emit('edit-profile')"
+          class="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2.5 rounded-lg transition active:scale-95"
+        >
+          ⚙️
+        </button>
       </div>
     </div>
 
-    <!-- Settings Sections (iOS 18 style) -->
-    <div class="settings-container">
-      <!-- Мои заказы -->
-      <div class="settings-section">
-        <h2 class="settings-section-title">ИСТОРИЯ</h2>
+    <!-- ======================== CUSTOMER TABS ======================== -->
+    <template v-if="!isProvider">
+      <div class="settings-container">
+        <!-- История заказов -->
+        <div class="settings-section">
+          <h2 class="settings-section-title">ВЫ КУПИЛИ</h2>
 
-        <div class="settings-cell-group">
-          <button
-              @click="showModal('orders')"
-              class="settings-cell border-b border-slate-700"
-          >
-            <div class="cell-icon bg-blue-500">📋</div>
-            <div class="cell-content">
-              <p class="cell-label">Мои заказы</p>
-              <p class="cell-value">{{ orders.length }} активных</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+          <div class="settings-cell-group">
+            <!-- My Orders -->
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-blue-500">📋</div>
+              <div class="cell-content">
+                <p class="cell-label">Мои заказы</p>
+                <p class="cell-value">{{ ordersCount }} заказов</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
 
-          <!-- Reviews -->
-          <button
-              @click="showModal('reviews')"
-              class="settings-cell border-b border-slate-700"
-          >
-            <div class="cell-icon bg-yellow-500">⭐</div>
-            <div class="cell-content">
-              <p class="cell-label">Оставленные отзывы</p>
-              <p class="cell-value">{{ reviews.length }} отзывов</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+            <!-- My Reviews -->
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-yellow-500">⭐</div>
+              <div class="cell-content">
+                <p class="cell-label">Мои отзывы</p>
+                <p class="cell-value">{{ reviewsCount }} отзывов</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
 
-          <!-- Saved Services -->
-          <button
-              @click="showModal('saved')"
-              class="settings-cell"
-          >
-            <div class="cell-icon bg-red-500">❤️</div>
-            <div class="cell-content">
-              <p class="cell-label">Сохраненные услуги</p>
-              <p class="cell-value">{{ savedServices.length }} услуг</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
+            <!-- Saved Services -->
+            <button class="settings-cell">
+              <div class="cell-icon bg-red-500">❤️</div>
+              <div class="cell-content">
+                <p class="cell-label">Сохраненные услуги</p>
+                <p class="cell-value">{{ savedCount }} услуг</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
+    </template>
 
-      <!-- Статистика -->
+    <!-- ======================== PROVIDER TABS ======================== -->
+    <template v-else>
+      <div class="settings-container">
+        <!-- Входящие заказы -->
+        <div class="settings-section">
+          <h2 class="settings-section-title">ЗАКАЗЫ</h2>
+
+          <div class="settings-cell-group">
+            <!-- Incoming Orders -->
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-orange-500">📬</div>
+              <div class="cell-content">
+                <p class="cell-label">Входящие заказы</p>
+                <p class="cell-value">{{ incomingOrdersCount }} новых</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <!-- Active Orders -->
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-blue-500">⚡</div>
+              <div class="cell-content">
+                <p class="cell-label">Активные заказы</p>
+                <p class="cell-value">{{ activeOrdersCount }} в работе</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <!-- Completed Orders -->
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-green-500">✅</div>
+              <div class="cell-content">
+                <p class="cell-label">Завершенные</p>
+                <p class="cell-value">{{ completedOrdersCount }} заказов</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Мои услуги -->
+        <div class="settings-section">
+          <h2 class="settings-section-title">УСЛУГИ</h2>
+
+          <div class="settings-cell-group">
+            <!-- My Services -->
+            <button class="settings-cell">
+              <div class="cell-icon bg-purple-500">📦</div>
+              <div class="cell-content">
+                <p class="cell-label">Мои услуги</p>
+                <p class="cell-value">{{ servicesCount }} услуг</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Статистика исполнителя -->
+        <div class="settings-section">
+          <h2 class="settings-section-title">МОЙЯ РЕПУТАЦИЯ</h2>
+
+          <div class="settings-cell-group">
+            <!-- Rating -->
+            <button class="settings-cell border-b border-slate-700">
+              <div class="cell-icon bg-yellow-500">⭐</div>
+              <div class="cell-content">
+                <p class="cell-label">Рейтинг</p>
+                <p class="cell-value">{{ providerRating }}/5 ({{ providerReviews }} отзывов)</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+
+            <!-- Earnings -->
+            <button class="settings-cell">
+              <div class="cell-icon bg-green-500">💰</div>
+              <div class="cell-content">
+                <p class="cell-label">Заработок</p>
+                <p class="cell-value">{{ totalEarnings.toLocaleString() }} ₽</p>
+              </div>
+              <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </template>
+
+    <!-- ======================== FOOTER (Both Roles) ======================== -->
+    <div class="settings-container">
+      <!-- Settings -->
       <div class="settings-section">
-        <h2 class="settings-section-title">СТАТИСТИКА</h2>
+        <h2 class="settings-section-title">ДРУГОЕ</h2>
 
         <div class="settings-cell-group">
-          <button
-              @click="showModal('analytics')"
-              class="settings-cell border-b border-slate-700"
-          >
-            <div class="cell-icon bg-purple-500">📊</div>
-            <div class="cell-content">
-              <p class="cell-label">Аналитика</p>
-              <p class="cell-value">425,000 ₽ доход</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-
-          <button
-              @click="showModal('notifications')"
-              class="settings-cell"
-          >
-            <div class="cell-icon bg-orange-500">🔔</div>
+          <button class="settings-cell-danger">
+            <div class="cell-icon-danger">🔔</div>
             <div class="cell-content">
               <p class="cell-label">Уведомления</p>
-              <p class="cell-value">Включены</p>
+              <p class="cell-value" style="color: rgba(148, 163, 184, 0.7)">Включены</p>
             </div>
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
           </button>
         </div>
       </div>
 
-      <!-- Профиль -->
-      <div class="settings-section">
-        <h2 class="settings-section-title">ПРОФИЛЬ</h2>
-
-        <div class="settings-cell-group">
-          <button
-              @click="showModal('edit-profile')"
-              class="settings-cell"
-          >
-            <div class="cell-icon bg-blue-500">✏️</div>
-            <div class="cell-content">
-              <p class="cell-label">Редактировать профиль</p>
-              <p class="cell-value">Лена</p>
-            </div>
-            <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-        </div>
-      </div>
-
-      <!-- Danger Zone -->
+      <!-- Danger Zone: Logout -->
       <div class="settings-section">
         <div class="settings-cell-group">
           <button
-              @click="handleLogout"
-              class="settings-cell-danger"
+            @click="$emit('logout')"
+            class="settings-cell-danger hover:bg-red-950/50"
           >
-            <div class="cell-icon-danger">🚪</div>
+            <div class="cell-icon-danger bg-red-500/20">🚪</div>
             <div class="cell-content">
               <p class="cell-label-danger">Выйти из аккаунта</p>
             </div>
           </button>
         </div>
-        <p class="section-footer">Вы выдете из своего аккаунта на этом устройстве</p>
+        <p class="section-footer">Вы выйдете из своего аккаунта на этом устройстве</p>
       </div>
     </div>
-
-    <!-- MODALS -->
-
-    <!-- Orders Modal -->
-    <Modal v-if="activeModal === 'orders'" title="📋 Мои заказы" @close="closeModal">
-      <OrdersTab :orders="orders" />
-    </Modal>
-
-    <!-- Reviews Modal -->
-    <Modal v-if="activeModal === 'reviews'" title="⭐ Оставленные отзывы" @close="closeModal">
-      <ReviewsTab :reviews="reviews" />
-    </Modal>
-
-    <!-- Saved Services Modal -->
-    <Modal v-if="activeModal === 'saved'" title="❤️ Сохраненные услуги" @close="closeModal">
-      <SavedTab :services="savedServices" />
-    </Modal>
-
-    <!-- Analytics Modal -->
-    <Modal v-if="activeModal === 'analytics'" title="📊 Аналитика" @close="closeModal">
-      <AnalyticsTab />
-    </Modal>
-
-    <!-- Notifications Modal -->
-    <Modal v-if="activeModal === 'notifications'" title="🔔 Уведомления" @close="closeModal">
-      <NotificationsTab />
-    </Modal>
-
-    <!-- Edit Profile Modal -->
-    <Modal v-if="activeModal === 'edit-profile'" title="✏️ Редактировать профиль" @close="closeModal">
-      <div class="space-y-4">
-        <div>
-          <label class="block text-sm text-gray-400 mb-2">Имя</label>
-          <input v-model="userData.first_name" type="text" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" />
-        </div>
-        <div>
-          <label class="block text-sm text-gray-400 mb-2">Юзернейм</label>
-          <input v-model="userData.username" type="text" class="w-full bg-slate-700 border border-slate-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500" />
-        </div>
-        <button @click="saveProfile" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 rounded-lg transition">
-          Сохранить
-        </button>
-      </div>
-    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import Modal from '@/components/common/Modal.vue'
-import OrdersTab from '@/components/profile/OrdersTab.vue'
-import ReviewsTab from '@/components/profile/ReviewsTab.vue'
-import SavedTab from '@/components/profile/SavedTab.vue'
-import AnalyticsTab from '@/components/profile/AnalyticsTab.vue'
-import NotificationsTab from '@/components/profile/NotificationsTab.vue'
-
-const activeModal = ref<string | null>(null)
-
-const userData = ref({
-  first_name: 'Лена',
-  username: 'lena_user',
-  id: '123456789'
-})
-
-// Mock data
-const orders = ref([
-  {
-    id: 1,
-    serviceName: 'Уроки английского',
-    provider: 'Джон Д.',
-    date: '12 янв 2025',
-    status: 'completed'
-  },
-  {
-    id: 2,
-    serviceName: 'Консультация бухгалтера',
-    provider: 'Мария С.',
-    date: '8 янв 2025',
-    status: 'active'
-  },
-  {
-    id: 3,
-    serviceName: 'Web-дизайн',
-    provider: 'Артем К.',
-    date: '5 янв 2025',
-    status: 'completed'
-  }
-])
-
-const reviews = ref([
-  {
-    id: 1,
-    serviceName: 'Уроки английского',
-    provider: 'Джон Д.',
-    text: 'Отличный преподаватель, очень доволен результатом! Рекомендую всем.',
-    rating: 5,
-    date: '12 янв 2025'
-  },
-  {
-    id: 2,
-    serviceName: 'Консультация бухгалтера',
-    provider: 'Мария С.',
-    text: 'Помогла разобраться с налогами, спасибо!',
-    rating: 5,
-    date: '8 янв 2025'
-  }
-])
-
-const savedServices = ref([
-  {
-    id: 1,
-    name: 'Web-дизайн сайта',
-    provider: 'Артем К.',
-    price: 15000,
-    rating: 4.9
-  },
-  {
-    id: 2,
-    name: 'Продвижение в соцсетях',
-    provider: 'Виктория Л.',
-    price: 5000,
-    rating: 4.8
-  }
-])
-
-// Functions
-const showModal = (modal: string) => {
-  console.log('📱 Открываю модаль:', modal)
-  activeModal.value = modal
+interface User {
+  id: string | number
+  first_name: string
+  username?: string
+  email?: string
 }
 
-const closeModal = () => {
-  console.log('❌ Закрываю модаль')
-  activeModal.value = null
+interface Props {
+  user: User
+  isProvider: boolean
+  ordersCount?: number
+  reviewsCount?: number
+  savedCount?: number
+  incomingOrdersCount?: number
+  activeOrdersCount?: number
+  completedOrdersCount?: number
+  servicesCount?: number
+  providerRating?: number
+  providerReviews?: number
+  totalEarnings?: number
 }
 
-const saveProfile = () => {
-  alert('✅ Профиль сохранен!')
-  closeModal()
-}
+defineProps<Props>()
 
-const handleLogout = () => {
-  alert('👋 Вы вышли из аккаунта')
-}
+defineEmits<{
+  'become-provider': []
+  'add-service': []
+  'edit-profile': []
+  'logout': []
+}>()
 </script>
 
 <style scoped>
