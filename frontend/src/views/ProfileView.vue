@@ -4,17 +4,17 @@
     <UserHeader 
       :user="userStore.user" 
       :is-provider="userStore.isProvider"
-      :services="providerServices"
       :orders-count="customerOrders.length"
       :reviews-count="userReviews.length"
       :saved-count="savedServices.length"
       :incoming-orders-count="incomingOrders.length"
       :active-orders-count="providerActiveOrders.length"
       :completed-orders-count="providerCompletedOrders.length"
+      :services-count="providerServices.length"
       :provider-rating="providerRating"
       :provider-reviews="providerReviews"
       @become-provider="showBecomeProviderModal = true"
-      @add-service="openAddService"
+      @add-service="handleAddService"
       @edit-profile="openEditProfile"
       @view-orders="showTabModal('orders')"
       @view-reviews="showTabModal('reviews')"
@@ -36,15 +36,6 @@
       :user="userStore.user"
       @submit="submitProviderProfile"
       @close="showBecomeProviderModal = false"
-    />
-
-    <!-- Create/Edit Service Modal -->
-    <ServiceModal
-      v-if="showServiceModal"
-      :service="currentService"
-      :is-editing="isEditingService"
-      @submit="submitService"
-      @close="closeServiceModal"
     />
 
     <!-- Edit Profile Modal -->
@@ -260,21 +251,26 @@
       </div>
     </div>
 
-    <!-- Services Modal (Provider) with ProviderServicesSection -->
+    <!-- Services Modal (Provider) -->
     <div v-if="activeTabModal === 'services'" class="modal-overlay" @click="closeTabModal">
-      <div class="modal-content services-modal" @click.stop>
+      <div class="modal-content" @click.stop>
         <div class="modal-header">
           <h2>📦 Мои услуги</h2>
           <button @click="closeTabModal" class="close-btn">✕</button>
         </div>
         <div class="modal-body">
-          <ProviderServicesSection
-            :services="providerServices"
-            @add-service="openAddService"
-            @edit-service="openEditService"
-            @delete-service="handleDeleteService"
-            @service-click="openProviderServiceDetail"
-          />
+          <div v-if="providerServices.length === 0" class="empty-state">
+            <p>Нет услуг</p>
+          </div>
+          <div v-else class="items-list">
+            <ServiceCard
+              v-for="service in providerServices" 
+              :key="service.id"
+              :service="service"
+              :is-provider="true"
+              @click="openProviderServiceDetail(service)"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -431,11 +427,9 @@ import { ref, computed } from 'vue'
 import { useUserStore } from '@/stores/userStore'
 import UserHeader from '@/components/profile/UserHeader.vue'
 import BecomeProviderModal from '@/components/profile/modals/BecomeProviderModal.vue'
-import ServiceModal from '@/components/profile/modals/ServiceModal.vue'
 import EditProfileModal from '@/components/profile/modals/EditProfileModal.vue'
 import ServiceCard from '@/components/profile/ServiceCard.vue'
 import ServiceDetailModal from '@/components/modals/ServiceDetailModal.vue'
-import ProviderServicesSection from '@/components/profile/ProviderServicesSection.vue'
 
 // ======================== INTERFACES ========================
 interface Service {
@@ -444,10 +438,6 @@ interface Service {
   price: number
   description?: string
   category?: string
-  orders?: number
-  rating?: number
-  images?: string[]
-  fullDescription?: string
 }
 
 interface Order {
@@ -476,10 +466,7 @@ const userStore = useUserStore()
 
 // ======================== STATE ========================
 const showBecomeProviderModal = ref(false)
-const showServiceModal = ref(false)
 const showEditProfileModal = ref(false)
-const isEditingService = ref(false)
-const currentService = ref<Service | null>(null)
 const activeTabModal = ref<string | null>(null)
 const selectedOrder = ref<Order | null>(null)
 const selectedService = ref<Service | null>(null)
@@ -634,8 +621,6 @@ const providerServices = ref<Service[]>([
     price: 15000,
     description: 'Профессиональный дизайн сайта',
     category: 'Дизайн',
-    orders: 12,
-    rating: 4.9,
     images: ['https://via.placeholder.com/400x300?text=Service+1'],
     fullDescription: 'Полный дизайн веб-сайта с учетом всех современных тенденций'
   },
@@ -645,8 +630,6 @@ const providerServices = ref<Service[]>([
     price: 3000,
     description: 'Креативные логотипы',
     category: 'Дизайн',
-    orders: 28,
-    rating: 5,
     images: ['https://via.placeholder.com/400x300?text=Service+2'],
     fullDescription: 'Создание уникального логотипа для вашего бренда'
   },
@@ -656,8 +639,6 @@ const providerServices = ref<Service[]>([
     price: 8000,
     description: 'Прототипы и макеты интерфейсов',
     category: 'Дизайн',
-    orders: 8,
-    rating: 4.8,
     images: ['https://via.placeholder.com/400x300?text=Service+3'],
     fullDescription: 'Интерактивные макеты и прототипы приложений'
   }
@@ -756,59 +737,28 @@ const submitProviderProfile = (profileData: any) => {
   console.log('✅ Профиль исполнителя создан успешно!', profileData)
 }
 
-const openAddService = () => {
-  isEditingService.value = false
-  currentService.value = null
-  showServiceModal.value = true
-}
-
-const openEditService = (service: Service) => {
-  isEditingService.value = true
-  currentService.value = JSON.parse(JSON.stringify(service))
-  showServiceModal.value = true
-}
-
-const closeServiceModal = () => {
-  showServiceModal.value = false
-  currentService.value = null
-  isEditingService.value = false
-}
-
-const submitService = (service: Service) => {
-  if (isEditingService.value) {
-    const index = providerServices.value.findIndex(s => s.id === service.id)
-    if (index !== -1) {
-      providerServices.value[index] = service
-    }
-  } else {
-    const newService: Service = {
-      ...service,
-      id: Date.now(),
-      orders: 0,
-      rating: 0
-    }
-    providerServices.value.push(newService)
-    
-    userStore.addService({
-      name: service.name,
-      serviceName: service.name,
-      description: service.description || '',
-      category: service.category || '',
-      price: service.price,
-      timezone: userStore.providerInfo?.timezone || 'UTC+3',
-      availability: userStore.providerInfo?.availability || {
-        weekdays: true,
-        weekends: false,
-        evenings: true
-      }
-    })
+const handleAddService = (service: Service) => {
+  const newService: Service = {
+    ...service,
+    id: Date.now()
   }
-  closeServiceModal()
-}
-
-const handleDeleteService = (serviceId: string | number) => {
-  providerServices.value = providerServices.value.filter(s => s.id !== serviceId)
-  userStore.deleteService(serviceId)
+  providerServices.value.push(newService)
+  
+  userStore.addService({
+    name: service.name,
+    serviceName: service.name,
+    description: service.description || '',
+    category: service.category || '',
+    price: service.price,
+    timezone: userStore.providerInfo?.timezone || 'UTC+3',
+    availability: userStore.providerInfo?.availability || {
+      weekdays: true,
+      weekends: false,
+      evenings: true
+    }
+  })
+  
+  console.log('✅ Услуга добавлена:', service.name)
 }
 
 const handleServiceSave = (service: Service) => {
@@ -902,10 +852,6 @@ const handleLogout = () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-}
-
-.modal-content.services-modal {
-  max-height: 95vh;
 }
 
 .modal-content.detail-modal {
