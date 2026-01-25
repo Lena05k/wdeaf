@@ -150,6 +150,13 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // 🔥 НОВОЕ: Убрать роль исполнителя (остаться обычным клиентом)
+  const removeProviderRole = () => {
+    providerInfo.value = null
+    providerServices.value = []
+    console.log('🚪 Provider role removed, now regular customer')
+  }
+
   // Выход
   const logout = () => {
     // Сбрасываем к дефолтному или телеграмм юзеру
@@ -192,6 +199,7 @@ export const useUserStore = defineStore('user', () => {
     updateService,
     deleteService,
     setProviderStatus,
+    removeProviderRole,
     logout
   }
 })
