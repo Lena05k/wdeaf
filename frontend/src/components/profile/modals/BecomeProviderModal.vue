@@ -4,7 +4,7 @@
       <!-- Header -->
       <div class="sticky top-0 bg-gradient-to-b from-slate-800 to-slate-900 border-b border-slate-700 p-4 flex justify-between items-center">
         <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <span>📋</span> Стать исполнителем
+          <span>Стать исполнителем</span>
         </h2>
         <button @click="$emit('close')" class="text-gray-400 hover:text-white text-2xl">
           ✕
@@ -54,30 +54,32 @@
             </div>
 
             <div>
-              <label class="block text-sm font-semibold mb-2 text-gray-300">Город</label>
-              <input
-                v-model="form.city"
-                type="text"
-                placeholder="Например: Москва"
-                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
-              />
-              <p v-if="errors.city" class="text-xs text-red-500 mt-1">{{ errors.city }}</p>
-            </div>
-
-            <div>
               <label class="block text-sm font-semibold mb-2 text-gray-300">Страна</label>
               <select
                 v-model="form.country"
-                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
               >
                 <option value="">Выберите страну</option>
-                <option value="Russia">Россия</option>
-                <option value="Belarus">Беларусь</option>
-                <option value="Kazakhstan">Казахстан</option>
-                <option value="Ukraine">Украина</option>
-                <option value="Other">Другая</option>
+                <option v-for="country in countries" :key="country.code" :value="country.code">
+                  {{ country.name }}
+                </option>
               </select>
               <p v-if="errors.country" class="text-xs text-red-500 mt-1">{{ errors.country }}</p>
+            </div>
+
+            <div>
+              <label class="block text-sm font-semibold mb-2 text-gray-300">Город</label>
+              <select
+                v-model="form.city"
+                :disabled="!form.country"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <option value="">{{ form.country ? 'Выберите город' : 'Сначала выберите страну' }}</option>
+                <option v-for="city in filteredCities" :key="city" :value="city">
+                  {{ city }}
+                </option>
+              </select>
+              <p v-if="errors.city" class="text-xs text-red-500 mt-1">{{ errors.city }}</p>
             </div>
 
             <div>
@@ -112,7 +114,7 @@
               <label class="block text-sm font-semibold mb-2 text-gray-300">Часовой пояс</label>
               <select
                 v-model="form.timezone"
-                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500"
+                class="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/30"
               >
                 <option value="UTC+3">UTC+3 (Москва)</option>
                 <option value="UTC+4">UTC+4 (Казань)</option>
@@ -155,7 +157,7 @@
 
             <!-- Data Processing Consent -->
             <div class="bg-blue-900/30 border border-blue-700 rounded-lg p-4 space-y-2">
-              <h4 class="font-semibold text-blue-300 text-sm">✓ Обработка данных</h4>
+              <h4 class="font-semibold text-blue-300 text-sm">Обработка данных</h4>
               <label class="flex items-start gap-3 cursor-pointer">
                 <input
                   v-model="form.agreeDataProcessing"
@@ -181,7 +183,7 @@
           @click="currentStep--"
           class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-3 rounded-lg transition active:scale-95"
         >
-          ← Назад
+          Назад
         </button>
         <button
           v-if="currentStep < 2"
@@ -194,7 +196,7 @@
               : 'bg-gray-700 text-gray-400 cursor-not-allowed'
           ]"
         >
-          Далее →
+          Далее
         </button>
         <button
           v-else
@@ -207,7 +209,7 @@
               : 'bg-gray-700 text-gray-400 cursor-not-allowed'
           ]"
         >
-          ✓ Создать профиль
+          Создать профиль
         </button>
       </div>
     </div>
@@ -232,6 +234,11 @@ interface ProviderForm {
   agreeDataProcessing: boolean
 }
 
+interface Country {
+  code: string
+  name: string
+}
+
 interface Props {
   user?: {
     first_name?: string
@@ -251,6 +258,78 @@ const userFirstName = computed(() => props.user?.first_name || '')
 
 const currentStep = ref(1)
 
+// Countries list (popular countries for CIS region and beyond)
+const countries: Country[] = [
+  { code: 'RU', name: 'Россия' },
+  { code: 'BY', name: 'Беларусь' },
+  { code: 'KZ', name: 'Казахстан' },
+  { code: 'UZ', name: 'Узбекистан' },
+  { code: 'TJ', name: 'Таджикистан' },
+  { code: 'TM', name: 'Туркменистан' },
+  { code: 'KG', name: 'Киргизия' },
+  { code: 'MD', name: 'Молдавия' },
+  { code: 'AM', name: 'Армения' },
+  { code: 'AZ', name: 'Азербайджан' },
+  { code: 'GE', name: 'Грузия' },
+  { code: 'UA', name: 'Украина' },
+  { code: 'DE', name: 'Германия' },
+  { code: 'FR', name: 'Франция' },
+  { code: 'IT', name: 'Италия' },
+  { code: 'ES', name: 'Испания' },
+  { code: 'GB', name: 'Великобритания' },
+  { code: 'US', name: 'США' },
+  { code: 'CA', name: 'Канада' },
+  { code: 'AU', name: 'Австралия' },
+  { code: 'CN', name: 'Китай' },
+  { code: 'JP', name: 'Япония' },
+  { code: 'KR', name: 'Южная Корея' },
+  { code: 'TH', name: 'Таиланд' },
+  { code: 'SG', name: 'Сингапур' },
+  { code: 'IN', name: 'Индия' },
+  { code: 'BR', name: 'Бразилия' },
+  { code: 'MX', name: 'Мексика' },
+]
+
+// Cities database by country code
+const citiesByCountry: Record<string, string[]> = {
+  RU: [
+    'Москва', 'Санкт-Петербург', 'Новосибирск', 'Екатеринбург', 'Нижний Новгород',
+    'Казань', 'Челябинск', 'Омск', 'Самара', 'Ростов-на-Дону', 'Уфа', 'Краснодар',
+    'Пермь', 'Воронеж', 'Волгоград', 'Кемерово', 'Тюмень', 'Иркутск', 'Минск', 'Магнитогорск',
+    'Краснояск', 'Сочи', 'Орел', 'Ярославль', 'Вологда', 'Архангельск', 'Мурманск',
+    'Кызыл', 'Якутск', 'Тюмень', 'Салехард', 'Элиста', 'Петрозаводск', 'Сыктывкар',
+    'Нарьян-Мар', 'Улан-Удэ', 'Абакан', 'Чита', 'Благовещенск', 'Магадан', 'Петропавловск-Камчатский',
+    'Владивосток', 'Хабаровск', 'Южно-Сахалинск'
+  ],
+  BY: ['Минск', 'Витебск', 'Гродно', 'Бобруйск', 'Могилев', 'Гомель', 'Брест', 'Полоцк'],
+  KZ: ['Нур-Султан', 'Алматы', 'Кокшетау', 'Актобе', 'Атырау', 'Павлодар', 'Петропавловск', 'Уральск', 'Тараз', 'Туркестан'],
+  UZ: ['Ташкент', 'Самарканд', 'Бухара', 'Чирчик', 'Ясабай', 'Каши', 'Кокан', 'Гюлистан', 'Сырдарья'],
+  TJ: ['Душанбе', 'Худжанд', 'Куляб', 'Хорог', 'Турсунзода'],
+  TM: ['Ашхабад', 'Туркменабат', 'Туркменский', 'Балканабат'],
+  KG: ['Бишкек', 'Ош', 'Жалал-Абад', 'Каракол', 'Нарын', 'Талас', 'Токмок', 'Замын-Уд'],
+  MD: ['Кишинев', 'Бельцы', 'Тирасполь', 'Бендеры'],
+  AM: ['Ереван', 'Гюмри', 'Ванадзор', 'Аргавад'],
+  AZ: ['Баку', 'Гянджа', 'Шеки', 'Лянкаран', 'Куба'],
+  GE: ['Тбилиси', 'Кутаиси', 'Батуми', 'Zugdidi'],
+  UA: ['Киев', 'Харьков', 'Одесса', 'Днепропетровск', 'Донецк', 'Львов', 'Луганск', 'Крымск'],
+  DE: ['Берлин', 'Мюнхен', 'Кельн', 'Франкфурт', 'Гамбург', 'Дюссельдорф', 'Дортмунд', 'Эссен'],
+  FR: ['Париж', 'Марсель', 'Лион', 'Toulouse', 'Ницца', 'Лилль', 'Bordeaux', 'Лион'],
+  IT: ['Рим', 'Милан', 'Неаполь', 'Турин', 'Палермо', 'Генуя', 'Болонья', 'Флоренция'],
+  ES: ['Мадрид', 'Барселона', 'Валенсия', 'Севилья', 'Бильбао', 'Малага', 'Кордова'],
+  GB: ['Лондон', 'Манчестер', 'Бирмингем', 'Лидс', 'Глазго', 'Ливерпуль', 'Эдинбург'],
+  US: ['Нью-Йорк', 'Лос-Анджелес', 'Чикаго', 'Хьюстон', 'Феникс', 'Филадельфия', 'Сан-Антонио'],
+  CA: ['Торонто', 'Монреаль', 'Ванкувер', 'Калгари', 'Виннипег', 'Квебек'],
+  AU: ['Сидней', 'Мельбурн', 'Брисбен', 'Перт', 'Аделаида', 'Хобарт'],
+  CN: ['Пекин', 'Шанхай', 'Гуанчжоу', 'Чэнду', 'Сиань', 'Шэньчжэнь', 'Тяньцзинь'],
+  JP: ['Токио', 'Осака', 'Киото', 'Йокогама', 'Кобе', 'Саппоро', 'Фукуока'],
+  KR: ['Сеул', 'Пусан', 'Тэгу', 'Инчхон', 'Кванджу', 'Тэджон'],
+  TH: ['Бангкок', 'Чиангмай', 'Паттайя', 'Пхукет', 'Хуахин'],
+  SG: ['Сингапур'],
+  IN: ['Дели', 'Бомбей', 'Бангалор', 'Хайдерабад', 'Колката', 'Ченнай', 'Пуна'],
+  BR: ['Рио-де-Жанейро', 'Сан-Паулу', 'Белу-Оризонти', 'Бразилиа', 'Салвадор', 'Манаус'],
+  MX: ['Мехико', 'Гвадалахара', 'Монтеррей', 'Пуэбла', 'Канкун', 'Плайя-дель-Кармен'],
+}
+
 const categories = [
   'Ремонт',
   'Бизнес',
@@ -266,7 +345,7 @@ const form = ref<ProviderForm>({
   name: userFirstName.value,
   description: '',
   city: '',
-  country: 'Russia',
+  country: 'RU',
   categories: [],
   timezone: 'UTC+3',
   availability: {
@@ -278,6 +357,12 @@ const form = ref<ProviderForm>({
 })
 
 const errors = ref<Record<string, string>>({})
+
+// Filtered cities based on selected country
+const filteredCities = computed(() => {
+  if (!form.value.country) return []
+  return citiesByCountry[form.value.country] || []
+})
 
 // Validation for Step 1
 const validateStep1 = (): boolean => {
