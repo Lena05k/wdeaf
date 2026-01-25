@@ -260,26 +260,21 @@
       </div>
     </div>
 
-    <!-- Services Modal (Provider) -->
+    <!-- Services Modal (Provider) with ProviderServicesSection -->
     <div v-if="activeTabModal === 'services'" class="modal-overlay" @click="closeTabModal">
-      <div class="modal-content" @click.stop>
+      <div class="modal-content services-modal" @click.stop>
         <div class="modal-header">
           <h2>📦 Мои услуги</h2>
           <button @click="closeTabModal" class="close-btn">✕</button>
         </div>
         <div class="modal-body">
-          <div v-if="providerServices.length === 0" class="empty-state">
-            <p>Нет услуг</p>
-          </div>
-          <div v-else class="items-list">
-            <ServiceCard
-              v-for="service in providerServices" 
-              :key="service.id"
-              :service="service"
-              :is-provider="true"
-              @click="openProviderServiceDetail(service)"
-            />
-          </div>
+          <ProviderServicesSection
+            :services="providerServices"
+            @add-service="openAddService"
+            @edit-service="openEditService"
+            @delete-service="handleDeleteService"
+            @service-click="openProviderServiceDetail"
+          />
         </div>
       </div>
     </div>
@@ -440,6 +435,7 @@ import ServiceModal from '@/components/profile/modals/ServiceModal.vue'
 import EditProfileModal from '@/components/profile/modals/EditProfileModal.vue'
 import ServiceCard from '@/components/profile/ServiceCard.vue'
 import ServiceDetailModal from '@/components/modals/ServiceDetailModal.vue'
+import ProviderServicesSection from '@/components/profile/ProviderServicesSection.vue'
 
 // ======================== INTERFACES ========================
 interface Service {
@@ -448,6 +444,10 @@ interface Service {
   price: number
   description?: string
   category?: string
+  orders?: number
+  rating?: number
+  images?: string[]
+  fullDescription?: string
 }
 
 interface Order {
@@ -634,6 +634,8 @@ const providerServices = ref<Service[]>([
     price: 15000,
     description: 'Профессиональный дизайн сайта',
     category: 'Дизайн',
+    orders: 12,
+    rating: 4.9,
     images: ['https://via.placeholder.com/400x300?text=Service+1'],
     fullDescription: 'Полный дизайн веб-сайта с учетом всех современных тенденций'
   },
@@ -643,6 +645,8 @@ const providerServices = ref<Service[]>([
     price: 3000,
     description: 'Креативные логотипы',
     category: 'Дизайн',
+    orders: 28,
+    rating: 5,
     images: ['https://via.placeholder.com/400x300?text=Service+2'],
     fullDescription: 'Создание уникального логотипа для вашего бренда'
   },
@@ -652,6 +656,8 @@ const providerServices = ref<Service[]>([
     price: 8000,
     description: 'Прототипы и макеты интерфейсов',
     category: 'Дизайн',
+    orders: 8,
+    rating: 4.8,
     images: ['https://via.placeholder.com/400x300?text=Service+3'],
     fullDescription: 'Интерактивные макеты и прототипы приложений'
   }
@@ -777,7 +783,9 @@ const submitService = (service: Service) => {
   } else {
     const newService: Service = {
       ...service,
-      id: Date.now()
+      id: Date.now(),
+      orders: 0,
+      rating: 0
     }
     providerServices.value.push(newService)
     
@@ -894,6 +902,10 @@ const handleLogout = () => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.modal-content.services-modal {
+  max-height: 95vh;
 }
 
 .modal-content.detail-modal {
