@@ -3,19 +3,19 @@
     <div class="max-w-md mx-auto px-4 py-2.5 flex items-center justify-between gap-3" role="banner">
       <!-- Logo -->
       <button
-        @click="goHome"
-        @keydown.enter="goHome"
-        @keydown.space="goHome"
-        class="logo-btn flex items-center flex-shrink-0 group"
-        title="На главную"
-        aria-label="WDEAF Главная"
+          @click="goHome"
+          @keydown.enter="goHome"
+          @keydown.space="goHome"
+          class="logo-btn flex items-center flex-shrink-0 group"
+          title="На главную"
+          aria-label="WDEAF Главная"
       >
         <div class="w-8 h-8 flex-shrink-0 transition-transform group-hover:scale-110 group-focus-visible:scale-110">
           <svg
-            viewBox="0 0 220 220"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-            class="w-full h-full"
+              viewBox="0 0 220 220"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              class="w-full h-full"
           >
             <g clip-path="url(#clip0_4001_20)">
               <path d="M1.52588e-05 47.2652C1.52588e-05 21.1613 21.1614 0 47.2652 0L173.306 1.81017e-10C199.41 2.08283e-10 220.571 21.1613 220.571 47.2652L220.571 173.306C220.571 199.41 199.41 220.571 173.306 220.571L47.2652 220.571C21.1614 220.571 1.5259e-05 199.41 1.5259e-05 173.306L1.52588e-05 47.2652Z" fill="#0E1117"/>
@@ -39,19 +39,19 @@
       <!-- Tab Navigation (inline) -->
       <nav class="flex items-center gap-4 flex-1 justify-center" role="tablist">
         <button
-          v-for="tab in tabs"
-          :key="tab.id"
-          role="tab"
-          :aria-selected="currentTab === tab.id"
-          :aria-controls="`panel-${tab.id}`"
-          @click="updateTab(tab.id)"
-          :class="[
+            v-for="tab in tabs"
+            :key="tab.id"
+            role="tab"
+            :aria-selected="currentTab === tab.id"
+            :aria-controls="`panel-${tab.id}`"
+            @click="updateTab(tab.id)"
+            :class="[
             'text-xs font-medium transition-colors px-2 py-1 rounded-md',
             currentTab === tab.id
               ? 'text-blue-600 font-semibold'
               : 'text-gray-600 hover:text-gray-800'
           ]"
-          :title="tab.label"
+            :title="tab.label"
         >
           {{ tab.label }}
         </button>
@@ -59,13 +59,13 @@
 
       <!-- Profile Avatar -->
       <button
-        v-if="userInitials"
-        @click="openProfile"
-        @keydown.enter="openProfile"
-        class="profile-avatar flex-shrink-0"
-        :title="`Профиль ${userName}`"
-        :aria-label="`Профиль пользователя ${userName}`"
-        :style="avatarStyle"
+          v-if="userInitials"
+          @click="openProfile"
+          @keydown.enter="openProfile"
+          class="profile-avatar flex-shrink-0"
+          :title="`Профиль ${userName}`"
+          :aria-label="`Профиль пользователя ${userName}`"
+          :style="avatarStyle"
       >
         <span class="font-bold text-xs">{{ userInitials }}</span>
       </button>

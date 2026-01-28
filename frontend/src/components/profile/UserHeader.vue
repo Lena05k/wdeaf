@@ -24,14 +24,14 @@
           @click="$emit('become-provider')"
           class="flex-1 bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 text-white font-semibold py-2.5 rounded-lg transition active:scale-95"
         >
-          💼 Стать исполнителем
+          Стать исполнителем
         </button>
         <button
           v-else
           @click="$emit('add-service')"
           class="flex-1 bg-gradient-to-r from-green-600 to-green-500 hover:from-green-500 hover:to-green-400 text-white font-semibold py-2.5 rounded-lg transition active:scale-95"
         >
-          ➕ Добавить услугу
+          Добавить услугу
         </button>
         <button
           @click="$emit('edit-profile')"
@@ -51,7 +51,7 @@
 
           <div class="settings-cell-group">
             <!-- My Orders -->
-            <button 
+            <button
               @click="$emit('view-orders')"
               class="settings-cell border-b border-slate-700 hover-cell"
             >
@@ -66,7 +66,7 @@
             </button>
 
             <!-- My Reviews -->
-            <button 
+            <button
               @click="$emit('view-reviews')"
               class="settings-cell border-b border-slate-700 hover-cell"
             >
@@ -81,7 +81,7 @@
             </button>
 
             <!-- Saved Services -->
-            <button 
+            <button
               @click="$emit('view-saved')"
               class="settings-cell hover-cell"
             >
@@ -108,7 +108,7 @@
 
           <div class="settings-cell-group">
             <!-- Incoming Orders -->
-            <button 
+            <button
               @click="$emit('view-incoming-orders')"
               class="settings-cell border-b border-slate-700 hover-cell"
             >
@@ -123,7 +123,7 @@
             </button>
 
             <!-- Active Orders -->
-            <button 
+            <button
               @click="$emit('view-active-orders')"
               class="settings-cell border-b border-slate-700 hover-cell"
             >
@@ -138,7 +138,7 @@
             </button>
 
             <!-- Completed Orders -->
-            <button 
+            <button
               @click="$emit('view-completed-orders')"
               class="settings-cell hover-cell"
             >
@@ -160,7 +160,7 @@
 
           <div class="settings-cell-group">
             <!-- My Services -->
-            <button 
+            <button
               @click="$emit('view-services')"
               class="settings-cell hover-cell"
             >
@@ -182,7 +182,7 @@
 
           <div class="settings-cell-group">
             <!-- Rating -->
-            <button 
+            <button
               @click="$emit('view-rating')"
               class="settings-cell hover-cell"
             >
@@ -204,7 +204,7 @@
 
           <div class="settings-cell-group">
             <!-- My Orders as Customer -->
-            <button 
+            <button
               @click="$emit('view-orders')"
               class="settings-cell border-b border-slate-700 hover-cell"
             >
@@ -219,7 +219,7 @@
             </button>
 
             <!-- My Reviews as Customer -->
-            <button 
+            <button
               @click="$emit('view-reviews')"
               class="settings-cell border-b border-slate-700 hover-cell"
             >
@@ -234,7 +234,7 @@
             </button>
 
             <!-- Saved Services -->
-            <button 
+            <button
               @click="$emit('view-saved')"
               class="settings-cell hover-cell"
             >
