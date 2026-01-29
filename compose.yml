@@ -11,7 +11,7 @@ services:
     ports:
       - "${DOCKER_FRONTEND_PORT:-5173}:5173"
     environment:
-      - VITE_API_URL=http://wdeaf-backend:8000
+      - VITE_API_URL=http://wdeaf-functions:8000
       - VITE_BOT_USERNAME=${VITE_BOT_USERNAME}
       - VITE_MINI_APP_SHORT_NAME=${VITE_MINI_APP_SHORT_NAME}
       - VITE_DEBUG=${VITE_DEBUG:-true}
@@ -19,7 +19,7 @@ services:
       - ./frontend:/app
       - /app/node_modules
     depends_on:
-      - wdeaf-backend
+      - wdeaf-functions
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5173"]
       interval: 30s
@@ -27,30 +27,30 @@ services:
       retries: 3
       start_period: 40s
 
-  wdeaf-backend:
+  wdeaf-functions:
     build:
-      context: ./backend
+      context: ./functions
       dockerfile: Dockerfile
       target: development
-    container_name: wdeaf-backend
+    container_name: wdeaf-functions
     restart: unless-stopped
     ports:
-      - "${DOCKER_BACKEND_PORT:-8000}:8000"
+      - "${DOCKER_FUNCTIONS_PORT:-8000}:8000"
     environment:
-      - FLASK_APP=app.py
+      - FLASK_APP=main.py
       - FLASK_ENV=${FLASK_ENV:-development}
       - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@wdeaf-postgres:5432/${DB_NAME}
       - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
       - REDIS_URL=redis://:${REDIS_PASSWORD}@wdeaf-redis:6379/0
     volumes:
-      - ./backend:/app
+      - ./functions:/app
     depends_on:
       wdeaf-postgres:
         condition: service_healthy
       wdeaf-redis:
         condition: service_started
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/docs"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health" || "exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
