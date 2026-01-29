@@ -5,7 +5,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-      target: development
     volumes:
       - ./frontend:/app
       - /app/node_modules
@@ -18,7 +17,6 @@ services:
     build:
       context: ./functions
       dockerfile: Dockerfile
-      target: development
     volumes:
       - ./functions:/app
     environment:
