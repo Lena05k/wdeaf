@@ -18,6 +18,7 @@ from telegram.ext import (
 from config import BOT_TOKEN, WEBHOOK_URL, ALLOWED_ORIGINS
 from handlers import WdeafHandlers, setup_menu_button
 from auth import router as auth_router
+from database import init_db, close_db
 
 # ============================================================================
 # LOGGING
@@ -70,6 +71,11 @@ async def lifespan(app: FastAPI):
     # -------- startup --------
     logger.info("🚀 Starting bot...")
 
+    # Database
+    await init_db()
+    logger.info("✅ Database initialized")
+
+    # Bot
     await ptb.initialize()
     await setup_bot_commands()
     await setup_menu_button(ptb.bot)
@@ -84,6 +90,7 @@ async def lifespan(app: FastAPI):
 
     await ptb.stop()
     await ptb.shutdown()
+    await close_db()
 
     logger.info("✅ Bot stopped")
 
