@@ -3,8 +3,16 @@
     <form @submit.prevent="handleSignup" class="space-y-4">
       <h2 class="text-2xl font-bold text-center mb-6">Создать аккаунт</h2>
 
-      <!-- First Name Input -->
-      <div class="form-group">
+      <!-- Error -->
+      <div
+        v-if="authStore.error"
+        class="p-3 rounded-lg bg-red-900/30 border border-red-500/50 text-red-300 text-sm"
+      >
+        {{ authStore.error }}
+      </div>
+
+      <!-- First Name -->
+      <div>
         <label for="firstName" class="block text-sm font-medium text-gray-300 mb-2">
           Имя
         </label>
@@ -13,13 +21,29 @@
           v-model="form.firstName"
           type="text"
           placeholder="Иван"
-          class="form-input w-full px-4 py-2 rounded-lg bg-slate-700 border border-blue-500 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          autocomplete="given-name"
+          class="w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
           required
-        >
+        />
       </div>
 
-      <!-- Email Input -->
-      <div class="form-group">
+      <!-- Last Name -->
+      <div>
+        <label for="lastName" class="block text-sm font-medium text-gray-300 mb-2">
+          Фамилия <span class="text-gray-500">(необязательно)</span>
+        </label>
+        <input
+          id="lastName"
+          v-model="form.lastName"
+          type="text"
+          placeholder="Иванов"
+          autocomplete="family-name"
+          class="w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
+        />
+      </div>
+
+      <!-- Email -->
+      <div>
         <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
           Email
         </label>
@@ -28,13 +52,14 @@
           v-model="form.email"
           type="email"
           placeholder="user@example.com"
-          class="form-input w-full px-4 py-2 rounded-lg bg-slate-700 border border-blue-500 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          autocomplete="email"
+          class="w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
           required
-        >
+        />
       </div>
 
-      <!-- Password Input -->
-      <div class="form-group">
+      <!-- Password -->
+      <div>
         <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
           Пароль
         </label>
@@ -43,14 +68,15 @@
           v-model="form.password"
           type="password"
           placeholder="••••••••"
-          class="form-input w-full px-4 py-2 rounded-lg bg-slate-700 border border-blue-500 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          autocomplete="new-password"
+          class="w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
           required
-        >
-        <p class="text-xs text-gray-400 mt-1">Минимум 8 символов</p>
+        />
+        <p class="text-xs text-gray-400 mt-1">Минимум 8 символов, хотя бы 1 цифра</p>
       </div>
 
-      <!-- Confirm Password Input -->
-      <div class="form-group">
+      <!-- Confirm Password -->
+      <div>
         <label for="confirmPassword" class="block text-sm font-medium text-gray-300 mb-2">
           Подтверждение пароля
         </label>
@@ -59,12 +85,16 @@
           v-model="form.confirmPassword"
           type="password"
           placeholder="••••••••"
-          class="form-input w-full px-4 py-2 rounded-lg bg-slate-700 border border-blue-500 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          autocomplete="new-password"
+          class="w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
           required
-        >
+        />
+        <p v-if="passwordMismatch" class="text-xs text-red-400 mt-1">
+          Пароли не совпадают
+        </p>
       </div>
 
-      <!-- Terms Checkbox -->
+      <!-- Terms -->
       <div class="flex items-start">
         <input
           id="terms"
@@ -72,7 +102,7 @@
           type="checkbox"
           class="w-4 h-4 rounded border-blue-500 cursor-pointer mt-1"
           required
-        >
+        />
         <label for="terms" class="ml-2 text-sm text-gray-400 cursor-pointer">
           Я согласен с
           <router-link to="#" class="text-blue-400 hover:text-blue-300">
@@ -81,13 +111,13 @@
         </label>
       </div>
 
-      <!-- Submit Button -->
+      <!-- Submit -->
       <button
         type="submit"
-        :disabled="loading"
-        class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 text-white font-semibold rounded-lg transition"
+        :disabled="authStore.loading || passwordMismatch"
+        class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition"
       >
-        {{ loading ? 'Загрузка...' : 'Зарегистрироваться' }}
+        {{ authStore.loading ? 'Загрузка...' : 'Зарегистрироваться' }}
       </button>
 
       <!-- Links -->
@@ -101,78 +131,40 @@
   </AuthLayout>
 </template>
 
-<script>
+<script setup lang="ts">
+import { reactive, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/authStore'
 import AuthLayout from '../../components/layout/AuthLayout.vue'
 
-export default {
-  name: 'SignupPage',
-  components: {
-    AuthLayout
-  },
-  data() {
-    return {
-      form: {
-        firstName: '',
-        email: '',
-        password: '',
-        confirmPassword: '',
-        terms: false
-      },
-      loading: false,
-      error: ''
-    }
-  },
-  methods: {
-    async handleSignup() {
-      // Валидация
-      if (this.form.password !== this.form.confirmPassword) {
-        this.error = 'Пароли не совпадают';
-        return;
-      }
+const router = useRouter()
+const authStore = useAuthStore()
 
-      if (this.form.password.length < 8) {
-        this.error = 'Пароль должен быть минимум 8 символов';
-        return;
-      }
+const form = reactive({
+  firstName: '',
+  lastName: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+  terms: false,
+})
 
-      this.loading = true;
-      this.error = '';
+const passwordMismatch = computed(
+  () => form.confirmPassword.length > 0 && form.password !== form.confirmPassword,
+)
 
-      try {
-        // Имитация API запроса
-        await new Promise(resolve => setTimeout(resolve, 1500));
+async function handleSignup(): Promise<void> {
+  if (form.password !== form.confirmPassword) return
 
-        // Сохранить данные пользователя
-        localStorage.setItem('authToken', 'mock-token-' + Date.now());
-        localStorage.setItem('user', JSON.stringify({
-          email: this.form.email,
-          firstName: this.form.firstName,
-          id: '123456789'
-        }));
+  const success = await authStore.signup({
+    email: form.email,
+    password: form.password,
+    first_name: form.firstName,
+    last_name: form.lastName || undefined,
+  })
 
-        // Редирект на главную
-        this.$router.push({ name: 'home' });
-      } catch (err) {
-        this.error = 'Ошибка при регистрации. Попробуйте снова.';
-      } finally {
-        this.loading = false;
-      }
-    }
+  if (success) {
+    router.push({ name: 'catalog' })
   }
 }
 </script>
-
-<style scoped>
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-input {
-  transition: all 0.3s ease;
-}
-
-.form-input:focus {
-  border-color: #0055FF;
-  box-shadow: 0 0 0 3px rgba(0, 85, 255, 0.1);
-}
-</style>
