@@ -3,23 +3,32 @@
     <form @submit.prevent="handleLogin" class="space-y-4">
       <h2 class="text-2xl font-bold text-center mb-6">Вход в аккаунт</h2>
 
+      <!-- Error -->
+      <div
+        v-if="authStore.error"
+        class="p-3 rounded-lg bg-red-900/30 border border-red-500/50 text-red-300 text-sm"
+      >
+        {{ authStore.error }}
+      </div>
+
       <!-- Email Input -->
-      <div class="form-group">
+      <div>
         <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
-          Email или username
+          Email
         </label>
         <input
           id="email"
           v-model="form.email"
-          type="text"
+          type="email"
           placeholder="user@example.com"
-          class="form-input w-full px-4 py-2 rounded-lg bg-slate-700 border border-blue-500 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          autocomplete="email"
+          class="w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
           required
-        >
+        />
       </div>
 
       <!-- Password Input -->
-      <div class="form-group">
+      <div>
         <label for="password" class="block text-sm font-medium text-gray-300 mb-2">
           Пароль
         </label>
@@ -28,31 +37,19 @@
           v-model="form.password"
           type="password"
           placeholder="••••••••"
-          class="form-input w-full px-4 py-2 rounded-lg bg-slate-700 border border-blue-500 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          autocomplete="current-password"
+          class="w-full px-4 py-3 rounded-lg bg-slate-700 border border-slate-600 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-transparent transition"
           required
-        >
+        />
       </div>
 
-      <!-- Remember Me -->
-      <div class="flex items-center">
-        <input
-          id="remember"
-          v-model="form.remember"
-          type="checkbox"
-          class="w-4 h-4 rounded border-blue-500 cursor-pointer"
-        >
-        <label for="remember" class="ml-2 text-sm text-gray-400 cursor-pointer">
-          Запомнить меня
-        </label>
-      </div>
-
-      <!-- Submit Button -->
+      <!-- Submit -->
       <button
         type="submit"
-        :disabled="loading"
-        class="w-full py-2 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 text-white font-semibold rounded-lg transition"
+        :disabled="authStore.loading"
+        class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition"
       >
-        {{ loading ? 'Загрузка...' : 'Вход' }}
+        {{ authStore.loading ? 'Загрузка...' : 'Войти' }}
       </button>
 
       <!-- Links -->
@@ -71,65 +68,27 @@
   </AuthLayout>
 </template>
 
-<script>
+<script setup lang="ts">
+import { reactive } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../../stores/authStore'
 import AuthLayout from '../../components/layout/AuthLayout.vue'
 
-export default {
-  name: 'LoginPage',
-  components: {
-    AuthLayout
-  },
-  data() {
-    return {
-      form: {
-        email: '',
-        password: '',
-        remember: false
-      },
-      loading: false,
-      error: ''
-    }
-  },
-  methods: {
-    async handleLogin() {
-      this.loading = true;
-      this.error = '';
+const router = useRouter()
+const authStore = useAuthStore()
 
-      try {
-        // Имитация API запроса
-        await new Promise(resolve => setTimeout(resolve, 1500));
+const form = reactive({
+  email: '',
+  password: '',
+})
 
-        // Сохранить токен
-        localStorage.setItem('authToken', 'mock-token-' + Date.now());
-        localStorage.setItem('user', JSON.stringify({
-          email: this.form.email,
-          id: '123456789',
-          first_name: 'Иван'
-        }));
-
-        // Редирект на главную
-        this.$router.push({ name: 'home' });
-      } catch (err) {
-        this.error = 'Ошибка при входе. Попробуйте снова.';
-      } finally {
-        this.loading = false;
-      }
-    }
+async function handleLogin(): Promise<void> {
+  const success = await authStore.login({
+    email: form.email,
+    password: form.password,
+  })
+  if (success) {
+    router.push({ name: 'catalog' })
   }
 }
 </script>
-
-<style scoped>
-.form-group {
-  margin-bottom: 1rem;
-}
-
-.form-input {
-  transition: all 0.3s ease;
-}
-
-.form-input:focus {
-  border-color: #0055FF;
-  box-shadow: 0 0 0 3px rgba(0, 85, 255, 0.1);
-}
-</style>
