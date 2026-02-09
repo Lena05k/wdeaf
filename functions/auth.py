@@ -1,81 +1,91 @@
 """
 Authentication module for WDEAF
-Handles Telegram Web Apps validation and phone-based authentication
+Handles email/password and phone-based authentication with PostgreSQL
+Telegram auth temporarily disabled for initial rollout
 """
 
+import json
 import logging
-import hmac
 import hashlib
+import hmac
 from datetime import datetime, timedelta
 from typing import Optional
+from urllib.parse import unquote
 
-from fastapi import APIRouter, HTTPException, status
-from pydantic import BaseModel, Field, validator
+from fastapi import APIRouter, Depends, HTTPException, Header, status
+from pydantic import BaseModel, Field, field_validator
 from jwt import encode, decode, InvalidTokenError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import BOT_TOKEN, JWT_SECRET, JWT_ALGORITHM, JWT_EXPIRATION_HOURS
+from database import get_session
+from services.auth_service import AuthServiceDB
 
-logger = logging.getLogger('wdeaf.auth')
-router = APIRouter(prefix='/api/auth', tags=['auth'])
+logger = logging.getLogger("wdeaf.auth")
+router = APIRouter(prefix="/api/auth", tags=["auth"])
+
 
 # ============================================================================
 # PYDANTIC SCHEMAS
 # ============================================================================
 
-class UserSchema(BaseModel):
-    """User response schema"""
-    id: int | str
+class UserResponseSchema(BaseModel):
+    id: int
+    telegram_id: Optional[int] = None
+    email: Optional[str] = None
     first_name: str
     last_name: Optional[str] = None
     username: Optional[str] = None
     phone: Optional[str] = None
+    is_provider: bool = False
+    auth_provider: str = "email"
 
-    class Config:
-        from_attributes = True
+    model_config = {"from_attributes": True}
 
 
 class AuthResponseSchema(BaseModel):
-    """Auth response with token and user"""
     access_token: str
-    token_type: str = 'bearer'
-    user: UserSchema
+    refresh_token: str
+    token_type: str = "bearer"
+    user: UserResponseSchema
 
 
-class TelegramAuthRequest(BaseModel):
-    """Telegram Web App auth request"""
-    init_data: str = Field(..., description='Telegram initData string')
+class EmailLoginRequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=255)
+    password: str = Field(..., min_length=8, max_length=128)
+
+
+class EmailSignupRequest(BaseModel):
+    email: str = Field(..., min_length=5, max_length=255)
+    password: str = Field(..., min_length=8, max_length=128)
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: Optional[str] = Field(None, max_length=100)
+
+    @field_validator("password")
+    @classmethod
+    def validate_password(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters")
+        if not any(c.isdigit() for c in v):
+            raise ValueError("Password must contain at least one digit")
+        return v
 
 
 class PhoneAuthRequest(BaseModel):
-    """Phone authentication request"""
-    phone: str = Field(
-        ...,
-        regex=r'^\+\d{10,15}$',
-        description='Phone number in format +7XXXXXXXXXX'
-    )
+    phone: str = Field(..., pattern=r"^\+\d{10,15}$")
     first_name: str = Field(..., min_length=1, max_length=100)
-    username: Optional[str] = Field(None, min_length=3, max_length=32)
     last_name: Optional[str] = Field(None, max_length=100)
+    username: Optional[str] = Field(None, min_length=3, max_length=32)
 
-    @validator('phone')
+    @field_validator("phone")
+    @classmethod
     def validate_phone(cls, v: str) -> str:
-        """Validate phone number format"""
-        if not v.startswith('+'):
-            raise ValueError('Phone must start with +')
-        if len(v) < 11 or len(v) > 16:
-            raise ValueError('Phone length must be between 11 and 16 characters')
-        return v
-
-    @validator('username')
-    def validate_username(cls, v: Optional[str]) -> Optional[str]:
-        """Validate Telegram username"""
-        if v and not v.replace('_', '').isalnum():
-            raise ValueError('Username can only contain letters, numbers, and underscores')
+        if not v.startswith("+"):
+            raise ValueError("Phone must start with +")
         return v
 
 
 class RefreshTokenRequest(BaseModel):
-    """Refresh token request"""
     refresh_token: str
 
 
@@ -83,374 +93,170 @@ class RefreshTokenRequest(BaseModel):
 # JWT UTILITIES
 # ============================================================================
 
-def create_access_token(user_id: int | str, expires_hours: Optional[int] = None) -> str:
-    """
-    Create JWT access token
-    
-    Args:
-        user_id: User ID
-        expires_hours: Token expiration time in hours (default: JWT_EXPIRATION_HOURS)
-    """
-    if expires_hours is None:
-        expires_hours = JWT_EXPIRATION_HOURS
-
-    expire = datetime.utcnow() + timedelta(hours=expires_hours)
+def create_access_token(
+    user_id: int,
+    expires_hours: Optional[int] = None,
+) -> str:
+    exp = expires_hours or JWT_EXPIRATION_HOURS
     payload = {
-        'sub': str(user_id),
-        'exp': expire,
-        'iat': datetime.utcnow(),
-        'type': 'access'
+        "sub": str(user_id),
+        "exp": datetime.utcnow() + timedelta(hours=exp),
+        "iat": datetime.utcnow(),
+        "type": "access",
     }
+    return encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-    token = encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
-    logger.info(f'✅ Access token created for user {user_id}')
-    return token
+
+def create_refresh_token(user_id: int) -> str:
+    payload = {
+        "sub": str(user_id),
+        "exp": datetime.utcnow() + timedelta(days=30),
+        "iat": datetime.utcnow(),
+        "type": "refresh",
+    }
+    return encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
 
 def decode_token(token: str) -> dict:
-    """
-    Decode and validate JWT token
-    
-    Args:
-        token: JWT token string
-        
-    Returns:
-        Decoded token payload
-        
-    Raises:
-        HTTPException: If token is invalid
-    """
     try:
-        payload = decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
-        return payload
+        return decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except InvalidTokenError as e:
-        logger.error(f'❌ Token decode error: {e}')
+        logger.error(f"❌ Token decode error: {e}")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='Invalid or expired token'
+            detail="Invalid or expired token",
         )
 
 
 # ============================================================================
-# TELEGRAM VALIDATION
+# AUTH DEPENDENCY
 # ============================================================================
 
-def validate_telegram_signature(init_data: str) -> dict:
-    """
-    Validate Telegram Mini App init data signature
-    
-    Based on: https://core.telegram.org/bots/webapps#validating-data-received-from-the-mini-app
-    
-    Args:
-        init_data: Raw init data string from Telegram
-        
-    Returns:
-        Parsed init data dict
-        
-    Raises:
-        HTTPException: If signature is invalid
-    """
-    try:
-        # Parse init_data query string
-        data_check_string_parts = []
-        init_data_pairs = init_data.split('&')
-        init_data_dict = {}
-
-        for pair in init_data_pairs:
-            if '=' not in pair:
-                continue
-            
-            key, value = pair.split('=', 1)
-            init_data_dict[key] = value
-
-            if key != 'hash':
-                data_check_string_parts.append(pair)
-
-        # Sort by key and join
-        data_check_string_parts.sort()
-        data_check_string = '\n'.join(data_check_string_parts)
-
-        # Validate signature
-        secret_key = hmac.new(
-            b'WebAppData',
-            BOT_TOKEN.encode(),
-            hashlib.sha256
-        ).digest()
-
-        received_hash = init_data_dict.get('hash', '')
-        computed_hash = hmac.new(
-            secret_key,
-            data_check_string.encode(),
-            hashlib.sha256
-        ).hexdigest()
-
-        if received_hash != computed_hash:
-            logger.warning('❌ Telegram signature validation failed')
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='Invalid Telegram signature'
-            )
-
-        logger.info('✅ Telegram signature validated')
-        return init_data_dict
-
-    except ValueError as e:
-        logger.error(f'❌ Telegram validation error: {e}')
+async def get_current_user_dep(
+    authorization: Optional[str] = Header(None),
+    session: AsyncSession = Depends(get_session),
+) -> "UserResponseSchema":
+    if not authorization or not authorization.startswith("Bearer "):
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Invalid init data format'
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Missing or invalid authorization header",
         )
 
+    token = authorization.split(" ", 1)[1]
+    payload = decode_token(token)
+    user_id = int(payload["sub"])
 
-# ============================================================================
-# USER DATABASE FUNCTIONS (MOCK)
-# ============================================================================
-# TODO: Replace with actual database calls when DB is set up
+    svc = AuthServiceDB(session)
+    user = await svc.get_user_by_id(user_id)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
 
-# In-memory user storage for development
-USERS_DB: dict = {}
-
-
-def find_or_create_user_telegram(telegram_id: int, user_data: dict) -> dict:
-    """
-    Find or create user from Telegram data
-    
-    Args:
-        telegram_id: Telegram user ID
-        user_data: Telegram user data dict
-        
-    Returns:
-        User dict
-    """
-    user_id = f'tg_{telegram_id}'
-    
-    if user_id not in USERS_DB:
-        USERS_DB[user_id] = {
-            'id': telegram_id,
-            'first_name': user_data.get('first_name', ''),
-            'last_name': user_data.get('last_name'),
-            'username': user_data.get('username'),
-            'phone': None,
-            'created_at': datetime.utcnow().isoformat()
-        }
-        logger.info(f'👤 New user created from Telegram: {user_id}')
-    else:
-        logger.info(f'✅ User found: {user_id}')
-    
-    return USERS_DB[user_id]
-
-
-def find_or_create_user_phone(phone: str, user_data: dict) -> dict:
-    """
-    Find or create user from phone auth
-    
-    Args:
-        phone: Phone number
-        user_data: User data dict (first_name, username, etc.)
-        
-    Returns:
-        User dict
-    """
-    # Use phone as key
-    user_id = f'phone_{phone}'
-    
-    if user_id not in USERS_DB:
-        USERS_DB[user_id] = {
-            'id': phone,
-            'first_name': user_data['first_name'],
-            'last_name': user_data.get('last_name'),
-            'username': user_data.get('username'),
-            'phone': phone,
-            'created_at': datetime.utcnow().isoformat()
-        }
-        logger.info(f'👤 New user created from phone: {user_id}')
-    else:
-        logger.info(f'✅ User found: {user_id}')
-    
-    return USERS_DB[user_id]
+    return UserResponseSchema.model_validate(user)
 
 
 # ============================================================================
 # ROUTES
 # ============================================================================
 
-@router.post('/telegram', response_model=AuthResponseSchema)
-async def telegram_login(request: TelegramAuthRequest) -> AuthResponseSchema:
-    """
-    Authenticate user via Telegram Web App
-    
-    Validates Telegram signature and creates/retrieves user
-    
-    Args:
-        request: TelegramAuthRequest with init_data
-        
-    Returns:
-        AuthResponseSchema with access token and user data
-    """
+@router.post("/signup", response_model=AuthResponseSchema)
+async def email_signup(
+    request: EmailSignupRequest,
+    session: AsyncSession = Depends(get_session),
+) -> AuthResponseSchema:
+    """Register new user with email + password"""
+    svc = AuthServiceDB(session)
+
     try:
-        # Validate Telegram signature
-        init_data = validate_telegram_signature(request.init_data)
-        
-        # Get user data from init_data
-        import json
-        from urllib.parse import unquote
-        
-        user_data_str = init_data.get('user')
-        if not user_data_str:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='No user data in Telegram response'
-            )
-        
-        # Decode user JSON
-        user_data = json.loads(unquote(user_data_str))
-        telegram_id = user_data.get('id')
-        
-        if not telegram_id:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail='No user ID in Telegram response'
-            )
-        
-        # Find or create user
-        user = find_or_create_user_telegram(telegram_id, user_data)
-        
-        # Create token
-        access_token = create_access_token(user['id'])
-        
-        return AuthResponseSchema(
-            access_token=access_token,
-            token_type='bearer',
-            user=UserSchema(**user)
+        user = await svc.register_email_user(
+            email=request.email,
+            password=request.password,
+            first_name=request.first_name,
+            last_name=request.last_name,
         )
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f'❌ Telegram login error: {e}', exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Authentication error'
-        )
+    except ValueError as e:
+        raise HTTPException(status_code=409, detail=str(e))
+
+    return AuthResponseSchema(
+        access_token=create_access_token(user.id),
+        refresh_token=create_refresh_token(user.id),
+        user=UserResponseSchema.model_validate(user),
+    )
 
 
-@router.post('/phone', response_model=AuthResponseSchema)
-async def phone_login(request: PhoneAuthRequest) -> AuthResponseSchema:
-    """
-    Authenticate user via phone number
-    
-    Args:
-        request: PhoneAuthRequest with phone, first_name, and optional username
-        
-    Returns:
-        AuthResponseSchema with access token and user data
-    """
-    try:
-        # Find or create user
-        user = find_or_create_user_phone(
-            request.phone,
-            {
-                'first_name': request.first_name,
-                'last_name': request.last_name,
-                'username': request.username
-            }
-        )
-        
-        # Create token
-        access_token = create_access_token(user['id'])
-        
-        return AuthResponseSchema(
-            access_token=access_token,
-            token_type='bearer',
-            user=UserSchema(**user)
-        )
-        
-    except Exception as e:
-        logger.error(f'❌ Phone login error: {e}', exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Authentication error'
-        )
+@router.post("/login", response_model=AuthResponseSchema)
+async def email_login(
+    request: EmailLoginRequest,
+    session: AsyncSession = Depends(get_session),
+) -> AuthResponseSchema:
+    """Login with email + password"""
+    svc = AuthServiceDB(session)
+    user = await svc.authenticate_email_user(request.email, request.password)
 
-
-@router.post('/refresh', response_model=AuthResponseSchema)
-async def refresh_token(request: RefreshTokenRequest) -> AuthResponseSchema:
-    """
-    Refresh access token
-    
-    Args:
-        request: RefreshTokenRequest with refresh_token
-        
-    Returns:
-        New access token
-    """
-    try:
-        # Decode refresh token
-        payload = decode_token(request.refresh_token)
-        
-        if payload.get('type') != 'refresh':
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail='Invalid token type'
-            )
-        
-        user_id = payload.get('sub')
-        
-        # Create new access token
-        access_token = create_access_token(user_id, expires_hours=1)
-        
-        return AuthResponseSchema(
-            access_token=access_token,
-            token_type='bearer',
-            user=UserSchema(id=user_id, first_name='User')
-        )
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f'❌ Token refresh error: {e}', exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Token refresh failed'
-        )
-
-
-@router.get('/me')
-async def get_current_user(token: str = None) -> UserSchema:
-    """
-    Get current authenticated user
-    
-    Args:
-        token: Authorization token from header
-        
-    Returns:
-        Current user data
-    """
-    if not token:
+    if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail='No token provided'
+            detail="Invalid email or password",
         )
-    
-    try:
-        payload = decode_token(token)
-        user_id = payload.get('sub')
-        
-        # Find user in DB
-        for db_user in USERS_DB.values():
-            if str(db_user['id']) == str(user_id):
-                return UserSchema(**db_user)
-        
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail='User not found'
-        )
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f'❌ Get user error: {e}', exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail='Error retrieving user'
-        )
+
+    return AuthResponseSchema(
+        access_token=create_access_token(user.id),
+        refresh_token=create_refresh_token(user.id),
+        user=UserResponseSchema.model_validate(user),
+    )
+
+
+@router.post("/phone", response_model=AuthResponseSchema)
+async def phone_login(
+    request: PhoneAuthRequest,
+    session: AsyncSession = Depends(get_session),
+) -> AuthResponseSchema:
+    """Login/register via phone number"""
+    svc = AuthServiceDB(session)
+    user = await svc.find_or_create_phone_user(
+        phone=request.phone,
+        first_name=request.first_name,
+        last_name=request.last_name,
+        username=request.username,
+    )
+
+    return AuthResponseSchema(
+        access_token=create_access_token(user.id),
+        refresh_token=create_refresh_token(user.id),
+        user=UserResponseSchema.model_validate(user),
+    )
+
+
+@router.post("/refresh", response_model=AuthResponseSchema)
+async def refresh_token(
+    request: RefreshTokenRequest,
+    session: AsyncSession = Depends(get_session),
+) -> AuthResponseSchema:
+    """Refresh access token using refresh token"""
+    payload = decode_token(request.refresh_token)
+
+    if payload.get("type") != "refresh":
+        raise HTTPException(status_code=401, detail="Invalid token type")
+
+    user_id = int(payload["sub"])
+    svc = AuthServiceDB(session)
+    user = await svc.get_user_by_id(user_id)
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    return AuthResponseSchema(
+        access_token=create_access_token(user.id),
+        refresh_token=create_refresh_token(user.id),
+        user=UserResponseSchema.model_validate(user),
+    )
+
+
+@router.get("/me", response_model=UserResponseSchema)
+async def get_me(
+    current_user: UserResponseSchema = Depends(get_current_user_dep),
+) -> UserResponseSchema:
+    """Get current authenticated user"""
+    return current_user
