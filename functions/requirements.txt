@@ -11,3 +11,5 @@ SQLAlchemy==2.0.23
 asyncpg==0.29.0
 alembic==1.13.0
 bcrypt==4.1.2
+greenlet==3.0.3
+firebase-functions==0.4.2

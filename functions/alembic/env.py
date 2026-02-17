@@ -8,8 +8,13 @@ from alembic import context
 
 from database import Base
 from models import User  # noqa: F401 — регистрируем модели
+from config import DATABASE_URL  # <- ДОБАВЛЕНО
 
 config = context.config
+
+# Переопределяем URL из config.py
+config.set_main_option('sqlalchemy.url', DATABASE_URL)  # <- ДОБАВЛЕНО
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
