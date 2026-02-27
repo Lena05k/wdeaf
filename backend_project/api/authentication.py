@@ -24,29 +24,29 @@ class UsersAuthentication(jwt_authentication.JWTAuthentication):
     def authenticate(self, request):
         # Try to get token from header first
         header = self.get_header(request)
-        
+
         # If no header, try cookie
         if header is None:
             raw_token = request.COOKIES.get(getattr(settings, 'SIMPLE_JWT', {}).get('AUTH_COOKIE', 'access_token'))
         else:
             raw_token = self.get_raw_token(header)
-        
+
         if raw_token is None:
             return None
-        
+
         # Validate token
         validated_token = self.get_validated_token(raw_token)
-        
+
         # Check if token is blacklisted (like MarsStationBackend)
         if self.is_token_blacklisted(raw_token):
             raise rest_exceptions.AuthenticationFailed('Token has been revoked')
-        
+
         # Enforce CSRF check
         enforce_csrf(request)
-        
+
         # Get user from token
         return self.get_user(validated_token), validated_token
-    
+
     def is_token_blacklisted(self, token):
         """Check if token is in Redis blacklist"""
         try:

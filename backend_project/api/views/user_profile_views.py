@@ -10,6 +10,7 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from ..authentication import UsersAuthentication
 from ..serializers import UserUpdateSerializer, UserSerializer
 from ..models import User
 
@@ -20,9 +21,9 @@ class UserUpdateView(APIView):
     """
     Update user profile
     Allows users to update their own profile information
-    Uses JWT authentication (no CSRF required)
+    Uses JWT authentication with CSRF check (like MarsStationBackend)
     """
-    authentication_classes = []  # JWT via header, no CSRF
+    authentication_classes = [UsersAuthentication]
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
@@ -90,9 +91,9 @@ class UserDeleteView(APIView):
     """
     Delete user account
     Allows users to delete their own account
-    Uses JWT authentication (no CSRF required)
+    Uses JWT authentication with CSRF check (like MarsStationBackend)
     """
-    authentication_classes = []  # JWT via header, no CSRF
+    authentication_classes = [UsersAuthentication]
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
