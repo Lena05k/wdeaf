@@ -4,6 +4,7 @@ Handles user profile update and deletion
 Similar to functions/ user model operations
 """
 import logging
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -105,26 +106,44 @@ class UserDeleteView(APIView):
     def delete(self, request):
         """
         Delete user account
-        
+
         This action is irreversible!
-        
+        Clears all JWT tokens (cookies)
+
         Returns:
         - Success message
         """
         user = request.user
-        
+
         # Log deletion for audit
         logger.info(f"User account deletion requested: {user.id} ({user.email or user.phone or user.telegram_id})")
-        
+
         # Store user info for response (before deletion)
         user_id = user.id
-        
+
         # Delete user
         user.delete()
-        
+
         logger.info(f"User account deleted: {user_id}")
-        
-        return Response(
+
+        # Clear JWT cookies (like logout)
+        response = Response(
             {'detail': 'Account deleted successfully'},
             status=status.HTTP_200_OK
         )
+        
+        jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
+        
+        # Clear access_token cookie
+        response.delete_cookie(
+            key=jwt_settings.get('AUTH_COOKIE', 'access_token'),
+            path=jwt_settings.get('AUTH_COOKIE_PATH', '/')
+        )
+        
+        # Clear refresh_token cookie
+        response.delete_cookie(
+            key='refresh_token',
+            path='/'
+        )
+
+        return response

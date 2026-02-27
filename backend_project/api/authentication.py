@@ -3,23 +3,11 @@ from django.conf import settings
 from rest_framework import authentication, exceptions as rest_exceptions
 
 
-def enforce_csrf(request):
-    """
-    Enforce CSRF check for JWT authentication
-    Similar to MarsStationBackend implementation
-    """
-    check = authentication.CSRFCheck(request)
-    reason = check.process_view(request, None, (), {})
-    
-    if reason:
-        raise rest_exceptions.PermissionDenied('CSRF Failed: %s' % reason)
-
-
 class UsersAuthentication(jwt_authentication.JWTAuthentication):
     """
-    Custom JWT authentication with CSRF check
+    Custom JWT authentication
     Supports both header and cookie token extraction
-    Similar to MarsStationBackend implementation
+    NO CSRF check - JWT in Authorization header is sufficient for API
     """
     def authenticate(self, request):
         # Try to get token from header first
@@ -37,12 +25,11 @@ class UsersAuthentication(jwt_authentication.JWTAuthentication):
         # Validate token
         validated_token = self.get_validated_token(raw_token)
 
-        # Check if token is blacklisted (like MarsStationBackend)
+        # Check if token is blacklisted
         if self.is_token_blacklisted(raw_token):
             raise rest_exceptions.AuthenticationFailed('Token has been revoked')
 
-        # Enforce CSRF check
-        enforce_csrf(request)
+        # NO CSRF check - JWT token in Authorization header is sufficient
 
         # Get user from token
         return self.get_user(validated_token), validated_token
