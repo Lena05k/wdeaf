@@ -4,11 +4,11 @@
 help:
 	@echo "Docker Compose команды для проекта:"
 	@echo ""
-	@echo "  make up           - Запуск контейнеров в фоновом режиме"
-	@echo "  make up-dev       - Запуск в foreground с логами (для разработки)"
-	@echo "  make up-build     - Запуск с пересборкой образов"
+	@echo "  make up           - Запуск контейнеров с логами (foreground)"
+	@echo "  make up-dev       - Запуск с пересборкой и логами (foreground)"
+	@echo "  make up-build     - Запуск с пересборкой образов и логами"
 	@echo "  make down         - Остановка контейнеров"
-	@echo "  make rebuild      - Пересборка с очисткой кэша (полная пересборка)"
+	@echo "  make rebuild      - Пересборка с очисткой кэша и запуск с логами"
 	@echo "  make rebuild-cache- Запуск с пересборкой с сохранением кэша (быстро)"
 	@echo "  make start        - Быстрый старт: сборка + миграции + суперпользователь (admin/admin)"
 	@echo "  make migrate      - Применение миграций"
@@ -24,31 +24,31 @@ help:
 # Запуск по умолчанию
 .DEFAULT_GOAL := help
 
-# Запуск контейнеров в фоновом режиме
+# Запуск контейнеров с логами (foreground)
 up:
-	docker compose up -d
+	docker compose up
 
-# Запуск контейнеров в foreground с логами (для разработки)
+# Запуск контейнеров в foreground с логами и пересборкой (для разработки)
 up-dev:
 	docker compose up --build
 
-# Запуск контейнеров в фоновом режиме с пересборкой
+# Запуск контейнеров с пересборкой и логами
 up-build:
-	docker compose up -d --build
+	docker compose up --build
 
 # Остановка контейнеров
 down:
 	docker compose down
 
-# Пересборка и запуск контейнеров (полная, без кэша)
+# Пересборка и запуск контейнеров (полная, без кэша) с логами
 rebuild:
 	docker compose down
 	docker compose build --no-cache
-	docker compose up -d
+	docker compose up
 
-# Пересборка с сохранением кэша (быстрый запуск)
+# Пересборка с сохранением кэша (быстрый запуск) с логами
 rebuild-cache:
-	docker compose up -d --build
+	docker compose up --build
 
 # Применение миграций
 migrate:
@@ -77,9 +77,9 @@ logs-db:
 superuser:
 	docker compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
 
-# Быстрый старт: сборка, миграции, суперпользователь
+# Быстрый старт: сборка, миграции, суперпользователь (с логами)
 start:
-	docker compose up -d --build
+	docker compose up --build &
 	sleep 5
 	docker compose exec backend python manage.py migrate
 	docker compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
