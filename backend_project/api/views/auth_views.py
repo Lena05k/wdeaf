@@ -16,9 +16,9 @@ from ..services import AuthService
 from .jwt_utils import create_access_token, create_refresh_token
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class SignupView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = [SessionAuthenticationNoCSRF]
 
     def post(self, request):
         """
@@ -50,9 +50,9 @@ class SignupView(APIView):
         }, status=status.HTTP_201_CREATED)
 
 
-@method_decorator(csrf_exempt, name='dispatch')
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    authentication_classes = [SessionAuthenticationNoCSRF]
 
     def post(self, request):
         """
