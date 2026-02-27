@@ -5,19 +5,8 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
-    environment:
-      - DEBUG=True
-      - SECRET_KEY=django-insecure-wdeaf-development-key-change-in-production
-      - DB_ENGINE=django.db.backends.postgresql
-      - DB_NAME=wdeaf
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_HOST=db
-      - DB_PORT=5432
-      - JWT_SECRET=your-jwt-secret-key-change-in-production
-      - ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+    env_file:
+      - .env
     depends_on:
       - db
       - redis

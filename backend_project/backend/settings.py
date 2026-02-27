@@ -170,27 +170,20 @@ AUTH_USER_MODEL = 'api.User'
 CORS_ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3000').split(',')
 CORS_ALLOW_CREDENTIALS = True
 
-# CSRF settings - disabled for API usage
-CSRF_TRUSTED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3000').split(',')
-CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'None'
-CSRF_COOKIE_SECURE = False
+# CSRF settings
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://localhost:3000,http://localhost:8000').split(',')
+CSRF_COOKIE_HTTPONLY = os.getenv('CSRF_COOKIE_HTTPONLY', 'False').lower() == 'true'
+CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE', 'Lax')
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'
 CSRF_USE_SESSIONS = False
 
-# Redis settings (for token blacklist - like MarsStationBackend)
+# Redis settings (for token blacklist)
 REDIS = {
-    'host': os.getenv('REDIS_HOST', 'localhost'),
+    'host': os.getenv('REDIS_HOST', 'redis'),
     'port': int(os.getenv('REDIS_PORT', '6379')),
     'db': int(os.getenv('REDIS_DB', '0')),
     'password': os.getenv('REDIS_PASSWORD', None),
 }
-
-# CSRF settings for admin
-CSRF_TRUSTED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3000,http://localhost:8000').split(',')
-CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = False  # Set True in production with HTTPS
-CSRF_USE_SESSIONS = False
 
 # Logging
 LOGGING = {
