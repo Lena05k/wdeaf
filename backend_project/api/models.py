@@ -48,9 +48,6 @@ class User(AbstractBaseUser):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Required by AbstractBaseUser
-    last_login = models.DateTimeField(null=True, blank=True)
-
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
