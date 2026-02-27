@@ -115,10 +115,14 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     """
-    Logout view - uses session authentication with CSRF check
-    Similar to MarsStationBackend - token from cookie with Redis blacklist
+    Logout view - uses session authentication
+    CSRF exempt for API usage (like login/signup)
     """
     authentication_classes = [SessionAuthentication, BasicAuthentication]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request):
         """
