@@ -78,3 +78,33 @@ class AuthService:
                 auth_provider='telegram'
             )
             return user
+
+    @staticmethod
+    def find_or_create_phone_user(
+        phone: str,
+        first_name: str,
+        last_name: Optional[str] = None,
+        username: Optional[str] = None
+    ) -> User:
+        """
+        Find or create phone user
+        Similar to functions/services/auth_service.py find_or_create_phone_user
+        """
+        try:
+            user = User.objects.get(phone=phone)
+            # Update user info if changed
+            user.first_name = first_name
+            user.last_name = last_name
+            user.username = username
+            user.save()
+            return user
+        except User.DoesNotExist:
+            # Create new phone user
+            user = User.objects.create(
+                phone=phone,
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+                auth_provider='phone'
+            )
+            return user
