@@ -35,10 +35,10 @@ up-build:
 down:
 	docker compose down
 
-# Пересборка и запуск контейнеров
+# Пересборка и запуск контейнеров (полная, без кэша)
 rebuild:
 	docker compose down
-	docker compose up -d --build
+	docker compose up -d --build --no-cache
 
 # Пересборка с сохранением кэша (быстрый запуск)
 rebuild-cache:
