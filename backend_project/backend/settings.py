@@ -130,7 +130,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # Django REST Framework
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'api.authentication.UsersAuthentication',  # Custom JWT with CSRF (like MarsStationBackend)
         'rest_framework.authentication.SessionAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
@@ -154,6 +154,12 @@ SIMPLE_JWT = {
     'SIGNING_KEY': os.getenv('JWT_SECRET', 'your-super-secret-key-change-in-production'),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'sub',
+    # Cookie settings (like MarsStationBackend)
+    'AUTH_COOKIE': 'access_token',
+    'AUTH_COOKIE_HTTPONLY': True,
+    'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_SAMESITE': 'Lax',
+    'AUTH_COOKIE_SECURE': False,  # Set True in production with HTTPS
 }
 
 # Custom User Model
@@ -169,6 +175,14 @@ CSRF_COOKIE_HTTPONLY = False
 CSRF_COOKIE_SAMESITE = 'None'
 CSRF_COOKIE_SECURE = False
 CSRF_USE_SESSIONS = False
+
+# Redis settings (for token blacklist - like MarsStationBackend)
+REDIS = {
+    'host': os.getenv('REDIS_HOST', 'localhost'),
+    'port': int(os.getenv('REDIS_PORT', '6379')),
+    'db': int(os.getenv('REDIS_DB', '0')),
+    'password': os.getenv('REDIS_PASSWORD', None),
+}
 
 # Logging
 LOGGING = {
