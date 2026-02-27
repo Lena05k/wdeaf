@@ -119,7 +119,7 @@ class LoginView(APIView):
 class LogoutView(APIView):
     """
     Logout view - like MarsStationBackend
-    Token from cookie, add to Redis blacklist, clear cookie
+    Token from cookie, add to Redis blacklist, clear all cookies
     """
     authentication_classes = []  # No CSRF check
     permission_classes = [AllowAny]
@@ -127,46 +127,56 @@ class LogoutView(APIView):
     def post(self, request):
         """
         Logout - like MarsStationBackend implementation
+        Clear all auth cookies: access_token, sessionid, csrftoken
         """
         from .jwt_utils import decode_token
         from ..services.token_blacklist import add_token_to_blacklist
-        
+
         # Get token from cookie (like MarsStationBackend)
         jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
         access_token = request.COOKIES.get(jwt_settings.get('AUTH_COOKIE', 'access_token'))
 
-        # Проверка наличия токена
-        if access_token is None:
-            return Response(
-                {'detail': 'Token not found in cookie. You may already be logged out.'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
         # Добавление токена в черный список в Redis (like MarsStationBackend)
-        try:
-            decoded = decode_token(access_token)
-            exp_timestamp = decoded.get('exp')
-            if exp_timestamp:
-                expires_at = datetime.utcfromtimestamp(exp_timestamp)
-            else:
-                expires_at = datetime.utcnow() + timedelta(hours=24)
-            
-            error_message, success = add_token_to_blacklist(access_token, expires_at)
-        except Exception as e:
-            error_message = str(e)
-            success = False
+        error_message = None
+        if access_token:
+            try:
+                decoded = decode_token(access_token)
+                exp_timestamp = decoded.get('exp')
+                if exp_timestamp:
+                    expires_at = datetime.utcfromtimestamp(exp_timestamp)
+                else:
+                    expires_at = datetime.utcnow() + timedelta(hours=24)
+
+                err, success = add_token_to_blacklist(access_token, expires_at)
+                if err:
+                    error_message = err
+            except Exception as e:
+                error_message = str(e)
 
         response = Response(status=status.HTTP_200_OK)
 
-        # Удаление куки с токеном (like MarsStationBackend)
+        # Удаление всех cookie аутентификации
+        # 1. access_token (JWT)
         response.delete_cookie(
             key=jwt_settings.get('AUTH_COOKIE', 'access_token'),
             path=jwt_settings.get('AUTH_COOKIE_PATH', '/')
         )
 
+        # 2. sessionid (Django session)
+        response.delete_cookie(
+            key='sessionid',
+            path='/'
+        )
+
+        # 3. csrftoken (CSRF token)
+        response.delete_cookie(
+            key='csrftoken',
+            path='/'
+        )
+
         response.data = {
             'detail': 'Successfully logged out',
-            'message': 'Token cleared'
+            'message': 'All cookies cleared'
         }
 
         # Добавляем error_message, если есть ошибка
