@@ -5,7 +5,6 @@ Similar to functions/ user model operations
 """
 import logging
 from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -26,10 +25,6 @@ class UserUpdateView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
     @swagger_auto_schema(
         request_body=UserUpdateSerializer,
         responses={
@@ -38,6 +33,7 @@ class UserUpdateView(APIView):
             404: openapi.Response(description='User not found'),
         }
     )
+    @csrf_exempt
     def put(self, request):
         """
         Update user profile
@@ -68,6 +64,7 @@ class UserUpdateView(APIView):
             404: openapi.Response(description='User not found'),
         }
     )
+    @csrf_exempt
     def patch(self, request):
         """
         Partial update user profile
@@ -99,16 +96,13 @@ class UserDeleteView(APIView):
     """
     permission_classes = [IsAuthenticated]
 
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
-
     @swagger_auto_schema(
         responses={
             200: openapi.Response(description='Account deleted successfully'),
             404: openapi.Response(description='User not found'),
         }
     )
+    @csrf_exempt
     def delete(self, request):
         """
         Delete user account
