@@ -1,111 +1,104 @@
 """
 Authentication views for user login, signup and logout
 """
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.request import Request
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.authentication import SessionAuthentication
+from rest_framework.permissions import AllowAny
 from django.contrib.auth import login as django_login, logout as django_logout
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+from ..authentication import SessionAuthenticationNoCSRF
 from ..serializers import (
-    UserSerializer, AuthResponseSerializer,
-    EmailLoginRequestSerializer, EmailSignupRequestSerializer
+    UserSerializer, EmailLoginRequestSerializer, EmailSignupRequestSerializer
 )
 from ..services import AuthService
 from .jwt_utils import create_access_token, create_refresh_token
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def email_signup(request: Request) -> Response:
-    """
-    Register new user with email + password and create session
-    
-    Expects: { "email": "...", "password": "...", "first_name": "...", "last_name": "..." }
-    Returns: { "access_token": "...", "refresh_token": "...", "token_type": "bearer", "user": {...} }
-    """
-    serializer = EmailSignupRequestSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+@method_decorator(csrf_exempt, name='dispatch')
+class SignupView(APIView):
+    permission_classes = [AllowAny]
 
-    try:
-        user = AuthService.register_email_user(
+    def post(self, request):
+        """
+        Register new user with email + password and create session
+        """
+        serializer = EmailSignupRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = AuthService.register_email_user(
+                email=serializer.validated_data['email'],
+                password=serializer.validated_data['password'],
+                first_name=serializer.validated_data['first_name'],
+                last_name=serializer.validated_data.get('last_name')
+            )
+        except ValueError as e:
+            return Response({'detail': str(e)}, status=status.HTTP_409_CONFLICT)
+
+        django_login(request, user)
+        access_token = create_access_token(user.id)
+        refresh_token = create_refresh_token(user.id)
+
+        return Response({
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'token_type': 'bearer',
+            'user': UserSerializer(user).data
+        }, status=status.HTTP_201_CREATED)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        """
+        Login with email + password and create session
+        """
+        serializer = EmailLoginRequestSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        user = AuthService.authenticate_email_user(
             email=serializer.validated_data['email'],
-            password=serializer.validated_data['password'],
-            first_name=serializer.validated_data['first_name'],
-            last_name=serializer.validated_data.get('last_name')
+            password=serializer.validated_data['password']
         )
-    except ValueError as e:
-        return Response({'detail': str(e)}, status=status.HTTP_409_CONFLICT)
 
-    # Create Django session
-    django_login(request, user)
+        if not user:
+            return Response({'detail': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
-    # Generate tokens
-    access_token = create_access_token(user.id)
-    refresh_token = create_refresh_token(user.id)
+        django_login(request, user)
+        access_token = create_access_token(user.id)
+        refresh_token = create_refresh_token(user.id)
 
-    # Prepare response
-    user_serializer = UserSerializer(user)
-    response_data = {
-        'access_token': access_token,
-        'refresh_token': refresh_token,
-        'token_type': 'bearer',
-        'user': user_serializer.data
-    }
-
-    return Response(response_data, status=status.HTTP_201_CREATED)
+        return Response({
+            'access_token': access_token,
+            'refresh_token': refresh_token,
+            'token_type': 'bearer',
+            'user': UserSerializer(user).data
+        }, status=status.HTTP_200_OK)
 
 
-@api_view(['POST'])
-@permission_classes([AllowAny])
-def email_login(request: Request) -> Response:
+class LogoutView(APIView):
     """
-    Login with email + password and create session
+    Logout view - CSRF exempt, uses session authentication without CSRF
+    """
+    authentication_classes = [SessionAuthenticationNoCSRF]
     
-    Expects: { "email": "...", "password": "..." }
-    Returns: { "access_token": "...", "refresh_token": "...", "token_type": "bearer", "user": {...} }
-    """
-    serializer = EmailLoginRequestSerializer(data=request.data)
-    if not serializer.is_valid():
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    user = AuthService.authenticate_email_user(
-        email=serializer.validated_data['email'],
-        password=serializer.validated_data['password']
-    )
-
-    if not user:
-        return Response({'detail': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
-
-    # Create Django session
-    django_login(request, user)
-
-    # Generate tokens
-    access_token = create_access_token(user.id)
-    refresh_token = create_refresh_token(user.id)
-
-    # Prepare response
-    user_serializer = UserSerializer(user)
-    response_data = {
-        'access_token': access_token,
-        'refresh_token': refresh_token,
-        'token_type': 'bearer',
-        'user': user_serializer.data
-    }
-
-    return Response(response_data, status=status.HTTP_200_OK)
+    def post(self, request):
+        """
+        Logout and clear session
+        """
+        if request.user.is_authenticated:
+            django_logout(request)
+            return Response({'detail': 'Successfully logged out'}, status=status.HTTP_200_OK)
+        return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def logout(request: Request) -> Response:
-    """
-    Logout and clear session
-    
-    Requires: Authentication (session or JWT)
-    Returns: { "detail": "Successfully logged out" }
-    """
-    django_logout(request)
-    return Response({'detail': 'Successfully logged out'}, status=status.HTTP_200_OK)
+# Function-based views for URL routing with csrf_exempt
+email_signup = csrf_exempt(SignupView.as_view())
+email_login = csrf_exempt(LoginView.as_view())
+logout = csrf_exempt(LogoutView.as_view())
