@@ -3,6 +3,7 @@ Authentication views for user login, signup and logout
 Similar to MarsStationBackend implementation
 """
 import logging
+from datetime import datetime, timedelta
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -117,45 +118,30 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     """
-    Logout view - uses session authentication without CSRF
-    CSRF exempt for API usage
+    Logout view - like MarsStationBackend
+    Token from cookie, add to Redis blacklist, clear cookie
     """
-    authentication_classes = []  # No authentication = no CSRF check
+    authentication_classes = []  # No CSRF check
     permission_classes = [AllowAny]
 
     def post(self, request):
         """
-        Logout and clear session + token cookie
-        Add token to Redis blacklist (like MarsStationBackend)
-        Manual token validation without CSRF check
+        Logout - like MarsStationBackend implementation
         """
-        from .jwt_utils import decode_token
         from ..services.token_blacklist import add_token_to_blacklist
-        from datetime import datetime, timedelta
-        from rest_framework_simplejwt.authentication import JWTAuthentication
         
         # Get token from cookie (like MarsStationBackend)
         jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
         access_token = request.COOKIES.get(jwt_settings.get('AUTH_COOKIE', 'access_token'))
 
+        # Проверка наличия токена
         if access_token is None:
             return Response(
                 {'detail': 'Token not found in cookie. You may already be logged out.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        # Validate token manually (without CSRF)
-        try:
-            jwt_auth = JWTAuthentication()
-            validated_token = jwt_auth.get_validated_token(access_token)
-            user = jwt_auth.get_user(validated_token)
-        except Exception as e:
-            return Response(
-                {'detail': f'Invalid token: {str(e)}'},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-
-        # Add token to Redis blacklist (like MarsStationBackend)
+        # Добавление токена в черный список в Redis (like MarsStationBackend)
         try:
             decoded = decode_token(access_token)
             exp_timestamp = decoded.get('exp')
@@ -165,25 +151,27 @@ class LogoutView(APIView):
                 expires_at = datetime.utcnow() + timedelta(hours=24)
             
             error_message, success = add_token_to_blacklist(access_token, expires_at)
-            if error_message:
-                logger.warning(f"Token blacklist warning: {error_message}")
         except Exception as e:
-            logger.warning(f"Could not add token to blacklist: {e}")
-
-        # Logout user from session
-        if user.is_authenticated:
-            django_logout(request)
+            error_message = str(e)
+            success = False
 
         response = Response(status=status.HTTP_200_OK)
-        # Clear token cookie
+
+        # Удаление куки с токеном (like MarsStationBackend)
         response.delete_cookie(
             key=jwt_settings.get('AUTH_COOKIE', 'access_token'),
             path=jwt_settings.get('AUTH_COOKIE_PATH', '/')
         )
+
         response.data = {
             'detail': 'Successfully logged out',
-            'message': 'Token cleared and blacklisted'
+            'message': 'Token cleared'
         }
+
+        # Добавляем error_message, если есть ошибка
+        if error_message:
+            response.data['error_message'] = error_message
+
         return response
 
 
