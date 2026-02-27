@@ -43,7 +43,8 @@ down:
 # Пересборка и запуск контейнеров (полная, без кэша)
 rebuild:
 	docker compose down
-	docker compose up -d --build --no-cache
+	docker compose build --no-cache
+	docker compose up -d
 
 # Пересборка с сохранением кэша (быстрый запуск)
 rebuild-cache:

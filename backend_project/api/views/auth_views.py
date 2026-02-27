@@ -5,10 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework.authentication import SessionAuthentication
 from django.contrib.auth import login as django_login, logout as django_logout
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
-from ..authentication import SessionAuthenticationNoCSRF
 from ..serializers import (
     UserSerializer, EmailLoginRequestSerializer, EmailSignupRequestSerializer
 )
@@ -18,7 +16,7 @@ from .jwt_utils import create_access_token, create_refresh_token
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = [SessionAuthenticationNoCSRF]
+    authentication_classes = [SessionAuthentication]
 
     def post(self, request):
         """
@@ -52,7 +50,7 @@ class SignupView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = [SessionAuthenticationNoCSRF]
+    authentication_classes = [SessionAuthentication]
 
     def post(self, request):
         """
@@ -84,10 +82,10 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     """
-    Logout view - CSRF exempt, uses session authentication without CSRF
+    Logout view - uses session authentication
     """
-    authentication_classes = [SessionAuthenticationNoCSRF]
-    
+    authentication_classes = [SessionAuthentication]
+
     def post(self, request):
         """
         Logout and clear session
@@ -98,7 +96,7 @@ class LogoutView(APIView):
         return Response({'detail': 'Authentication credentials were not provided.'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-# Function-based views for URL routing with csrf_exempt
-email_signup = csrf_exempt(SignupView.as_view())
-email_login = csrf_exempt(LoginView.as_view())
-logout = csrf_exempt(LogoutView.as_view())
+# Function-based views for URL routing
+email_signup = SignupView.as_view()
+email_login = LoginView.as_view()
+logout = LogoutView.as_view()

@@ -7,16 +7,17 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
+from rest_framework_simplejwt.authentication import JWTAuthentication
 from ..serializers import UserSerializer
 
 
 @api_view(['GET'])
-@authentication_classes([SessionAuthentication])
+@authentication_classes([SessionAuthentication, JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def get_current_user(request: Request) -> Response:
     """
     Get current authenticated user information
-    
+
     Requires: Authentication (session or JWT)
     Returns: User object { "id": ..., "email": "...", "first_name": "...", ... }
     """
