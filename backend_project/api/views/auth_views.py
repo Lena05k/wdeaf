@@ -128,6 +128,7 @@ class LogoutView(APIView):
         """
         Logout - like MarsStationBackend implementation
         """
+        from .jwt_utils import decode_token
         from ..services.token_blacklist import add_token_to_blacklist
         
         # Get token from cookie (like MarsStationBackend)
