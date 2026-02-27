@@ -8,6 +8,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.authentication import SessionAuthentication
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from ..serializers import (
     UserSerializer, EmailLoginRequestSerializer, EmailSignupRequestSerializer
 )
@@ -87,6 +88,10 @@ class LogoutView(APIView):
     """
     authentication_classes = [SessionAuthentication]
 
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request):
         """
         Logout and clear session
@@ -100,4 +105,4 @@ class LogoutView(APIView):
 # Function-based views for URL routing
 email_signup = SignupView.as_view()
 email_login = LoginView.as_view()
-logout = csrf_exempt(LogoutView.as_view())
+logout = LogoutView.as_view()
