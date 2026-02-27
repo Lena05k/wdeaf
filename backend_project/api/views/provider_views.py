@@ -125,7 +125,7 @@ class ProviderListView(APIView):
                         'previous': openapi.Schema(type=openapi.TYPE_STRING),
                         'results': openapi.Schema(
                             type=openapi.TYPE_ARRAY,
-                            items=openapi.Items(schema=ProviderListSerializer)
+                            items=openapi.Schema(type=openapi.TYPE_OBJECT)
                         ),
                     }
                 )
