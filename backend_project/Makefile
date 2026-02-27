@@ -1,4 +1,4 @@
-.PHONY: help up up-dev up-build down rebuild rebuild-cache migrate shell test logs logs-backend logs-db superuser start clean
+.PHONY: help up up-dev up-build down rebuild rebuild-cache migrate migrate-reset shell test test-verbose logs logs-backend logs-db superuser reset-db start clean
 
 # Справка по доступным командам (вызывается по умолчанию)
 help:
@@ -12,12 +12,15 @@ help:
 	@echo "  make rebuild-cache- Запуск с пересборкой с сохранением кэша (быстро)"
 	@echo "  make start        - Быстрый старт: сборка + миграции + суперпользователь (admin/admin)"
 	@echo "  make migrate      - Применение миграций"
+	@echo "  make migrate-reset- Полная очистка БД + миграции + суперпользователь"
 	@echo "  make shell        - Открыть shell в контейнере backend"
 	@echo "  make test         - Запуск тестов Django"
+	@echo "  make test-verbose - Запуск тестов с подробным выводом"
 	@echo "  make logs         - Просмотр логов всех сервисов"
 	@echo "  make logs-backend - Просмотр логов backend"
 	@echo "  make logs-db      - Просмотр логов базы данных"
 	@echo "  make superuser    - Создание суперпользователя admin/admin"
+	@echo "  make reset-db     - Полная очистка БД, миграции, суперпользователь"
 	@echo "  make clean        - Остановка и очистка volumes"
 	@echo ""
 
@@ -60,7 +63,11 @@ shell:
 
 # Запуск тестов
 test:
-	docker compose exec backend python manage.py test
+	docker compose exec backend python manage.py test api.tests
+
+# Запуск тестов с подробным выводом
+test-verbose:
+	docker compose exec backend python manage.py test api.tests --verbosity=2
 
 # Просмотр логов
 logs:
@@ -75,14 +82,24 @@ logs-db:
 
 # Создание суперпользователя admin/admin
 superuser:
-	docker compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
+	docker compose exec backend python manage.py shell -c "from api.models import User; User.objects.filter(email='admin@example.com').exists() or User.objects.create_superuser(email='admin@example.com', password='adminadmin', first_name='Admin')"
+
+# Полная очистка БД, миграции, суперпользователь
+reset-db:
+	@echo "=== Полная очистка базы данных ==="
+	docker compose exec backend python manage.py flush --no-input
+	@echo "=== Применение миграций ==="
+	docker compose exec backend python manage.py migrate
+	@echo "=== Создание суперпользователя (admin@example.com / adminadmin) ==="
+	docker compose exec backend python manage.py shell -c "from api.models import User; User.objects.filter(email='admin@example.com').exists() or User.objects.create_superuser(email='admin@example.com', password='adminadmin', first_name='Admin')"
+	@echo "=== Готово! ==="
 
 # Быстрый старт: сборка, миграции, суперпользователь (с логами)
 start:
 	docker compose up --build &
 	sleep 5
 	docker compose exec backend python manage.py migrate
-	docker compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
+	docker compose exec backend python manage.py shell -c "from api.models import User; User.objects.filter(email='admin@example.com').exists() or User.objects.create_superuser(email='admin@example.com', password='adminadmin', first_name='Admin')"
 
 # Остановка и очистка volumes
 clean:
