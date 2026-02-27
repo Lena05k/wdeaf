@@ -1,19 +1,39 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
 from typing import Optional
 
 
-class User(models.Model):
+class UserManager(BaseUserManager):
+    """Custom manager for User model"""
+    
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('Email is required')
+        email = self.normalize_email(email)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+        return self.create_user(email, password, **extra_fields)
+
+
+class User(AbstractBaseUser):
     telegram_id = models.BigIntegerField(unique=True, null=True, blank=True, db_index=True)
     email = models.EmailField(max_length=255, unique=True, null=True, blank=True, db_index=True)
-    password = models.CharField(max_length=255, null=True)  # Store hashed password
     phone = models.CharField(max_length=20, unique=True, null=True, blank=True, db_index=True)
     first_name = models.CharField(max_length=100)
     last_name = models.CharField(max_length=100, null=True, blank=True)
     username = models.CharField(max_length=32, unique=True, null=True, blank=True, db_index=True)
     avatar_url = models.TextField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
     is_provider = models.BooleanField(default=False)
     auth_provider = models.CharField(
         max_length=20,
@@ -28,8 +48,18 @@ class User(models.Model):
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(auto_now=True)
 
+    # Required by AbstractBaseUser
+    last_login = models.DateTimeField(null=True, blank=True)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name']
+
     class Meta:
         db_table = 'users'
+        verbose_name = 'user'
+        verbose_name_plural = 'users'
         indexes = [
             models.Index(fields=['telegram_id'], name='ix_users_telegram_id'),
             models.Index(fields=['email'], name='ix_users_email'),

@@ -1,9 +1,6 @@
 from typing import Any
 from rest_framework import serializers
 from .models import User
-import hashlib
-import hmac
-from django.contrib.auth.hashers import make_password
 
 
 class UserSerializer(serializers.ModelSerializer[User]):
@@ -41,19 +38,3 @@ class EmailSignupRequestSerializer(serializers.Serializer[Any]):
         if not any(c.isdigit() for c in value):
             raise serializers.ValidationError("Password must contain at least one digit")
         return value
-
-
-class PhoneAuthRequestSerializer(serializers.Serializer[Any]):
-    phone = serializers.CharField(max_length=15, min_length=10)
-    first_name = serializers.CharField(min_length=1, max_length=100)
-    last_name = serializers.CharField(max_length=100, required=False, allow_blank=True)
-    username = serializers.CharField(max_length=32, min_length=3, required=False, allow_blank=True)
-
-    def validate_phone(self, value: str) -> str:
-        if not value.startswith("+"):
-            raise serializers.ValidationError("Phone must start with +")
-        return value
-
-
-class RefreshTokenRequestSerializer(serializers.Serializer[Any]):
-    refresh_token = serializers.CharField()
