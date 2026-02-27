@@ -5,6 +5,8 @@ Similar to MarsStationBackend
 """
 import logging
 from datetime import datetime, timedelta
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -23,6 +25,25 @@ class SignupView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []  # No session auth, only JWT
 
+    @swagger_auto_schema(
+        request_body=EmailSignupRequestSerializer,
+        responses={
+            201: openapi.Response(
+                description='User registered successfully',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'access_token': openapi.Schema(type=openapi.TYPE_STRING, description='JWT access token'),
+                        'refresh_token': openapi.Schema(type=openapi.TYPE_STRING, description='JWT refresh token'),
+                        'token_type': openapi.Schema(type=openapi.TYPE_STRING, description='Token type (bearer)'),
+                        'user': openapi.Schema(type=openapi.TYPE_OBJECT, description='User object'),
+                    }
+                )
+            ),
+            400: openapi.Response(description='Bad request'),
+            409: openapi.Response(description='User already exists'),
+        }
+    )
     def post(self, request):
         """
         Register new user with email + password
@@ -71,6 +92,25 @@ class LoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []  # No session auth, only JWT
 
+    @swagger_auto_schema(
+        request_body=EmailLoginRequestSerializer,
+        responses={
+            200: openapi.Response(
+                description='Login successful',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'access_token': openapi.Schema(type=openapi.TYPE_STRING, description='JWT access token'),
+                        'refresh_token': openapi.Schema(type=openapi.TYPE_STRING, description='JWT refresh token'),
+                        'token_type': openapi.Schema(type=openapi.TYPE_STRING, description='Token type (bearer)'),
+                        'user': openapi.Schema(type=openapi.TYPE_OBJECT, description='User object'),
+                    }
+                )
+            ),
+            400: openapi.Response(description='Bad request'),
+            401: openapi.Response(description='Invalid credentials'),
+        }
+    )
     def post(self, request):
         """
         Login with email + password
@@ -121,6 +161,21 @@ class LogoutView(APIView):
     authentication_classes = []  # No CSRF check
     permission_classes = [AllowAny]
 
+    @swagger_auto_schema(
+        responses={
+            200: openapi.Response(
+                description='Logout successful',
+                schema=openapi.Schema(
+                    type=openapi.TYPE_OBJECT,
+                    properties={
+                        'detail': openapi.Schema(type=openapi.TYPE_STRING, description='Success message'),
+                        'message': openapi.Schema(type=openapi.TYPE_STRING, description='Additional message'),
+                    }
+                )
+            ),
+            401: openapi.Response(description='Already logged out or no token'),
+        }
+    )
     def post(self, request):
         """
         Logout - clear access_token cookie only

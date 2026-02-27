@@ -1,6 +1,8 @@
 """
 User profile views
 """
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -14,6 +16,12 @@ from ..serializers import UserSerializer
 @api_view(['GET'])
 @authentication_classes([SessionAuthentication, BasicAuthentication, UsersAuthentication])
 @permission_classes([IsAuthenticated])
+@swagger_auto_schema(
+    responses={
+        200: UserSerializer,
+        401: openapi.Response(description='Unauthorized'),
+    }
+)
 def get_current_user(request: Request) -> Response:
     """
     Get current authenticated user information
