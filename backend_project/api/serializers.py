@@ -38,3 +38,7 @@ class EmailSignupRequestSerializer(serializers.Serializer[Any]):
         if not any(c.isdigit() for c in value):
             raise serializers.ValidationError("Password must contain at least one digit")
         return value
+
+
+class RefreshTokenRequestSerializer(serializers.Serializer[Any]):
+    refresh_token = serializers.CharField()
