@@ -108,3 +108,30 @@ class AuthService:
                 auth_provider='phone'
             )
             return user
+
+    @staticmethod
+    def register_provider_user(
+        email: str,
+        password: str,
+        first_name: str,
+        last_name: Optional[str] = None,
+        phone: Optional[str] = None,
+    ) -> User:
+        """
+        Register a new service provider
+        Sets is_provider=True
+        """
+        if User.objects.filter(email=email).exists():
+            raise ValueError("Provider with this email already exists")
+
+        user = User.objects.create(
+            email=email,
+            password=make_password(password),
+            first_name=first_name,
+            last_name=last_name,
+            phone=phone,
+            is_provider=True,
+            auth_provider='email'
+        )
+
+        return user

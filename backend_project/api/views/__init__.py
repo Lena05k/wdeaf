@@ -8,6 +8,7 @@ from .health_views import health_check
 from .jwt_views import RefreshTokenView
 from .telegram_auth_views import TelegramAuthView
 from .phone_auth_views import PhoneAuthView
+from .provider_views import ProviderSignupView, ProviderListView
 
 __all__ = [
     'email_signup',
@@ -20,4 +21,6 @@ __all__ = [
     'PhoneAuthView',
     'UserUpdateView',
     'UserDeleteView',
+    'ProviderSignupView',
+    'ProviderListView',
 ]
