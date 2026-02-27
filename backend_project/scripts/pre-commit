@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# Pre-commit hook script
+# Automatically runs tests before each commit
+# Install: cp scripts/pre-commit .git/hooks/pre-commit && chmod +x .git/hooks/pre-commit
+#
+
+set -e
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+PROJECT_DIR="$(dirname "$(dirname "$SCRIPT_DIR")")"
+
+echo "🔍 Running pre-commit tests..."
+
+# Run local test script (quiet mode)
+cd "$PROJECT_DIR"
+if [ -f "scripts/local-test.sh" ]; then
+    bash scripts/local-test.sh --quiet
+    if [ $? -ne 0 ]; then
+        echo ""
+        echo "❌ Pre-commit tests failed. Commit aborted."
+        echo "Please fix the issues and try again."
+        exit 1
+    fi
+else
+    echo "⚠️  local-test.sh not found. Skipping tests."
+fi
+
+echo "✅ Pre-commit tests passed."
+exit 0
