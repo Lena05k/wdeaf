@@ -185,6 +185,13 @@ REDIS = {
     'password': os.getenv('REDIS_PASSWORD', None),
 }
 
+# CSRF settings for admin
+CSRF_TRUSTED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3000,http://localhost:8000').split(',')
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SECURE = False  # Set True in production with HTTPS
+CSRF_USE_SESSIONS = False
+
 # Logging
 LOGGING = {
     'version': 1,
