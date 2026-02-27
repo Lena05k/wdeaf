@@ -115,25 +115,24 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     """
-    Logout view - like MarsStationBackend
-    Token from cookie, add to Redis blacklist, clear all cookies
+    Logout view - JWT only (like MarsStationBackend)
+    Clear access_token cookie, add token to Redis blacklist
     """
     authentication_classes = []  # No CSRF check
     permission_classes = [AllowAny]
 
     def post(self, request):
         """
-        Logout - like MarsStationBackend implementation
-        Clear all auth cookies: access_token, sessionid, csrftoken
+        Logout - clear access_token cookie only
         """
         from .jwt_utils import decode_token
         from ..services.token_blacklist import add_token_to_blacklist
 
-        # Get token from cookie (like MarsStationBackend)
+        # Get token from cookie
         jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
         access_token = request.COOKIES.get(jwt_settings.get('AUTH_COOKIE', 'access_token'))
 
-        # Добавление токена в черный список в Redis (like MarsStationBackend)
+        # Add token to Redis blacklist
         error_message = None
         if access_token:
             try:
@@ -152,31 +151,17 @@ class LogoutView(APIView):
 
         response = Response(status=status.HTTP_200_OK)
 
-        # Удаление всех cookie аутентификации
-        # 1. access_token (JWT)
+        # Clear ONLY access_token cookie (no sessionid, no csrftoken)
         response.delete_cookie(
             key=jwt_settings.get('AUTH_COOKIE', 'access_token'),
             path=jwt_settings.get('AUTH_COOKIE_PATH', '/')
         )
 
-        # 2. sessionid (Django session)
-        response.delete_cookie(
-            key='sessionid',
-            path='/'
-        )
-
-        # 3. csrftoken (CSRF token)
-        response.delete_cookie(
-            key='csrftoken',
-            path='/'
-        )
-
         response.data = {
             'detail': 'Successfully logged out',
-            'message': 'All cookies cleared'
+            'message': 'Access token cleared'
         }
 
-        # Добавляем error_message, если есть ошибка
         if error_message:
             response.data['error_message'] = error_message
 
