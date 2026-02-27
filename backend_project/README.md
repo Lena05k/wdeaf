@@ -87,6 +87,113 @@ backend_project/
 
 Проект использует **модульную архитектуру** с разделением ответственности:
 
+### Архитектурные паттерны
+
+#### 1. Repository Pattern (Репозиторий)
+**Где:** `api/repositories/user_repo.py`
+
+```python
+class UserRepository:
+    def get_by_email(self, email): ...
+    def create_user(self, email, password, ...): ...
+    def update(self, user, **kwargs): ...
+```
+
+**Зачем:**
+- ✅ Изолирует доступ к базе данных
+- ✅ Легко тестировать (можно замокать)
+- ✅ Можно сменить ORM/БД без изменения бизнес-логики
+
+#### 2. Service Layer Pattern (Сервисный слой)
+**Где:** `api/services/auth/*.py`, `api/services/token/*.py`
+
+```python
+class EmailAuthService:
+    def __init__(self):
+        self.user_repo = UserRepository()  # ← Dependency Injection
+    
+    def register(self, email, password, ...):
+        # Бизнес-логика
+    
+    def authenticate(self, email, password):
+        # Бизнес-логика
+```
+
+**Зачем:**
+- ✅ Бизнес-логика отдельно от HTTP слоя
+- ✅ Single Responsibility Principle
+- ✅ Переиспользование логики между разными views
+
+#### 3. Dependency Injection (Внедрение зависимостей)
+**Где:** Конструкторы сервисов
+
+```python
+class EmailAuthService:
+    def __init__(self):
+        self.user_repo = UserRepository()  # ← Внедрение зависимости
+```
+
+**Зачем:**
+- ✅ Легко заменять реализации (например, для тестов)
+- ✅ Слабая связанность компонентов
+- ✅ Проще тестировать
+
+#### 4. Builder Pattern (Строитель)
+**Где:** `api/utils/responses.py`
+
+```python
+class AuthResponseBuilder:
+    @staticmethod
+    def with_jwt(user, status_code=200):
+        # Строит ответ с JWT токенами
+    
+    @staticmethod
+    def success(data, message):
+        # Строит успешный ответ
+```
+
+**Зачем:**
+- ✅ DRY - нет дублирования кода
+- ✅ Консистентность ответов API
+- ✅ Централизованное управление форматом ответов
+
+#### 5. Layered Architecture (Многослойная архитектура)
+
+```
+┌─────────────────────────────────────┐
+│         HTTP Layer (Views)          │  ← API Views
+├─────────────────────────────────────┤
+│       Service Layer (Services)      │  ← Бизнес-логика
+├─────────────────────────────────────┤
+│    Repository Layer (Repositories)  │  ← Доступ к данным
+├─────────────────────────────────────┤
+│         Database (PostgreSQL)       │  ← БД
+└─────────────────────────────────────┘
+```
+
+**Поток запроса:**
+```
+HTTP Request → View → Service → Repository → Database
+HTTP Response ← View ← Service ← Repository ← Database
+```
+
+#### 6. DTO Pattern (Data Transfer Object)
+**Где:** `api/serializers/*.py`
+
+```python
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'email', 'first_name', ...]
+```
+
+**Зачем:**
+- ✅ Преобразование между DB и API форматами
+- ✅ Валидация данных
+- ✅ Сериализация/десериализация
+
+---
+
 ### 1. Models (Модели)
 ```python
 # api/models/user.py
