@@ -79,3 +79,16 @@ class User(AbstractBaseUser):
             "is_provider": self.is_provider,
             "auth_provider": self.auth_provider,
         }
+
+    # Permissions methods (required for Django admin)
+    def has_perm(self, perm, obj=None):
+        """Does the user have the specific permission?"""
+        return self.is_superuser
+
+    def has_perms(self, perm_list, obj=None):
+        """Does the user have all permissions in perm_list?"""
+        return self.is_superuser
+
+    def has_module_perms(self, app_label):
+        """Does the user have permissions in the given app label?"""
+        return self.is_superuser
