@@ -1,4 +1,4 @@
-.PHONY: help up up-build down rebuild migrate shell test logs logs-backend logs-db superuser start clean
+.PHONY: help up up-build down rebuild rebuild-cache migrate shell test logs logs-backend logs-db superuser start clean
 
 # Справка по доступным командам (вызывается по умолчанию)
 help:
@@ -7,7 +7,8 @@ help:
 	@echo "  make up           - Запуск контейнеров в фоновом режиме"
 	@echo "  make up-build     - Запуск с пересборкой образов"
 	@echo "  make down         - Остановка контейнеров"
-	@echo "  make rebuild      - Пересборка и запуск контейнеров"
+	@echo "  make rebuild      - Пересборка с очисткой кэша (полная пересборка)"
+	@echo "  make rebuild-cache- Запуск с пересборкой с сохранением кэша (быстро)"
 	@echo "  make start        - Быстрый старт: сборка + миграции + суперпользователь (admin/admin)"
 	@echo "  make migrate      - Применение миграций"
 	@echo "  make shell        - Открыть shell в контейнере backend"
@@ -37,6 +38,10 @@ down:
 # Пересборка и запуск контейнеров
 rebuild:
 	docker compose down
+	docker compose up -d --build
+
+# Пересборка с сохранением кэша (быстрый запуск)
+rebuild-cache:
 	docker compose up -d --build
 
 # Применение миграций
