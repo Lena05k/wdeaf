@@ -10,6 +10,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.authentication import SessionAuthentication, BasicAuthentication
 from django.contrib.auth import login as django_login, logout as django_logout
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from ..serializers import (
     UserSerializer, EmailLoginRequestSerializer, EmailSignupRequestSerializer
 )
