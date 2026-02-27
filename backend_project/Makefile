@@ -20,7 +20,8 @@ help:
 	@echo "  make logs-backend - Просмотр логов backend"
 	@echo "  make logs-db      - Просмотр логов базы данных"
 	@echo "  make superuser    - Создание суперпользователя admin/admin"
-	@echo "  make reset-db     - Полная очистка БД, миграции, суперпользователь"
+	@echo "  make reset-db     - Очистка БД + миграции + суперпользователь (быстро)"
+	@echo "  make reset-db-full- Полная очистка volume + миграции + суперпользователь"
 	@echo "  make clean        - Остановка и очистка volumes"
 	@echo ""
 
@@ -84,15 +85,21 @@ logs-db:
 superuser:
 	docker compose exec backend python manage.py shell -c "from api.models import User; User.objects.filter(email='admin@example.com').exists() or User.objects.create_superuser(email='admin@example.com', password='adminadmin', first_name='Admin')"
 
-# Полная очистка БД, миграции, суперпользователь
+# Полная очистка БД, миграции, суперпользователь (без удаления volume)
 reset-db:
-	@echo "=== Полная очистка базы данных ==="
-	docker compose exec backend python manage.py flush --no-input
+	@echo "=== Очистка и пересоздание базы данных ==="
+	docker compose exec backend python manage.py migrate --run-syncdb
+	@echo "=== Создание суперпользователя (admin@example.com / adminadmin) ==="
+	docker compose exec backend python manage.py shell -c "from api.models import User; User.objects.filter(email='admin@example.com').exists() or User.objects.create_superuser(email='admin@example.com', password='adminadmin', first_name='Admin')"
+	@echo "=== Готово! ==="
+
+# Полная очистка с удалением volume (БД, Redis) + миграции + суперпользователь
+reset-db-full: down clean start
 	@echo "=== Применение миграций ==="
 	docker compose exec backend python manage.py migrate
 	@echo "=== Создание суперпользователя (admin@example.com / adminadmin) ==="
 	docker compose exec backend python manage.py shell -c "from api.models import User; User.objects.filter(email='admin@example.com').exists() or User.objects.create_superuser(email='admin@example.com', password='adminadmin', first_name='Admin')"
-	@echo "=== Готово! ==="
+	@echo "=== Готово! База данных полностью пересоздана! ==="
 
 # Быстрый старт: сборка, миграции, суперпользователь (с логами)
 start:
