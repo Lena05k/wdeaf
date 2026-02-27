@@ -1,6 +1,7 @@
 """
 Authentication views for user login, signup and logout
-Similar to MarsStationBackend implementation
+JWT-only implementation (no Django session)
+Similar to MarsStationBackend
 """
 import logging
 from datetime import datetime, timedelta
@@ -8,11 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from django.contrib.auth import login as django_login, logout as django_logout
 from django.conf import settings
-from django.views.decorators.csrf import csrf_exempt
-from django.utils.decorators import method_decorator
 from ..serializers import (
     UserSerializer, EmailLoginRequestSerializer, EmailSignupRequestSerializer
 )
@@ -24,12 +21,12 @@ logger = logging.getLogger(__name__)
 
 class SignupView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    authentication_classes = []  # No session auth, only JWT
 
     def post(self, request):
         """
-        Register new user with email + password and create session
-        Returns JWT token in cookie (like MarsStationBackend)
+        Register new user with email + password
+        Returns ONLY JWT token in cookie (no session)
         """
         serializer = EmailSignupRequestSerializer(data=request.data)
         if not serializer.is_valid():
@@ -45,12 +42,12 @@ class SignupView(APIView):
         except ValueError as e:
             return Response({'detail': str(e)}, status=status.HTTP_409_CONFLICT)
 
-        django_login(request, user)
+        # Create JWT tokens ONLY (no Django session)
         access_token = create_access_token(user.id)
         refresh_token = create_refresh_token(user.id)
 
         response = Response(status=status.HTTP_201_CREATED)
-        # Set token in cookie (like MarsStationBackend)
+        # Set ONLY access_token in cookie (no sessionid, no csrftoken)
         jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
         response.set_cookie(
             key=jwt_settings.get('AUTH_COOKIE', 'access_token'),
@@ -72,12 +69,12 @@ class SignupView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
+    authentication_classes = []  # No session auth, only JWT
 
     def post(self, request):
         """
-        Login with email + password and create session
-        Returns JWT token in cookie (like MarsStationBackend)
+        Login with email + password
+        Returns ONLY JWT token in cookie (no session)
         """
         serializer = EmailLoginRequestSerializer(data=request.data)
         if not serializer.is_valid():
@@ -91,12 +88,12 @@ class LoginView(APIView):
         if not user:
             return Response({'detail': 'Invalid email or password'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        django_login(request, user)
+        # Create JWT tokens ONLY (no Django session)
         access_token = create_access_token(user.id)
         refresh_token = create_refresh_token(user.id)
 
         response = Response(status=status.HTTP_200_OK)
-        # Set token in cookie (like MarsStationBackend)
+        # Set ONLY access_token in cookie (no sessionid, no csrftoken)
         jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
         response.set_cookie(
             key=jwt_settings.get('AUTH_COOKIE', 'access_token'),
