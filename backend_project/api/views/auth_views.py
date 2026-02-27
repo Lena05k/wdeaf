@@ -117,23 +117,22 @@ class LoginView(APIView):
 
 class LogoutView(APIView):
     """
-    Logout view - uses session authentication
-    CSRF exempt for API usage (like login/signup)
+    Logout view - uses session authentication without CSRF
+    CSRF exempt for API usage
     """
-    authentication_classes = [SessionAuthentication, BasicAuthentication]
-
-    @method_decorator(csrf_exempt)
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
+    authentication_classes = []  # No authentication = no CSRF check
+    permission_classes = [AllowAny]
 
     def post(self, request):
         """
         Logout and clear session + token cookie
         Add token to Redis blacklist (like MarsStationBackend)
+        Manual token validation without CSRF check
         """
         from .jwt_utils import decode_token
         from ..services.token_blacklist import add_token_to_blacklist
         from datetime import datetime, timedelta
+        from rest_framework_simplejwt.authentication import JWTAuthentication
         
         # Get token from cookie (like MarsStationBackend)
         jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
@@ -142,6 +141,17 @@ class LogoutView(APIView):
         if access_token is None:
             return Response(
                 {'detail': 'Token not found in cookie. You may already be logged out.'},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        # Validate token manually (without CSRF)
+        try:
+            jwt_auth = JWTAuthentication()
+            validated_token = jwt_auth.get_validated_token(access_token)
+            user = jwt_auth.get_user(validated_token)
+        except Exception as e:
+            return Response(
+                {'detail': f'Invalid token: {str(e)}'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
@@ -160,8 +170,8 @@ class LogoutView(APIView):
         except Exception as e:
             logger.warning(f"Could not add token to blacklist: {e}")
 
-        # Logout user
-        if request.user.is_authenticated:
+        # Logout user from session
+        if user.is_authenticated:
             django_logout(request)
 
         response = Response(status=status.HTTP_200_OK)
