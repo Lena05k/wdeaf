@@ -38,10 +38,18 @@ class AuthTestCase(TestCase):
         self.login_url = reverse('email_login')
         self.logout_url = reverse('logout')
         self.me_url = reverse('get_current_user')
+        self.user_update_url = reverse('user_update')
+        self.user_delete_url = reverse('user_delete')
 
         self.login_credentials = {
             'email': 'test@example.com',
             'password': 'testpass123'
+        }
+        
+        self.update_data = {
+            'first_name': 'Updated',
+            'last_name': 'User',
+            'username': 'updateduser'
         }
 
     def test_01_signup(self):
@@ -230,5 +238,89 @@ class AuthTestCase(TestCase):
         logout_response = self.client.post(self.logout_url)
         self.assertEqual(logout_response.status_code, status.HTTP_401_UNAUTHORIZED)
         print("  3. ✓ Logout (no token - 401)")
-        
+
         print("✓ Full flow completed successfully")
+
+    # =========================================================================
+    # USER PROFILE TESTS
+    # =========================================================================
+
+    def test_11_user_update_patch(self):
+        """Test PATCH /auth/me/update - partial update"""
+        print("\n=== Test 11: PATCH /auth/me/update ===")
+        
+        # Login
+        login_response = self.client.post(self.login_url, self.login_credentials, format='json')
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+        token = login_response.data['access_token']
+        
+        # Update profile (PATCH)
+        self.client.cookies['access_token'] = token
+        update_response = self.client.patch(self.user_update_url, self.update_data, format='json')
+        
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(update_response.data['first_name'], 'Updated')
+        self.assertEqual(update_response.data['last_name'], 'User')
+        print("✓ PATCH update successful")
+
+    def test_12_user_update_put(self):
+        """Test PUT /auth/me/update - full update"""
+        print("\n=== Test 12: PUT /auth/me/update ===")
+        
+        # Login
+        login_response = self.client.post(self.login_url, self.login_credentials, format='json')
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+        token = login_response.data['access_token']
+        
+        # Update profile (PUT)
+        self.client.cookies['access_token'] = token
+        update_response = self.client.put(self.user_update_url, self.update_data, format='json')
+        
+        self.assertEqual(update_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(update_response.data['first_name'], 'Updated')
+        print("✓ PUT update successful")
+
+    def test_13_user_update_without_jwt(self):
+        """Test /auth/me/update without JWT - should fail"""
+        print("\n=== Test 13: UPDATE without JWT ===")
+        
+        # Try to update without authentication
+        update_response = self.client.patch(self.user_update_url, self.update_data, format='json')
+        
+        self.assertEqual(update_response.status_code, status.HTTP_401_UNAUTHORIZED)
+        print("✓ Update without JWT correctly rejected")
+
+    def test_14_user_delete(self):
+        """Test DELETE /auth/me/delete"""
+        print("\n=== Test 14: DELETE /auth/me/delete ===")
+        
+        # Create user for deletion
+        delete_user_data = {
+            'email': 'delete_me@example.com',
+            'password': 'deletepass123',
+            'first_name': 'Delete'
+        }
+        signup_response = self.client.post(self.signup_url, delete_user_data, format='json')
+        self.assertEqual(signup_response.status_code, status.HTTP_201_CREATED)
+        
+        # Login
+        login_response = self.client.post(self.login_url, delete_user_data, format='json')
+        self.assertEqual(login_response.status_code, status.HTTP_200_OK)
+        token = login_response.data['access_token']
+        
+        # Delete account
+        self.client.cookies['access_token'] = token
+        delete_response = self.client.delete(self.user_delete_url)
+        
+        self.assertEqual(delete_response.status_code, status.HTTP_200_OK)
+        self.assertEqual(delete_response.data['detail'], 'Account deleted successfully')
+        
+        # Check cookies are cleared
+        self.assertIn('access_token', delete_response.cookies)
+        self.assertEqual(delete_response.cookies['access_token']['value'], '')
+        print("✓ Account deleted, cookies cleared")
+        
+        # Try to login again - should fail
+        login_again = self.client.post(self.login_url, delete_user_data, format='json')
+        self.assertEqual(login_again.status_code, status.HTTP_401_UNAUTHORIZED)
+        print("✓ Login after delete correctly rejected")
