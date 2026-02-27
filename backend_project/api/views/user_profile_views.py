@@ -4,7 +4,6 @@ Handles user profile update and deletion
 Similar to functions/ user model operations
 """
 import logging
-from django.views.decorators.csrf import csrf_exempt
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -21,8 +20,9 @@ class UserUpdateView(APIView):
     """
     Update user profile
     Allows users to update their own profile information
-    CSRF exempt for API usage
+    Uses JWT authentication (no CSRF required)
     """
+    authentication_classes = []  # JWT via header, no CSRF
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
@@ -33,7 +33,6 @@ class UserUpdateView(APIView):
             404: openapi.Response(description='User not found'),
         }
     )
-    @csrf_exempt
     def put(self, request):
         """
         Update user profile
@@ -64,7 +63,6 @@ class UserUpdateView(APIView):
             404: openapi.Response(description='User not found'),
         }
     )
-    @csrf_exempt
     def patch(self, request):
         """
         Partial update user profile
@@ -92,8 +90,9 @@ class UserDeleteView(APIView):
     """
     Delete user account
     Allows users to delete their own account
-    CSRF exempt for API usage
+    Uses JWT authentication (no CSRF required)
     """
+    authentication_classes = []  # JWT via header, no CSRF
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
@@ -102,7 +101,6 @@ class UserDeleteView(APIView):
             404: openapi.Response(description='User not found'),
         }
     )
-    @csrf_exempt
     def delete(self, request):
         """
         Delete user account
