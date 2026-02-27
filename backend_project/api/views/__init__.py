@@ -3,6 +3,7 @@ API Views - Deconstructed into modules
 """
 from .auth_views import email_signup, email_login, logout
 from .user_views import get_current_user
+from .user_profile_views import UserUpdateView, UserDeleteView
 from .health_views import health_check
 from .jwt_views import RefreshTokenView
 from .telegram_auth_views import TelegramAuthView
@@ -17,4 +18,6 @@ __all__ = [
     'RefreshTokenView',
     'TelegramAuthView',
     'PhoneAuthView',
+    'UserUpdateView',
+    'UserDeleteView',
 ]
