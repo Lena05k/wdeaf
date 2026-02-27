@@ -20,6 +20,10 @@ class SignupView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = [SessionAuthentication]
 
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
+
     def post(self, request):
         """
         Register new user with email + password and create session
@@ -53,6 +57,10 @@ class SignupView(APIView):
 class LoginView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = [SessionAuthentication]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     def post(self, request):
         """
