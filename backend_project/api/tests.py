@@ -323,3 +323,78 @@ class AuthTestCase(TestCase):
         login_again = self.client.post(self.login_url, delete_user_data, format='json')
         self.assertEqual(login_again.status_code, status.HTTP_401_UNAUTHORIZED)
         print("✓ Login after delete correctly rejected")
+
+    # =========================================================================
+    # PROVIDER TESTS
+    # =========================================================================
+
+    def test_15_provider_signup(self):
+        """Test POST /provider/signup"""
+        print("\n=== Test 15: Provider Signup ===")
+        
+        provider_data = {
+            'email': 'provider_test@example.com',
+            'password': 'providerpass123',
+            'first_name': 'Provider',
+            'last_name': 'Test',
+            'phone': '+77771234567'
+        }
+        
+        signup_response = self.client.post(
+            reverse('provider_signup'),
+            provider_data,
+            format='json'
+        )
+        
+        self.assertEqual(signup_response.status_code, status.HTTP_201_CREATED)
+        self.assertIn('access_token', signup_response.data)
+        self.assertEqual(signup_response.data['user']['is_provider'], True)
+        self.assertEqual(signup_response.data['user']['email'], provider_data['email'])
+        print("✓ Provider signup successful")
+
+    def test_16_provider_list(self):
+        """Test GET /provider/list"""
+        print("\n=== Test 16: Provider List ===")
+        
+        # Create a provider first
+        provider_data = {
+            'email': 'provider_list@example.com',
+            'password': 'providerpass123',
+            'first_name': 'List',
+            'last_name': 'Provider',
+            'phone': '+77779876543'
+        }
+        self.client.post(reverse('provider_signup'), provider_data, format='json')
+        
+        # Get provider list
+        list_response = self.client.get(reverse('provider_list'))
+        
+        self.assertEqual(list_response.status_code, status.HTTP_200_OK)
+        self.assertIn('count', list_response.data)
+        self.assertIn('results', list_response.data)
+        self.assertGreaterEqual(list_response.data['count'], 1)
+        print(f"✓ Provider list retrieved (count: {list_response.data['count']})")
+
+    def test_17_provider_duplicate_signup(self):
+        """Test duplicate provider signup - should fail"""
+        print("\n=== Test 17: Duplicate Provider Signup ===")
+        
+        provider_data = {
+            'email': 'duplicate@example.com',
+            'password': 'providerpass123',
+            'first_name': 'Duplicate',
+            'last_name': 'Provider'
+        }
+        
+        # First signup
+        self.client.post(reverse('provider_signup'), provider_data, format='json')
+        
+        # Duplicate signup - should fail
+        duplicate_response = self.client.post(
+            reverse('provider_signup'),
+            provider_data,
+            format='json'
+        )
+        
+        self.assertEqual(duplicate_response.status_code, status.HTTP_409_CONFLICT)
+        print("✓ Duplicate provider signup correctly rejected")
