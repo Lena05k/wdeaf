@@ -45,3 +45,36 @@ class AuthService:
             return None
 
         return user
+
+    @staticmethod
+    def find_or_create_telegram_user(
+        telegram_id: int,
+        first_name: str,
+        last_name: Optional[str] = None,
+        username: Optional[str] = None,
+        avatar_url: Optional[str] = None
+    ) -> User:
+        """
+        Find or create Telegram user
+        Similar to functions/services/auth_service.py find_or_create_telegram_user
+        """
+        try:
+            user = User.objects.get(telegram_id=telegram_id)
+            # Update user info if changed
+            user.first_name = first_name
+            user.last_name = last_name
+            user.username = username
+            user.avatar_url = avatar_url
+            user.save()
+            return user
+        except User.DoesNotExist:
+            # Create new Telegram user
+            user = User.objects.create(
+                telegram_id=telegram_id,
+                first_name=first_name,
+                last_name=last_name,
+                username=username,
+                avatar_url=avatar_url,
+                auth_provider='telegram'
+            )
+            return user

@@ -5,6 +5,7 @@ from .auth_views import email_signup, email_login, logout
 from .user_views import get_current_user
 from .health_views import health_check
 from .jwt_views import RefreshTokenView
+from .telegram_auth_views import TelegramAuthView
 
 __all__ = [
     'email_signup',
@@ -13,4 +14,5 @@ __all__ = [
     'get_current_user',
     'health_check',
     'RefreshTokenView',
+    'TelegramAuthView',
 ]

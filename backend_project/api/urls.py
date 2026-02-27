@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import email_signup, email_login, logout, get_current_user, health_check, RefreshTokenView
+from .views import email_signup, email_login, logout, get_current_user, health_check, RefreshTokenView, TelegramAuthView
 
 urlpatterns = [
     # Auth endpoints - login/signup with session
@@ -12,6 +12,9 @@ urlpatterns = [
 
     # JWT token management
     path('auth/refresh', RefreshTokenView.as_view(), name='refresh_token'),
+
+    # Telegram authentication
+    path('auth/telegram', TelegramAuthView.as_view(), name='telegram_auth'),
 
     # Health check
     path('health', health_check, name='health_check'),
