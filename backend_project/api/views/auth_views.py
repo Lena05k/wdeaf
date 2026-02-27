@@ -124,6 +124,7 @@ class LogoutView(APIView):
     def post(self, request):
         """
         Logout - clear access_token cookie only
+        Return error if already logged out (no token)
         """
         from .jwt_utils import decode_token
         from ..services.token_blacklist import add_token_to_blacklist
@@ -132,22 +133,31 @@ class LogoutView(APIView):
         jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
         access_token = request.COOKIES.get(jwt_settings.get('AUTH_COOKIE', 'access_token'))
 
+        # Проверка наличия токена
+        if access_token is None:
+            return Response(
+                {
+                    'detail': 'Already logged out',
+                    'message': 'No access token found in cookie'
+                },
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
         # Add token to Redis blacklist
         error_message = None
-        if access_token:
-            try:
-                decoded = decode_token(access_token)
-                exp_timestamp = decoded.get('exp')
-                if exp_timestamp:
-                    expires_at = datetime.utcfromtimestamp(exp_timestamp)
-                else:
-                    expires_at = datetime.utcnow() + timedelta(hours=24)
+        try:
+            decoded = decode_token(access_token)
+            exp_timestamp = decoded.get('exp')
+            if exp_timestamp:
+                expires_at = datetime.utcfromtimestamp(exp_timestamp)
+            else:
+                expires_at = datetime.utcnow() + timedelta(hours=24)
 
-                err, success = add_token_to_blacklist(access_token, expires_at)
-                if err:
-                    error_message = err
-            except Exception as e:
-                error_message = str(e)
+            err, success = add_token_to_blacklist(access_token, expires_at)
+            if err:
+                error_message = err
+        except Exception as e:
+            error_message = str(e)
 
         response = Response(status=status.HTTP_200_OK)
 
@@ -159,7 +169,7 @@ class LogoutView(APIView):
 
         response.data = {
             'detail': 'Successfully logged out',
-            'message': 'Access token cleared'
+            'message': 'Access token cleared and blacklisted'
         }
 
         if error_message:
