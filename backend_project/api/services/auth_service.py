@@ -1,6 +1,6 @@
 from typing import Optional
 from django.contrib.auth.hashers import make_password, check_password
-from .models import User
+from api.models import User
 
 
 class AuthService:
