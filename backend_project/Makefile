@@ -24,55 +24,55 @@ help:
 
 # Запуск контейнеров в фоновом режиме
 up:
-	docker-compose up -d
+	docker compose up -d
 
 # Запуск контейнеров в фоновом режиме с пересборкой
 up-build:
-	docker-compose up -d --build
+	docker compose up -d --build
 
 # Остановка контейнеров
 down:
-	docker-compose down
+	docker compose down
 
 # Пересборка и запуск контейнеров
 rebuild:
-	docker-compose down
-	docker-compose up -d --build
+	docker compose down
+	docker compose up -d --build
 
 # Применение миграций
 migrate:
-	docker-compose exec backend python manage.py migrate
+	docker compose exec backend python manage.py migrate
 
 # Открыть shell в контейнере
 shell:
-	docker-compose exec backend sh
+	docker compose exec backend sh
 
 # Запуск тестов
 test:
-	docker-compose exec backend python manage.py test
+	docker compose exec backend python manage.py test
 
 # Просмотр логов
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 # Логи конкретного сервиса
 logs-backend:
-	docker-compose logs -f backend
+	docker compose logs -f backend
 
 logs-db:
-	docker-compose logs -f db
+	docker compose logs -f db
 
 # Создание суперпользователя admin/admin
 superuser:
-	docker-compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
+	docker compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
 
 # Быстрый старт: сборка, миграции, суперпользователь
 start:
-	docker-compose up -d --build
+	docker compose up -d --build
 	sleep 5
-	docker-compose exec backend python manage.py migrate
-	docker-compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
+	docker compose exec backend python manage.py migrate
+	docker compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin', 'admin@example.com', 'admin')"
 
 # Остановка и очистка volumes
 clean:
-	docker-compose down -v
+	docker compose down -v
