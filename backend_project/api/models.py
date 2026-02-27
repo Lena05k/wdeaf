@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin
 from django.utils import timezone
+from typing import Optional
 
 
 class User(models.Model):
@@ -35,10 +36,10 @@ class User(models.Model):
             models.Index(fields=['created_at'], name='ix_users_created_at'),
         ]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"{self.first_name} {self.last_name or ''}".strip()
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         return {
             "id": self.id,
             "telegram_id": self.telegram_id,

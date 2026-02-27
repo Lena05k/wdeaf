@@ -1,5 +1,7 @@
+from typing import Any, Optional
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.hashers import make_password, check_password
@@ -19,7 +21,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 # JWT utilities
-def create_access_token(user_id, expires_hours=None):
+def create_access_token(user_id: int, expires_hours: Optional[int] = None) -> str:
     exp = expires_hours or getattr(settings, 'JWT_EXPIRATION_HOURS', 24)
     payload = {
         'sub': str(user_id),
@@ -29,7 +31,7 @@ def create_access_token(user_id, expires_hours=None):
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=getattr(settings, 'JWT_ALGORITHM', 'HS256'))
 
-def create_refresh_token(user_id):
+def create_refresh_token(user_id: int) -> str:
     payload = {
         'sub': str(user_id),
         'exp': datetime.utcnow() + timedelta(days=30),
@@ -38,7 +40,7 @@ def create_refresh_token(user_id):
     }
     return jwt.encode(payload, settings.SECRET_KEY, algorithm=getattr(settings, 'JWT_ALGORITHM', 'HS256'))
 
-def decode_token(token):
+def decode_token(token: str) -> dict[str, Any]:
     try:
         return jwt.decode(token, settings.SECRET_KEY, algorithms=[getattr(settings, 'JWT_ALGORITHM', 'HS256')])
     except jwt.InvalidTokenError as e:
@@ -48,7 +50,7 @@ def decode_token(token):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def email_signup(request):
+def email_signup(request: Request) -> Response:
     """Register new user with email + password"""
     serializer = EmailSignupRequestSerializer(data=request.data)
     if not serializer.is_valid():
@@ -82,7 +84,7 @@ def email_signup(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def email_login(request):
+def email_login(request: Request) -> Response:
     """Login with email + password"""
     serializer = EmailLoginRequestSerializer(data=request.data)
     if not serializer.is_valid():
@@ -114,7 +116,7 @@ def email_login(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def phone_auth(request):
+def phone_auth(request: Request) -> Response:
     """Login/register via phone number"""
     serializer = PhoneAuthRequestSerializer(data=request.data)
     if not serializer.is_valid():
@@ -145,7 +147,7 @@ def phone_auth(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def refresh_token(request):
+def refresh_token(request: Request) -> Response:
     """Refresh access token using refresh token"""
     serializer = RefreshTokenRequestSerializer(data=request.data)
     if not serializer.is_valid():
@@ -153,7 +155,7 @@ def refresh_token(request):
 
     try:
         payload = decode_token(serializer.validated_data['refresh_token'])
-        
+
         if payload.get('type') != 'refresh':
             return Response({'detail': 'Invalid token type'}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -185,7 +187,7 @@ def refresh_token(request):
 
 
 @api_view(['GET'])
-def get_current_user(request):
+def get_current_user(request: Request) -> Response:
     """Get current authenticated user"""
     user_serializer = UserSerializer(request.user)
     return Response(user_serializer.data, status=status.HTTP_200_OK)
@@ -193,7 +195,7 @@ def get_current_user(request):
 
 @api_view(['GET'])
 @permission_classes([AllowAny])
-def health_check(request):
+def health_check(request: Request) -> Response:
     """Health check endpoint"""
     return Response({
         'status': 'ok',
