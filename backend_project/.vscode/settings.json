@@ -1,9 +1,12 @@
 {
-    "python.analysis.typeCheckingMode": "standard",
+    "python.analysis.typeCheckingMode": "basic",
     "python.analysis.diagnosticMode": "workspace",
     "python.analysis.extraPaths": [
         "./backend",
         "./api"
+    ],
+    "python.analysis.ignore": [
+        "api/migrations"
     ],
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": false,
