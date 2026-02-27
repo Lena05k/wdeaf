@@ -4,6 +4,8 @@ Handles user profile update and deletion
 Similar to functions/ user model operations
 """
 import logging
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -20,8 +22,13 @@ class UserUpdateView(APIView):
     """
     Update user profile
     Allows users to update their own profile information
+    CSRF exempt for API usage
     """
     permission_classes = [IsAuthenticated]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     @swagger_auto_schema(
         request_body=UserUpdateSerializer,
@@ -88,8 +95,13 @@ class UserDeleteView(APIView):
     """
     Delete user account
     Allows users to delete their own account
+    CSRF exempt for API usage
     """
     permission_classes = [IsAuthenticated]
+
+    @method_decorator(csrf_exempt)
+    def dispatch(self, request, *args, **kwargs):
+        return super().dispatch(request, *args, **kwargs)
 
     @swagger_auto_schema(
         responses={
