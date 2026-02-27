@@ -43,9 +43,9 @@ fi
 
 echo -e "${YELLOW}📦 Step 1: Starting Docker containers...${NC}"
 cd "$PROJECT_DIR"
-docker compose up -d db redis
-echo "Waiting for databases to be ready (10 seconds)..."
-sleep 10
+docker compose up -d
+echo "Waiting for all services to be ready (15 seconds)..."
+sleep 15
 
 echo ""
 echo -e "${YELLOW}🔧 Step 2: Running migrations...${NC}"
