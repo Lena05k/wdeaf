@@ -15,9 +15,9 @@ from ..serializers import (
     ProviderListSerializer,
     UserSerializer
 )
-from ..services import AuthService
-from ..models import User
-from .jwt_utils import create_access_token, create_refresh_token
+from api.services.auth import ProviderAuthService
+from api.services.token import JWTService
+from api.models import User
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +71,8 @@ class ProviderSignupView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            # Create provider user
-            user = AuthService.register_provider_user(
+            auth_service = ProviderAuthService()
+            user = auth_service.register(
                 email=serializer.validated_data['email'],
                 password=serializer.validated_data['password'],
                 first_name=serializer.validated_data['first_name'],
@@ -86,8 +86,9 @@ class ProviderSignupView(APIView):
             )
         
         # Generate JWT tokens
-        access_token = create_access_token(user.id)
-        refresh_token = create_refresh_token(user.id)
+        jwt_service = JWTService()
+        access_token = jwt_service.create_access_token(user.id)
+        refresh_token = jwt_service.create_refresh_token(user.id)
         
         return Response({
             'access_token': access_token,

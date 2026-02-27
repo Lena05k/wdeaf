@@ -1,3 +1,7 @@
+"""
+User model for WDEAF
+Supports Telegram, phone, and email authentication
+"""
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.utils import timezone
@@ -6,7 +10,7 @@ from typing import Optional
 
 class UserManager(BaseUserManager):
     """Custom manager for User model"""
-    
+
     def create_user(self, email, password=None, **extra_fields):
         if not email:
             raise ValueError('Email is required')
@@ -79,16 +83,3 @@ class User(AbstractBaseUser):
             "is_provider": self.is_provider,
             "auth_provider": self.auth_provider,
         }
-
-    # Permissions methods (required for Django admin)
-    def has_perm(self, perm, obj=None):
-        """Does the user have the specific permission?"""
-        return self.is_superuser
-
-    def has_perms(self, perm_list, obj=None):
-        """Does the user have all permissions in perm_list?"""
-        return self.is_superuser
-
-    def has_module_perms(self, app_label):
-        """Does the user have permissions in the given app label?"""
-        return self.is_superuser

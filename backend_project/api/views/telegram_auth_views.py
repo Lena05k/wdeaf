@@ -16,8 +16,8 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.conf import settings
 from ..serializers import TelegramAuthRequestSerializer, AuthResponseSerializer
-from ..services import AuthService
-from .jwt_utils import create_access_token, create_refresh_token
+from api.services.auth import TelegramAuthService
+from api.services.token import JWTService
 
 logger = logging.getLogger(__name__)
 
@@ -98,23 +98,19 @@ class TelegramAuthView(APIView):
         username = telegram_data.get('username', '')
         photo_url = telegram_data.get('photo_url', '')
         
-        try:
-            user = AuthService.find_or_create_telegram_user(
-                telegram_id=telegram_id,
-                first_name=first_name,
-                last_name=last_name,
-                username=username,
-                avatar_url=photo_url
-            )
-        except ValueError as e:
-            return Response(
-                {'detail': str(e)},
-                status=status.HTTP_409_CONFLICT
-            )
-        
+        telegram_service = TelegramAuthService()
+        user = telegram_service.find_or_create_user(
+            telegram_id=telegram_id,
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            avatar_url=photo_url
+        )
+
         # Generate JWT tokens
-        access_token = create_access_token(user.id)
-        refresh_token = create_refresh_token(user.id)
+        jwt_service = JWTService()
+        access_token = jwt_service.create_access_token(user.id)
+        refresh_token = jwt_service.create_refresh_token(user.id)
         
         return Response({
             'access_token': access_token,

@@ -9,8 +9,7 @@ from rest_framework.permissions import AllowAny
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from ..serializers import RefreshTokenRequestSerializer
-from ..services import AuthService
-from .jwt_utils import create_access_token, create_refresh_token, decode_token
+from api.services.token import JWTService
 from ..models import User
 
 
@@ -95,8 +94,9 @@ class RefreshTokenView(APIView):
             )
         
         # Generate new tokens
-        new_access_token = create_access_token(user.id)
-        new_refresh_token = create_refresh_token(user.id)
+        jwt_service = JWTService()
+        new_access_token = jwt_service.create_access_token(user.id)
+        new_refresh_token = jwt_service.create_refresh_token(user.id)
         
         return Response({
             'access_token': new_access_token,

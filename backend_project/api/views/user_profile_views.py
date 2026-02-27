@@ -1,7 +1,5 @@
 """
 User profile management views
-Handles user profile update and deletion
-Similar to functions/ user model operations
 """
 import logging
 from django.conf import settings
@@ -11,139 +9,58 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from ..authentication import UsersAuthentication
-from ..serializers import UserUpdateSerializer, UserSerializer
-from ..models import User
+from api.authentication import UsersAuthentication
+from api.serializers import UserUpdateSerializer, UserSerializer
+from api.repositories import UserRepository
 
 logger = logging.getLogger(__name__)
 
 
 class UserUpdateView(APIView):
-    """
-    Update user profile
-    Allows users to update their own profile information
-    Uses JWT authentication with CSRF check (like MarsStationBackend)
-    """
     authentication_classes = [UsersAuthentication]
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
         request_body=UserUpdateSerializer,
-        responses={
-            200: UserSerializer,
-            400: openapi.Response(description='Invalid data'),
-            404: openapi.Response(description='User not found'),
-        }
+        responses={200: UserSerializer, 400: openapi.Response(description='Invalid data')}
     )
     def put(self, request):
-        """
-        Update user profile
-        
-        Request body:
-        - first_name: User's first name (optional)
-        - last_name: User's last name (optional)
-        - username: Username (optional)
-        - avatar_url: Profile photo URL (optional)
-        
-        Returns:
-        - Updated user information
-        """
         user = request.user
         serializer = UserUpdateSerializer(user, data=request.data, partial=False)
-        
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @swagger_auto_schema(
         request_body=UserUpdateSerializer,
-        responses={
-            200: UserSerializer,
-            400: openapi.Response(description='Invalid data'),
-            404: openapi.Response(description='User not found'),
-        }
+        responses={200: UserSerializer, 400: openapi.Response(description='Invalid data')}
     )
     def patch(self, request):
-        """
-        Partial update user profile
-        
-        Request body (all fields optional):
-        - first_name: User's first name
-        - last_name: User's last name
-        - username: Username
-        - avatar_url: Profile photo URL
-        
-        Returns:
-        - Updated user information
-        """
         user = request.user
         serializer = UserUpdateSerializer(user, data=request.data, partial=True)
-        
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
-        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserDeleteView(APIView):
-    """
-    Delete user account
-    Allows users to delete their own account
-    Uses JWT authentication with CSRF check (like MarsStationBackend)
-    """
     authentication_classes = [UsersAuthentication]
     permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(
-        responses={
-            200: openapi.Response(description='Account deleted successfully'),
-            404: openapi.Response(description='User not found'),
-        }
-    )
+    @swagger_auto_schema(responses={200: openapi.Response(description='Account deleted successfully')})
     def delete(self, request):
-        """
-        Delete user account
-
-        This action is irreversible!
-        Clears all JWT tokens (cookies)
-
-        Returns:
-        - Success message
-        """
         user = request.user
-
-        # Log deletion for audit
-        logger.info(f"User account deletion requested: {user.id} ({user.email or user.phone or user.telegram_id})")
-
-        # Store user info for response (before deletion)
+        logger.info(f"User account deletion requested: {user.id}")
+        
         user_id = user.id
-
-        # Delete user
         user.delete()
-
         logger.info(f"User account deleted: {user_id}")
 
-        # Clear JWT cookies (like logout)
-        response = Response(
-            {'detail': 'Account deleted successfully'},
-            status=status.HTTP_200_OK
-        )
+        response = Response({'detail': 'Account deleted successfully'}, status=status.HTTP_200_OK)
         
         jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
-        
-        # Clear access_token cookie
-        response.delete_cookie(
-            key=jwt_settings.get('AUTH_COOKIE', 'access_token'),
-            path=jwt_settings.get('AUTH_COOKIE_PATH', '/')
-        )
-        
-        # Clear refresh_token cookie
-        response.delete_cookie(
-            key='refresh_token',
-            path='/'
-        )
-
+        response.delete_cookie(key=jwt_settings.get('AUTH_COOKIE', 'access_token'), path='/')
+        response.delete_cookie(key='refresh_token', path='/')
         return response
