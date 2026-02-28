@@ -1,0 +1,215 @@
+# WDEAF - Django Backend + Vue 3 Frontend
+
+## 📋 Обзор
+
+Проект состоит из двух основных частей:
+- **Backend**: Django REST API (`backend_project/`)
+- **Frontend**: Vue 3 + Vite (`frontend/`)
+
+## 🚀 Быстрый старт
+
+### 1. Клонирование репозитория
+```bash
+git clone <repository-url>
+cd wdeaf
+```
+
+### 2. Настройка окружения
+```bash
+# Скопируйте .env.example в .env
+cp .env.example .env
+
+# Отредактируйте .env при необходимости
+# Минимальные настройки:
+# - TELEGRAM_BOT_TOKEN (если нужен Telegram)
+# - JWT_SECRET (для production)
+```
+
+### 3. Запуск проекта
+```bash
+# Запуск всех сервисов
+make up
+
+# Или через docker compose
+docker compose up -d
+```
+
+### 4. Проверка
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8000
+- **Swagger UI**: http://localhost:8000/swagger/
+- **Django Admin**: http://localhost:8000/admin/
+
+## 📁 Структура проекта
+
+```
+wdeaf/
+├── backend_project/        # Django Backend
+│   ├── api/               # API приложение
+│   │   ├── models/        # Модели
+│   │   ├── serializers/   # Сериализаторы
+│   │   ├── services/      # Бизнес-логика
+│   │   ├── views/         # API Views
+│   │   └── tests/         # Тесты
+│   ├── backend/           # Настройки Django
+│   └── manage.py          # Django CLI
+│
+├── frontend/              # Vue 3 Frontend
+│   ├── src/
+│   │   ├── components/    # Vue компоненты
+│   │   ├── views/         # Страницы
+│   │   └── api/           # API клиенты
+│   └── package.json
+│
+├── docker-compose.yml     # Docker конфигурация
+├── .env.example          # Пример окружения
+├── .env                  # Локальное окружение (не в git)
+└── Makefile              # Команды для разработки
+```
+
+## 🔧 Команды разработки
+
+```bash
+# Запуск всех сервисов
+make up
+
+# Остановка сервисов
+make down
+
+# Просмотр логов
+make logs
+make logs-backend    # Только backend
+make logs-frontend   # Только frontend
+
+# Тесты
+make test
+
+# Миграции БД
+make migrate
+
+# Сброс БД (внимание: удаляет все данные!)
+make reset-db
+
+# Shell в контейнерах
+make shell-backend
+make shell-frontend
+
+# Пересборка
+make rebuild
+
+# Полная очистка
+make clean
+```
+
+## 🗄️ База данных
+
+### PostgreSQL
+- **Хост**: localhost:5432
+- **База**: wdeaf
+- **Пользователь**: postgres
+- **Пароль**: postgres
+
+### Redis
+- **Хост**: localhost:6379
+- **Пароль**: нет (для разработки)
+
+## 🔐 Суперпользователь Django
+
+После `make reset-db` создаётся суперпользователь:
+- **Email**: admin@example.com
+- **Пароль**: adminadmin
+
+## 📊 API Документация
+
+- **Swagger UI**: http://localhost:8000/swagger/
+- **ReDoc**: http://localhost:8000/redoc/
+- **OpenAPI JSON**: http://localhost:8000/api/swagger.json
+
+## 🧪 Тестирование
+
+```bash
+# Все тесты
+make test
+
+# Конкретный модуль
+docker compose exec backend python manage.py test api.tests.test_auth
+docker compose exec backend python manage.py test api.tests.test_provider
+
+# С подробным выводом
+docker compose exec backend python manage.py test api.tests --verbosity=2
+```
+
+## 🌐 Frontend API Client
+
+Frontend использует `VITE_API_URL` для подключения к backend:
+
+```javascript
+// frontend/src/api/client.js
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+
+// Пример запроса
+const response = await fetch(`${API_URL}/auth/login`, {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ email, password })
+})
+```
+
+## 🔒 Production настройки
+
+### .env для production
+```bash
+# Security
+JWT_SECRET=your-super-secret-production-key
+SECRET_KEY=django-insecure-production-key-change-this
+
+# Database
+POSTGRES_PASSWORD=secure-production-password
+
+# CORS
+ALLOWED_ORIGINS=https://yourdomain.com
+CSRF_TRUSTED_ORIGINS=https://yourdomain.com
+
+# Cookies
+CSRF_COOKIE_SECURE=True
+SESSION_COOKIE_SECURE=True
+```
+
+### Docker Compose для production
+```bash
+# Используйте docker-compose.prod.yml
+docker compose -f docker-compose.prod.yml up -d
+```
+
+## 🐛 Troubleshooting
+
+### Backend не запускается
+```bash
+# Проверьте логи
+make logs-backend
+
+# Пересоберите
+make rebuild
+```
+
+### Frontend не видит backend
+```bash
+# Проверьте VITE_API_URL в .env
+# Должно быть: VITE_API_URL=http://localhost:8000
+
+# Перезапустите frontend
+docker compose restart frontend
+```
+
+### Ошибки миграции
+```bash
+# Сбросьте БД
+make reset-db
+```
+
+## 📚 Дополнительная документация
+
+- [Backend README](backend_project/README.md)
+- [API Documentation](http://localhost:8000/swagger/)
+- [Django Docs](https://docs.djangoproject.com/)
+- [Vue 3 Docs](https://vuejs.org/)

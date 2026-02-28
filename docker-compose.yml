@@ -1,50 +1,92 @@
 version: '3.8'
 
+# ============================================================================
+# WDEAF - Django Backend + Vue 3 Frontend
+# ============================================================================
+
 services:
   # 🗄️ PostgreSQL Database
   postgres:
-    image: postgres:14-alpine
+    image: postgres:15-alpine
     container_name: wdeaf-postgres
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: wdeaf
-      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+      POSTGRES_DB: ${DB_NAME:-wdeaf_db}
+      POSTGRES_USER: ${DB_USER:-wdeaf_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_db_password_change_this}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:${POSTGRES_PORT:-5432}"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d wdeaf"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-wdeaf_user} -d ${DB_NAME:-wdeaf_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
       - wdeaf-network
 
-  # 🚀 FastAPI Backend
+  # 🗄️ Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: wdeaf-redis
+    ports:
+      - "${REDIS_PORT:-6379}:${REDIS_PORT:-6379}"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - wdeaf-network
+
+  # 🚀 Django Backend
   backend:
     build:
-      context: ./functions
+      context: ./backend_project
       dockerfile: Dockerfile
-    container_name: wdeaf-backend
+    container_name: wdeaf-django-backend
     environment:
-      DATABASE_URL: postgresql+asyncpg://postgres:postgres@postgres:5432/wdeaf
-      BOT_TOKEN: ${BOT_TOKEN}
-      WEBHOOK_URL: http://backend:8000
-      MINI_APP_URL: http://localhost:5173
-      JWT_SECRET: ${JWT_SECRET:-your-secret-key-change-in-production}
-      JWT_EXPIRATION_HOURS: 24
-      ALLOWED_ORIGINS: "http://localhost:5173,http://localhost:3000,http://frontend:3000"
-      PYTHONUNBUFFERED: 1
+      # Django Settings
+      DEBUG: ${DJANGO_DEBUG:-true}
+      SECRET_KEY: ${SECRET_KEY:-django-insecure-change-this-in-production}
+      
+      # Database
+      DB_ENGINE: ${DB_ENGINE:-django.db.backends.postgresql}
+      DB_NAME: ${DB_NAME:-wdeaf_db}
+      DB_USER: ${DB_USER:-wdeaf_user}
+      DB_PASSWORD: ${DB_PASSWORD:-secure_db_password_change_this}
+      DB_HOST: ${DB_HOST:-wdeaf-postgres}
+      DB_PORT: ${POSTGRES_PORT:-5432}
+      
+      # JWT Settings
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-key-change-in-production}
+      JWT_ALGORITHM: ${JWT_ALGORITHM:-HS256}
+      JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS:-24}
+      
+      # Redis
+      REDIS_HOST: ${REDIS_HOST:-wdeaf-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      
+      # CORS & CSRF
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS:-http://localhost:5173,http://localhost:3000}
+      
+      # Telegram
+      BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
     ports:
-      - "8000:8000"
+      - "${BACKEND_PORT:-8000}:${BACKEND_PORT:-8000}"
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     volumes:
-      - ./functions:/app
-    command: python -m uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+      - ./backend_project:/app
+    command: >
+      sh -c 'python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000'
     networks:
       - wdeaf-network
     restart: unless-stopped
@@ -57,13 +99,15 @@ services:
     container_name: wdeaf-frontend
     environment:
       VITE_API_URL: http://localhost:8000
-      VITE_BOT_USERNAME: ${BOT_USERNAME:-wdeaf_bot}
-      VITE_DEBUG: "true"
+      VITE_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME:-wdeaf_bot}
+      VITE_DEBUG: ${VITE_DEBUG:-true}
     ports:
-      - "5173:5173"
+      - "${FRONTEND_PORT:-5173}:${FRONTEND_PORT:-5173}"
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    depends_on:
+      - backend
     command: pnpm dev
     networks:
       - wdeaf-network
@@ -71,6 +115,8 @@ services:
 
 volumes:
   postgres_data:
+    driver: local
+  redis_data:
     driver: local
 
 networks:
