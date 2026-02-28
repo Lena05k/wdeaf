@@ -51,6 +51,7 @@ services:
       # Django Settings
       DEBUG: ${DJANGO_DEBUG}
       SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
       
       # Database - внутри контейнера используем стандартные порты
       DB_ENGINE: ${DB_ENGINE}
@@ -58,7 +59,7 @@ services:
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
-      DB_PORT: 5432
+      DB_PORT: ${DB_PORT}
       
       # JWT Settings
       JWT_SECRET: ${JWT_SECRET}
@@ -67,11 +68,15 @@ services:
       
       # Redis - внутри контейнера используем стандартный порт
       REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: 6379
+      REDIS_PORT: ${REDIS_PORT}
+      REDIS_DB: ${REDIS_DB}
       
       # CORS & CSRF
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
       CSRF_TRUSTED_ORIGINS: ${CSRF_TRUSTED_ORIGINS}
+      CSRF_COOKIE_HTTPONLY: ${CSRF_COOKIE_HTTPONLY}
+      CSRF_COOKIE_SAMESITE: ${CSRF_COOKIE_SAMESITE}
+      CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE}
       
       # Telegram
       BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
@@ -86,6 +91,7 @@ services:
       - ./backend_project:/app
     command: >
       sh -c 'python manage.py migrate &&
+             python create_superuser.py &&
              python manage.py runserver 0.0.0.0:8000'
     networks:
       - wdeaf-network
@@ -98,8 +104,8 @@ services:
       dockerfile: Dockerfile
     container_name: wdeaf-frontend
     environment:
-      VITE_API_URL: http://localhost:8000
-      VITE_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME}
+      VITE_API_URL: ${VITE_API_URL}
+      VITE_BOT_USERNAME: ${VITE_BOT_USERNAME}
       VITE_DEBUG: ${VITE_DEBUG}
     ports:
       - "${FRONTEND_PORT}:5173"
@@ -108,7 +114,7 @@ services:
       - /app/node_modules
     depends_on:
       - backend
-    command: pnpm dev
+    command: npm run dev -- --host 0.0.0.0
     networks:
       - wdeaf-network
     restart: unless-stopped

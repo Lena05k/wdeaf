@@ -83,3 +83,9 @@ class User(AbstractBaseUser):
             "is_provider": self.is_provider,
             "auth_provider": self.auth_provider,
         }
+
+    def has_perm(self, perm, obj=None):
+        return bool(self.is_superuser)
+
+    def has_module_perms(self, app_label):
+        return bool(self.is_superuser)
