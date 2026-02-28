@@ -14,7 +14,7 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -30,7 +30,7 @@ services:
     image: redis:7-alpine
     container_name: wdeaf-redis
     ports:
-      - "${REDIS_PORT}:${REDIS_PORT}"
+      - "${REDIS_PORT}:6379"
     volumes:
       - redis_data:/data
     healthcheck:
@@ -52,22 +52,22 @@ services:
       DEBUG: ${DJANGO_DEBUG}
       SECRET_KEY: ${SECRET_KEY}
       
-      # Database
+      # Database - внутри контейнера используем стандартные порты
       DB_ENGINE: ${DB_ENGINE}
       DB_NAME: ${DB_NAME}
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_HOST: ${DB_HOST}
-      DB_PORT: ${POSTGRES_PORT}
+      DB_PORT: 5432
       
       # JWT Settings
       JWT_SECRET: ${JWT_SECRET}
       JWT_ALGORITHM: ${JWT_ALGORITHM}
       JWT_EXPIRATION_HOURS: ${JWT_EXPIRATION_HOURS}
       
-      # Redis
+      # Redis - внутри контейнера используем стандартный порт
       REDIS_HOST: ${REDIS_HOST}
-      REDIS_PORT: ${REDIS_PORT}
+      REDIS_PORT: 6379
       
       # CORS & CSRF
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS}
@@ -76,7 +76,7 @@ services:
       # Telegram
       BOT_TOKEN: ${TELEGRAM_BOT_TOKEN}
     ports:
-      - "${BACKEND_PORT}:${BACKEND_PORT}"
+      - "${BACKEND_PORT}:8000"
     depends_on:
       postgres:
         condition: service_healthy
@@ -102,7 +102,7 @@ services:
       VITE_BOT_USERNAME: ${TELEGRAM_BOT_USERNAME}
       VITE_DEBUG: ${VITE_DEBUG}
     ports:
-      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+      - "${FRONTEND_PORT}:5173"
     volumes:
       - ./frontend:/app
       - /app/node_modules

@@ -16,12 +16,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-wdeaf-development-key-change-in-production')
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',')
 
 
 # Application definition
@@ -76,12 +76,12 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DB_ENGINE', 'django.db.backends.postgresql'),
-        'NAME': os.getenv('DB_NAME', 'wdeaf'),
-        'USER': os.getenv('DB_USER', 'postgres'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'postgres'),
-        'HOST': os.getenv('DB_HOST', 'db'),
-        'PORT': os.getenv('DB_PORT', '5432'),
+        'ENGINE': os.getenv('DB_ENGINE'),
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -149,10 +149,10 @@ AUTHENTICATION_BACKENDS = [
 
 # JWT Settings
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(hours=int(os.getenv('JWT_EXPIRATION_HOURS', '24'))),
+    'ACCESS_TOKEN_LIFETIME': timedelta(hours=int(os.getenv('JWT_EXPIRATION_HOURS'))),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
-    'ALGORITHM': os.getenv('JWT_ALGORITHM', 'HS256'),
-    'SIGNING_KEY': os.getenv('JWT_SECRET', 'your-super-secret-key-change-in-production'),
+    'ALGORITHM': os.getenv('JWT_ALGORITHM'),
+    'SIGNING_KEY': os.getenv('JWT_SECRET'),
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'sub',
     # Cookie settings (like MarsStationBackend)
@@ -167,11 +167,11 @@ SIMPLE_JWT = {
 AUTH_USER_MODEL = 'api.User'
 
 # CORS settings
-CORS_ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:5173,http://localhost:3000').split(',')
+CORS_ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '').split(',')
 CORS_ALLOW_CREDENTIALS = True
 
 # CSRF settings
-CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost:5173,http://localhost:3000,http://localhost:8000').split(',')
+CSRF_TRUSTED_ORIGINS = os.getenv('CSRF_TRUSTED_ORIGINS', '').split(',')
 CSRF_COOKIE_HTTPONLY = os.getenv('CSRF_COOKIE_HTTPONLY', 'False').lower() == 'true'
 CSRF_COOKIE_SAMESITE = os.getenv('CSRF_COOKIE_SAMESITE', 'Lax')
 CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'
@@ -179,10 +179,10 @@ CSRF_USE_SESSIONS = False
 
 # Redis settings (for token blacklist)
 REDIS = {
-    'host': os.getenv('REDIS_HOST', 'redis'),
-    'port': int(os.getenv('REDIS_PORT', '6379')),
-    'db': int(os.getenv('REDIS_DB', '0')),
-    'password': os.getenv('REDIS_PASSWORD', None),
+    'host': os.getenv('REDIS_HOST'),
+    'port': int(os.getenv('REDIS_PORT')),
+    'db': int(os.getenv('REDIS_DB')),
+    'password': os.getenv('REDIS_PASSWORD'),
 }
 
 # Logging
