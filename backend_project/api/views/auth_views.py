@@ -102,7 +102,7 @@ class LogoutView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
 
-        # Add token to Redis blacklist
+        # Добавить токен в Redis blacklist
         blacklist_service = TokenBlacklistService()
         try:
             jwt_service = JWTService()
@@ -119,7 +119,7 @@ class LogoutView(APIView):
 
         response = Response(status=status.HTTP_200_OK)
         
-        # Clear token cookie
+        # Очистить cookie токена
         response.delete_cookie(
             key=jwt_settings.get('AUTH_COOKIE', 'access_token'),
             path=jwt_settings.get('AUTH_COOKIE_PATH', '/')
@@ -132,7 +132,7 @@ class LogoutView(APIView):
         return response
 
 
-# Function-based views for URL routing
+# Views на основе функций для маршрутизации URL
 email_signup = SignupView.as_view()
 email_login = LoginView.as_view()
 logout = LogoutView.as_view()

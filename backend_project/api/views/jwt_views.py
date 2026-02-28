@@ -59,7 +59,7 @@ class RefreshTokenView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        # Decode and validate refresh token
+        # Декодировать и проверить refresh токен
         try:
             payload = decode_token(refresh_token)
         except Exception as e:
@@ -68,14 +68,14 @@ class RefreshTokenView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
-        # Check token type
+        # Проверить тип токена
         if payload.get('token_type') != 'refresh':
             return Response(
                 {'detail': 'Invalid token type. Expected refresh token.'},
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
-        # Get user ID from token
+        # Получить ID пользователя из токена
         try:
             user_id = int(payload.get('sub'))
         except (ValueError, TypeError):
@@ -84,7 +84,7 @@ class RefreshTokenView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
-        # Get user from database
+        # Получить пользователя из базы данных
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
@@ -93,7 +93,7 @@ class RefreshTokenView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
         
-        # Generate new tokens
+        # Сгенерировать новые токены
         jwt_service = JWTService()
         new_access_token = jwt_service.create_access_token(user.id)
         new_refresh_token = jwt_service.create_refresh_token(user.id)

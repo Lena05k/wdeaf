@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_redis_client() -> Optional[redis.Redis]:
-    """Get Redis client from settings"""
+    """Получить Redis клиент из настроек"""
     redis_config = getattr(settings, 'REDIS', {
         'host': 'localhost',
         'port': 6379,
@@ -36,24 +36,24 @@ def get_redis_client() -> Optional[redis.Redis]:
 
 
 class TokenBlacklistService:
-    """Service for token blacklist operations"""
+    """Сервис для операций с blacklist токенов"""
     
     def __init__(self):
         self.redis_client = get_redis_client()
     
     def add_to_blacklist(self, token: str, expires_at: datetime) -> Tuple[Optional[str], bool]:
         """
-        Add token to blacklist
+        Добавить токен в blacklist
         
         Args:
-            token: JWT token string
-            expires_at: Token expiration time
+            token: Строка JWT токена
+            expires_at: Время истечения токена
             
         Returns:
-            Tuple of (error_message, success)
+            Кортеж (сообщение_об_ошибке, успех)
         """
         if self.redis_client is None:
-            logger.warning("Redis not available, token will not be blacklisted")
+            logger.warning("Redis недоступен, токен не будет добавлен в blacklist")
             return None, True
         
         try:
@@ -64,21 +64,21 @@ class TokenBlacklistService:
             blacklist_key = f"token_blacklist:{token}"
             self.redis_client.setex(blacklist_key, ttl, "blacklisted")
             
-            logger.info(f"Token added to blacklist, TTL: {ttl}s")
+            logger.info(f"Токен добавлен в blacklist, TTL: {ttl}s")
             return None, True
         except Exception as e:
-            logger.error(f"Error adding token to blacklist: {e}")
+            logger.error(f"Ошибка добавления токена в blacklist: {e}")
             return str(e), False
     
     def is_blacklisted(self, token: str) -> bool:
         """
-        Check if token is in blacklist
+        Проверить находится ли токен в blacklist
         
         Args:
-            token: JWT token string
+            token: Строка JWT токена
             
         Returns:
-            True if token is blacklisted
+            True если токен в blacklist
         """
         if self.redis_client is None:
             return False
@@ -87,18 +87,18 @@ class TokenBlacklistService:
             blacklist_key = f"token_blacklist:{token}"
             return self.redis_client.exists(blacklist_key)
         except Exception as e:
-            logger.error(f"Error checking token blacklist: {e}")
+            logger.error(f"Ошибка проверки blacklist токена: {e}")
             return False
     
     def remove_from_blacklist(self, token: str) -> Tuple[Optional[str], bool]:
         """
-        Remove token from blacklist
+        Удалить токен из blacklist
         
         Args:
-            token: JWT token string
+            token: Строка JWT токена
             
         Returns:
-            Tuple of (error_message, success)
+            Кортеж (сообщение_об_ошибке, успех)
         """
         if self.redis_client is None:
             return None, True
@@ -108,5 +108,5 @@ class TokenBlacklistService:
             self.redis_client.delete(blacklist_key)
             return None, True
         except Exception as e:
-            logger.error(f"Error removing token from blacklist: {e}")
+            logger.error(f"Ошибка удаления токена из blacklist: {e}")
             return str(e), False

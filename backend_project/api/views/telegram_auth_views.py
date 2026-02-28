@@ -55,10 +55,10 @@ class TelegramAuthView(APIView):
         - JWT access_token and refresh_token
         - User information
         """
-        # Get Telegram data from request
+        # Получить данные Telegram из запроса
         telegram_data = request.data
         
-        # Validate required fields
+        # Проверить обязательные поля
         required_fields = ['id', 'first_name', 'auth_date', 'hash']
         for field in required_fields:
             if field not in telegram_data:
@@ -67,7 +67,7 @@ class TelegramAuthView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
         
-        # Validate hash
+        # Проверить hash
         bot_token = getattr(settings, 'BOT_TOKEN', None)
         if not bot_token:
             logger.error("BOT_TOKEN not configured in settings")
@@ -82,7 +82,7 @@ class TelegramAuthView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
-        # Check auth_date (not older than 24 hours)
+        # Проверить auth_date (not older than 24 hours)
         auth_date = int(telegram_data.get('auth_date', 0))
         current_time = int(datetime.now().timestamp())
         if current_time - auth_date > 86400:  # 24 hours
@@ -91,7 +91,7 @@ class TelegramAuthView(APIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
-        # Get or create user
+        # Найти или создать пользователя
         telegram_id = int(telegram_data['id'])
         first_name = telegram_data.get('first_name', '')
         last_name = telegram_data.get('last_name', '')
@@ -107,7 +107,7 @@ class TelegramAuthView(APIView):
             avatar_url=photo_url
         )
 
-        # Generate JWT tokens
+        # Сгенерировать JWT токены
         jwt_service = JWTService()
         access_token = jwt_service.create_access_token(user.id)
         refresh_token = jwt_service.create_refresh_token(user.id)

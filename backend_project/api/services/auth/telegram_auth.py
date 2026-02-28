@@ -22,22 +22,22 @@ class TelegramAuthService:
         avatar_url: Optional[str] = None
     ):
         """
-        Find existing Telegram user or create new one
+        Найти существующего Telegram пользователя или создать нового
         
         Args:
-            telegram_id: Telegram user ID
-            first_name: User first name
-            last_name: User last name (optional)
-            username: Telegram username (optional)
-            avatar_url: Profile photo URL (optional)
+            telegram_id: Telegram ID пользователя
+            first_name: Имя пользователя
+            last_name: Фамилия (опционально)
+            username: Telegram username (опционально)
+            avatar_url: URL фото профиля (опционально)
             
         Returns:
-            User object
+            Объект User
         """
         user = self.user_repo.get_by_telegram_id(telegram_id)
         
         if user:
-            # Update existing user info
+            # Обновляем данные существующего пользователя
             return self.user_repo.update(
                 user,
                 first_name=first_name,
@@ -46,7 +46,7 @@ class TelegramAuthService:
                 avatar_url=avatar_url
             )
         
-        # Create new Telegram user
+        # Создаём нового Telegram пользователя
         return self.user_repo.create(
             telegram_id=telegram_id,
             first_name=first_name,

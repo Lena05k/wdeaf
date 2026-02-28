@@ -16,19 +16,19 @@ class EmailAuthService:
     
     def register(self, email: str, password: str, first_name: str, last_name: Optional[str] = None):
         """
-        Register new user with email and password
+        Зарегистрировать пользователя с email и паролем
         
         Args:
-            email: User email
-            password: Plain text password
-            first_name: User first name
-            last_name: User last name (optional)
+            email: Email пользователя
+            password: Пароль в открытом виде
+            first_name: Имя пользователя
+            last_name: Фамилия пользователя (опционально)
             
         Returns:
-            User object
+            Объект User
             
         Raises:
-            ValueError: If email already registered
+            ValueError: Если email уже зарегистрирован
         """
         if self.user_repo.email_exists(email):
             raise ValueError("User with this email already exists")
@@ -43,14 +43,14 @@ class EmailAuthService:
     
     def authenticate(self, email: str, password: str) -> Optional[User]:
         """
-        Authenticate user with email and password
+        Аутентифицировать пользователя с email и паролем
         
         Args:
-            email: User email
-            password: Plain text password
+            email: Email пользователя
+            password: Пароль в открытом виде
             
         Returns:
-            User object if authenticated, None otherwise
+            Объект User если аутентификация успешна, иначе None
         """
         user = self.user_repo.get_by_email(email)
         if not user:

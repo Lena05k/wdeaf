@@ -10,10 +10,10 @@ class UsersAuthentication(jwt_authentication.JWTAuthentication):
     NO CSRF check - JWT in Authorization header is sufficient for API
     """
     def authenticate(self, request):
-        # Try to get token from header first
+        # Пытаемся получить токен из заголовка
         header = self.get_header(request)
 
-        # If no header, try cookie
+        # Если нет заголовка, пробуем cookie
         if header is None:
             raw_token = request.COOKIES.get(getattr(settings, 'SIMPLE_JWT', {}).get('AUTH_COOKIE', 'access_token'))
         else:
@@ -22,23 +22,23 @@ class UsersAuthentication(jwt_authentication.JWTAuthentication):
         if raw_token is None:
             return None
 
-        # Validate token
+        # Проверяем токен
         validated_token = self.get_validated_token(raw_token)
 
-        # Check if token is blacklisted
+        # Проверяем blacklist
         if self.is_token_blacklisted(raw_token):
             raise rest_exceptions.AuthenticationFailed('Token has been revoked')
 
-        # NO CSRF check - JWT token in Authorization header is sufficient
+        # CSRF проверка не требуется - JWT токена в заголовке достаточно
 
-        # Get user from token
+        # Получаем пользователя из токена
         return self.get_user(validated_token), validated_token
 
     def is_token_blacklisted(self, token):
-        """Check if token is in Redis blacklist"""
+        """Проверка токена в Redis blacklist"""
         try:
             from .services.token_blacklist import is_token_blacklisted
             return is_token_blacklisted(token)
         except Exception as e:
-            # If Redis is unavailable, assume token is valid
+            # Если Redis недоступен, считаем токен валидным
             return False

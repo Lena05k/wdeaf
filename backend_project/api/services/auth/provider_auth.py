@@ -22,20 +22,20 @@ class ProviderAuthService:
         phone: Optional[str] = None
     ):
         """
-        Register new service provider
+        Зарегистрировать нового провайдера услуг
         
         Args:
-            email: Provider email
-            password: Plain text password
-            first_name: Provider name
-            last_name: Provider surname (optional)
-            phone: Provider phone (optional)
+            email: Email провайдера
+            password: Пароль в открытом виде
+            first_name: Название/Имя провайдера
+            last_name: Фамилия (опционально)
+            phone: Телефон (опционально)
             
         Returns:
-            User object (is_provider=True)
+            Объект User (is_provider=True)
             
         Raises:
-            ValueError: If email already registered
+            ValueError: Если email уже зарегистрирован
         """
         if self.user_repo.email_exists(email):
             raise ValueError("Provider with this email already exists")

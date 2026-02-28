@@ -21,21 +21,21 @@ class PhoneAuthService:
         username: Optional[str] = None
     ):
         """
-        Find existing phone user or create new one
+        Найти существующего пользователя по телефону или создать нового
         
         Args:
-            phone: Phone number
-            first_name: User first name
-            last_name: User last name (optional)
-            username: Username (optional)
+            phone: Номер телефона
+            first_name: Имя пользователя
+            last_name: Фамилия (опционально)
+            username: Username (опционально)
             
         Returns:
-            User object
+            Объект User
         """
         user = self.user_repo.get_by_phone(phone)
         
         if user:
-            # Update existing user info
+            # Обновляем данные существующего пользователя
             return self.user_repo.update(
                 user,
                 first_name=first_name,
@@ -43,7 +43,7 @@ class PhoneAuthService:
                 username=username
             )
         
-        # Create new phone user
+        # Создаём нового пользователя по телефону
         return self.user_repo.create(
             phone=phone,
             first_name=first_name,

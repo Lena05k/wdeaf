@@ -75,7 +75,7 @@ class PhoneAuthView(APIView):
             username=username
         )
 
-        # Generate JWT tokens
+        # Сгенерировать JWT токены
         jwt_service = JWTService()
         access_token = jwt_service.create_access_token(user.id)
         refresh_token = jwt_service.create_refresh_token(user.id)

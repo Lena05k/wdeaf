@@ -17,23 +17,23 @@ class JWTService:
         self._algorithm = self._jwt_settings.get('ALGORITHM', 'HS256')
     
     def _get_secret(self) -> str:
-        """Get JWT secret key"""
+        """Получить секретный ключ JWT"""
         return self._secret
     
     def _get_algorithm(self) -> str:
-        """Get JWT algorithm"""
+        """Получить алгоритм JWT"""
         return self._algorithm
     
     def create_access_token(self, user_id: int, expires_hours: Optional[int] = None) -> str:
         """
-        Create JWT access token
+        Создать JWT access токен
         
         Args:
-            user_id: User ID
-            expires_hours: Token expiration in hours
+            user_id: ID пользователя
+            expires_hours: Время жизни токена в часах
             
         Returns:
-            JWT token string
+            Строка JWT токена
         """
         exp = expires_hours or int(
             self._jwt_settings.get('ACCESS_TOKEN_LIFETIME', timedelta(hours=24)).total_seconds() / 3600
@@ -51,13 +51,13 @@ class JWTService:
     
     def create_refresh_token(self, user_id: int) -> str:
         """
-        Create JWT refresh token
+        Создать JWT refresh токен
         
         Args:
-            user_id: User ID
+            user_id: ID пользователя
             
         Returns:
-            JWT token string
+            Строка JWT токена
         """
         exp = int(
             self._jwt_settings.get('REFRESH_TOKEN_LIFETIME', timedelta(days=30)).total_seconds() / 86400
@@ -75,28 +75,28 @@ class JWTService:
     
     def decode_token(self, token: str) -> Dict[str, Any]:
         """
-        Decode and validate JWT token
+        Декодировать и проверить JWT токен
         
         Args:
-            token: JWT token string
+            token: Строка JWT токена
             
         Returns:
-            Decoded token payload
+            Расшифрованный payload токена
             
         Raises:
-            jwt.InvalidTokenError: If token is invalid or expired
+            jwt.InvalidTokenError: Если токен невалиден или истёк
         """
         return jwt.decode(token, self._get_secret(), algorithms=[self._get_algorithm()])
     
     def validate_token(self, token: str) -> bool:
         """
-        Validate JWT token without decoding
+        Проверить JWT токен без декодирования
         
         Args:
-            token: JWT token string
+            token: Строка JWT токена
             
         Returns:
-            True if token is valid
+            True если токен валиден
         """
         try:
             self.decode_token(token)

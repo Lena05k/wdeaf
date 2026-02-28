@@ -1,5 +1,5 @@
 """
-Response builder for consistent API responses
+Response builder для консистентных ответов API
 DRY - Don't Repeat Yourself
 """
 from rest_framework.response import Response
@@ -9,30 +9,30 @@ from api.serializers import UserSerializer
 
 
 class AuthResponseBuilder:
-    """Builder for authentication responses with JWT tokens"""
-    
+    """Билдер для ответов аутентификации с JWT токенами"""
+
     @staticmethod
     def with_jwt(user, status_code=status.HTTP_200_OK) -> Response:
         """
-        Create response with JWT tokens
-        
+        Создать ответ с JWT токенами
+
         Args:
-            user: User object
-            status_code: HTTP status code
-            
+            user: Объект User
+            status_code: HTTP статус код
+
         Returns:
-            Response with JWT tokens and user data
+            Response с JWT токенами и данными пользователя
         """
         jwt_service = JWTService()
         access_token = jwt_service.create_access_token(user.id)
         refresh_token = jwt_service.create_refresh_token(user.id)
-        
+
         response = Response(status=status_code)
-        
-        # Set tokens in cookies
+
+        # Устанавливаем токены в cookies
         from django.conf import settings
         jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
-        
+
         response.set_cookie(
             key=jwt_settings.get('AUTH_COOKIE', 'access_token'),
             value=access_token,
@@ -41,26 +41,26 @@ class AuthResponseBuilder:
             samesite=jwt_settings.get('AUTH_COOKIE_SAMESITE', 'Lax'),
             secure=jwt_settings.get('AUTH_COOKIE_SECURE', False)
         )
-        
+
         response.data = {
             'access_token': access_token,
             'refresh_token': refresh_token,
             'token_type': 'bearer',
             'user': UserSerializer(user).data
         }
-        
+
         return response
-    
+
     @staticmethod
     def success(data=None, message='Success', status_code=status.HTTP_200_OK) -> Response:
         """
-        Create success response
-        
+        Создать успешный ответ
+
         Args:
-            data: Response data
-            message: Success message
-            status_code: HTTP status code
-            
+            data: Данные ответа
+            message: Сообщение об успехе
+            status_code: HTTP статус код
+
         Returns:
             Response
         """
@@ -68,30 +68,30 @@ class AuthResponseBuilder:
         if data:
             response_data.update(data)
         return Response(response_data, status=status_code)
-    
+
     @staticmethod
     def error(message='Error', status_code=status.HTTP_400_BAD_REQUEST) -> Response:
         """
-        Create error response
-        
+        Создать ответ об ошибке
+
         Args:
-            message: Error message
-            status_code: HTTP status code
-            
+            message: Сообщение об ошибке
+            status_code: HTTP статус код
+
         Returns:
             Response
         """
         return Response({'detail': message}, status=status_code)
-    
+
     @staticmethod
     def validation_error(errors, status_code=status.HTTP_400_BAD_REQUEST) -> Response:
         """
-        Create validation error response
-        
+        Создать ответ об ошибке валидации
+
         Args:
-            errors: Validation errors dict
-            status_code: HTTP status code
-            
+            errors: Словарь ошибок валидации
+            status_code: HTTP статус код
+
         Returns:
             Response
         """
