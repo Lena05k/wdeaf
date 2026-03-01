@@ -11,19 +11,19 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 log_info() {
-    echo -e "${BLUE}ℹ️${NC} $1"
+    echo -e "${BLUE}$1${NC}"
 }
 
 log_success() {
-    echo -e "${GREEN}✅${NC} $1"
+    echo -e "${GREEN}$1${NC}"
 }
 
 log_warning() {
-    echo -e "${YELLOW}⚠️${NC} $1"
+    echo -e "${YELLOW}$1${NC}"
 }
 
 log_error() {
-    echo -e "${RED}❌${NC} $1"
+    echo -e "${RED}$1${NC}"
 }
 
 # Загружаем .env если существует
@@ -39,9 +39,9 @@ DB_NAME=${DB_NAME:-wdeaf_db}
 DB_PASSWORD=${DB_PASSWORD:-secure_db_password_change_this}
 
 echo ""
-echo -e "${BLUE}════════════════════════════════════════${NC}"
-echo -e "${BLUE}   WDEAF - Проверка PostgreSQL${NC}"
-echo -e "${BLUE}════════════════════════════════════════${NC}"
+echo -e "${BLUE}========================================${NC}"
+echo -e "${BLUE}WDEAF - Проверка PostgreSQL${NC}"
+echo -e "${BLUE}========================================${NC}"
 echo ""
 
 # Проверяем, запущен ли PostgreSQL
