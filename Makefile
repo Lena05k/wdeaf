@@ -27,7 +27,10 @@ up:
 	docker compose up -d postgres redis
 	@echo "Ожидание готовности PostgreSQL..."
 	@sleep 15
+	@echo "Инициализация PostgreSQL..."
 	@./scripts/init_postgres.sh
+	@echo "Ожидание применения прав..."
+	@sleep 5
 	@echo "Запуск backend и frontend..."
 	docker compose up -d backend frontend
 	@sleep 5
@@ -40,7 +43,10 @@ up-safe:
 	docker compose up -d postgres redis
 	@echo "Ожидание готовности PostgreSQL..."
 	@sleep 15
+	@echo "Инициализация PostgreSQL..."
 	@./scripts/init_postgres.sh
+	@echo "Ожидание применения прав..."
+	@sleep 5
 	@echo "Запуск backend и frontend..."
 	docker compose up -d backend frontend
 	@sleep 5
@@ -61,7 +67,10 @@ rebuild:
 	docker compose up -d postgres redis
 	@echo "Ожидание готовности PostgreSQL..."
 	@sleep 15
+	@echo "Инициализация PostgreSQL..."
 	@./scripts/init_postgres.sh
+	@echo "Ожидание применения прав..."
+	@sleep 5
 	@echo "Запуск backend и frontend..."
 	docker compose up -d --build backend frontend
 	@sleep 5
@@ -75,7 +84,10 @@ rebuild-no-cache:
 	docker compose up -d postgres redis
 	@echo "Ожидание готовности PostgreSQL..."
 	@sleep 15
+	@echo "Инициализация PostgreSQL..."
 	@./scripts/init_postgres.sh
+	@echo "Ожидание применения прав..."
+	@sleep 5
 	@echo "Запуск backend и frontend..."
 	docker compose up -d backend frontend
 	@sleep 5

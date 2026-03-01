@@ -70,12 +70,17 @@ psql_super() {
     docker compose exec -T postgres psql -U "$PG_SUPER_USER" -d postgres -c "$1" 2>/dev/null
 }
 
+# Функция для выполнения команд psql в БД приложения от имени суперпользователя
+psql_db_super() {
+    docker compose exec -T postgres psql -U "$PG_SUPER_USER" -d "$DB_NAME" -c "$1" 2>/dev/null
+}
+
 # Проверяем существование пользователя БД
 log_info "Проверка пользователя ${DB_USER}..."
 USER_EXISTS=$(psql_super "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}';" 2>/dev/null | grep -q "1" && echo "yes" || echo "no")
 if [ "$USER_EXISTS" = "no" ]; then
     log_info "Создание пользователя ${DB_USER}..."
-    psql_super "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';" || true
+    psql_super "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}' CREATEDB;" || true
 fi
 
 # Проверяем существование базы данных
@@ -105,11 +110,11 @@ psql_super "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" 2>/dev/n
 
 # Предоставляем права на схему public (необходимо для PostgreSQL 15+)
 log_info "Предоставление прав на схему public..."
-psql_super "GRANT ALL ON SCHEMA public TO ${DB_USER};" 2>/dev/null || true
-psql_super "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${DB_USER};" 2>/dev/null || true
-psql_super "GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO ${DB_USER};" 2>/dev/null || true
-psql_super "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${DB_USER};" 2>/dev/null || true
-psql_super "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${DB_USER};" 2>/dev/null || true
+psql_db_super "GRANT ALL ON SCHEMA public TO ${DB_USER};" 2>/dev/null || true
+psql_db_super "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${DB_USER};" 2>/dev/null || true
+psql_db_super "GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO ${DB_USER};" 2>/dev/null || true
+psql_db_super "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${DB_USER};" 2>/dev/null || true
+psql_db_super "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${DB_USER};" 2>/dev/null || true
 
 # Проверяем аутентификацию пользователя
 log_info "Проверка аутентификации..."

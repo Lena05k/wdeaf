@@ -56,11 +56,11 @@ jobs:
       postgres:
         image: postgres:15-alpine
         env:
-          POSTGRES_DB: ${{ env.DB_NAME }}
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: wdeaf_db
+          POSTGRES_USER: wdeaf_admin
+          POSTGRES_PASSWORD: test_password_ci
         options: >-
-          --health-cmd "pg_isready -U ${{ env.POSTGRES_USER }}"
+          --health-cmd "pg_isready -U wdeaf_admin"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -107,10 +107,14 @@ jobs:
           exit 1
 
       - name: Create database user and grant permissions
+        env:
+          PGPASSWORD: ${{ env.POSTGRES_PASSWORD }}
         run: |
-          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "CREATE USER ${{ env.DB_USER }} WITH PASSWORD '${{ env.DB_PASSWORD }}';" || true
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "CREATE USER ${{ env.DB_USER }} WITH PASSWORD '${{ env.DB_PASSWORD }}' CREATEDB;" || true
           psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "GRANT ALL PRIVILEGES ON DATABASE ${{ env.DB_NAME }} TO ${{ env.DB_USER }};"
           psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "GRANT ALL ON SCHEMA public TO ${{ env.DB_USER }};"
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${{ env.DB_USER }};"
+          psql -h localhost -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${{ env.DB_USER }};"
 
       - name: Run backend migrations
         working-directory: ./backend_project
@@ -362,9 +366,11 @@ jobs:
           sleep 10
           
           # Initialize database user and permissions
-          docker compose exec -T postgres psql -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "CREATE USER ${{ env.DB_USER }} WITH PASSWORD '${{ env.DB_PASSWORD }}';" || true
+          docker compose exec -T postgres psql -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "CREATE USER ${{ env.DB_USER }} WITH PASSWORD '${{ env.DB_PASSWORD }}' CREATEDB;" || true
           docker compose exec -T postgres psql -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "GRANT ALL PRIVILEGES ON DATABASE ${{ env.DB_NAME }} TO ${{ env.DB_USER }};"
           docker compose exec -T postgres psql -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "GRANT ALL ON SCHEMA public TO ${{ env.DB_USER }};"
+          docker compose exec -T postgres psql -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${{ env.DB_USER }};"
+          docker compose exec -T postgres psql -U ${{ env.POSTGRES_USER }} -d ${{ env.DB_NAME }} -c "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${{ env.DB_USER }};"
           
           # Start remaining services
           docker compose up -d backend frontend

@@ -59,9 +59,11 @@ class RefreshTokenView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
         
+        jwt_service = JWTService()
+        
         # Декодировать и проверить refresh токен
         try:
-            payload = decode_token(refresh_token)
+            payload = jwt_service.decode_token(refresh_token)
         except Exception as e:
             return Response(
                 {'detail': f'Invalid token: {str(e)}'},
@@ -94,7 +96,6 @@ class RefreshTokenView(APIView):
             )
         
         # Сгенерировать новые токены
-        jwt_service = JWTService()
         new_access_token = jwt_service.create_access_token(user.id)
         new_refresh_token = jwt_service.create_refresh_token(user.id)
         
