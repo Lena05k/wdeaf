@@ -86,6 +86,19 @@ if [ "$DB_EXISTS" = "no" ]; then
     psql_super "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};" || true
 fi
 
+# Ждем пока схема public будет доступна (до 30 секунд)
+log_info "Ожидание схемы public..."
+for i in {1..30}; do
+    if psql_super "SELECT 1 FROM information_schema.schemata WHERE schema_name='public';" 2>/dev/null | grep -q "1"; then
+        log_info "Схема public доступна"
+        break
+    fi
+    if [ $i -eq 30 ]; then
+        log_info "Схема public не найдена, продолжаем..."
+    fi
+    sleep 1
+done
+
 # Применяем права сразу после создания пользователя и БД
 log_info "Применение прав доступа..."
 psql_super "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" 2>/dev/null || true
