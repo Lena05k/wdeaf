@@ -1,13 +1,17 @@
-.PHONY: help up down rebuild rebuild-no-cache logs shell test migrate reset-db clean
+.PHONY: help up up-safe init-db down rebuild rebuild-no-cache logs shell test migrate reset-db clean reset-volumes check-db
 
 # Справка по командам
 help:
 	@echo "WDEAF Project Commands"
 	@echo ""
 	@echo "  make up          - Запуск всех сервисов (frontend + backend + db + redis)"
+	@echo "  make up-safe     - Запуск с авто-исправлением проблем БД"
+	@echo "  make init-db     - Инициализация/сброс PostgreSQL (проверка пароля, пользователя, БД)"
 	@echo "  make down        - Остановка всех сервисов"
 	@echo "  make rebuild     - Пересборка и запуск всех сервисов"
 	@echo "  make rebuild-no-cache - Пересборка без кэша и запуск всех сервисов"
+	@echo "  make check-db    - Проверка подключения к PostgreSQL"
+	@echo "  make reset-volumes - Остановка и удаление всех volumes (БД, Redis)"
 	@echo "  make logs        - Просмотр логов всех сервисов"
 	@echo "  make logs-backend- Логи backend"
 	@echo "  make logs-frontend - Логи frontend"
@@ -22,6 +26,15 @@ help:
 up:
 	docker compose up -d
 
+# Запуск с автоматической проверкой и исправлением проблем БД
+up-safe:
+	docker compose up -d
+	@./scripts/init_postgres.sh
+
+# Инициализация PostgreSQL (проверка и создание пользователя/БД)
+init-db:
+	@./scripts/init_postgres.sh
+
 # Остановка сервисов
 down:
 	docker compose down
@@ -30,12 +43,18 @@ down:
 rebuild:
 	docker compose down
 	docker compose up -d --build
+	@./scripts/init_postgres.sh
 
 # Пересборка без кэша и запуск
 rebuild-no-cache:
 	docker compose down
 	docker compose build --no-cache
 	docker compose up -d
+	@./scripts/init_postgres.sh
+
+# Проверка подключения к PostgreSQL
+check-db:
+	@./scripts/check_db.sh
 
 # Логи всех сервисов
 logs:
@@ -77,3 +96,10 @@ reset-db:
 # Остановка и очистка volumes
 clean:
 	docker compose down -v
+
+# Сброс volumes (БД и Redis) - полезно при проблемах с паролем/версией PostgreSQL
+reset-volumes:
+	docker compose down -v
+	docker compose up -d
+	@echo ""
+	@echo "✅ Volumes сброшены. БД пересоздана с новыми учетными данными."

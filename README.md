@@ -73,13 +73,31 @@ wdeaf/
 # Запуск всех сервисов
 make up
 
+# Запуск с авто-исправлением проблем БД (рекомендуется для нового окружения)
+make up-safe
+
+# Инициализация PostgreSQL (проверка пользователя, БД, пароля)
+make init-db
+
 # Остановка сервисов
 make down
+
+# Пересборка с авто-проверкой БД
+make rebuild
+
+# Пересборка без кэша с авто-проверкой БД
+make rebuild-no-cache
 
 # Просмотр логов
 make logs
 make logs-backend    # Только backend
 make logs-frontend   # Только frontend
+
+# Проверка подключения к БД
+make check-db
+
+# Сброс volumes (при проблемах с паролем/версией PostgreSQL)
+make reset-volumes
 
 # Тесты
 make test
@@ -93,9 +111,6 @@ make reset-db
 # Shell в контейнерах
 make shell-backend
 make shell-frontend
-
-# Пересборка
-make rebuild
 
 # Полная очистка
 make clean
@@ -183,12 +198,40 @@ docker compose -f docker-compose.prod.yml up -d
 
 ## 🐛 Troubleshooting
 
+### Ошибка аутентификации PostgreSQL
+
+**Симптомы:**
+```
+django.db.utils.OperationalError: connection to server at "wdeaf-postgres" (172.18.0.2), port 5432 failed: FATAL:  password authentication failed for user "wdeaf_user"
+```
+
+**Причина:** Старый том Docker с другим паролем или измененные учетные данные в `.env`
+
+**Решение (автоматическое):**
+```bash
+# Запуск с авто-исправлением проблем БД
+make up-safe
+
+# Или инициализация PostgreSQL
+make init-db
+```
+
+**Решение (вручную):**
+```bash
+# Сброс volumes и пересоздание БД
+make reset-volumes
+
+# Или полная очистка
+make clean
+docker compose up -d
+```
+
 ### Backend не запускается
 ```bash
 # Проверьте логи
 make logs-backend
 
-# Пересоберите
+# Пересоберите с проверкой БД
 make rebuild
 ```
 
@@ -205,6 +248,20 @@ docker compose restart frontend
 ```bash
 # Сбросьте БД
 make reset-db
+```
+
+### Конфликт версий PostgreSQL
+
+**Симптомы:**
+```
+FATAL:  database files are incompatible with server
+The data directory was initialized by PostgreSQL version 16, which is not compatible with this version 15.17
+```
+
+**Решение:**
+```bash
+# Сброс volumes
+make reset-volumes
 ```
 
 ## 📚 Дополнительная документация
