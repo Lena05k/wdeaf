@@ -1,0 +1,26 @@
+"""
+API Views - Deconstructed into modules
+"""
+from .auth_views import email_signup, email_login, logout
+from .user_views import get_current_user
+from .user_profile_views import UserUpdateView, UserDeleteView
+from .health_views import health_check
+from .jwt_views import RefreshTokenView
+from .telegram_auth_views import TelegramAuthView
+from .phone_auth_views import PhoneAuthView
+from .provider_views import ProviderSignupView, ProviderListView
+
+__all__ = [
+    'email_signup',
+    'email_login',
+    'logout',
+    'get_current_user',
+    'health_check',
+    'RefreshTokenView',
+    'TelegramAuthView',
+    'PhoneAuthView',
+    'UserUpdateView',
+    'UserDeleteView',
+    'ProviderSignupView',
+    'ProviderListView',
+]
