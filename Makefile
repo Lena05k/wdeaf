@@ -24,12 +24,28 @@ help:
 
 # Запуск всех сервисов
 up:
-	docker compose up -d
+	docker compose up -d postgres redis
+	@echo "Ожидание готовности PostgreSQL..."
+	@sleep 10
+	@./scripts/init_postgres.sh
+	@echo "Запуск backend и frontend..."
+	docker compose up -d backend frontend
+	@sleep 5
+	@echo "Готово!"
+	@docker compose ps
 
 # Запуск с автоматической проверкой и исправлением проблем БД
 up-safe:
-	docker compose up -d
+	docker compose down -v
+	docker compose up -d postgres redis
+	@echo "Ожидание готовности PostgreSQL..."
+	@sleep 10
 	@./scripts/init_postgres.sh
+	@echo "Запуск backend и frontend..."
+	docker compose up -d backend frontend
+	@sleep 5
+	@echo "Готово!"
+	@docker compose ps
 
 # Инициализация PostgreSQL (проверка и создание пользователя/БД)
 init-db:
@@ -42,15 +58,29 @@ down:
 # Пересборка и запуск
 rebuild:
 	docker compose down
-	docker compose up -d --build
+	docker compose up -d postgres redis
+	@echo "Ожидание готовности PostgreSQL..."
+	@sleep 10
 	@./scripts/init_postgres.sh
+	@echo "Запуск backend и frontend..."
+	docker compose up -d --build backend frontend
+	@sleep 5
+	@echo "Готово!"
+	@docker compose ps
 
 # Пересборка без кэша и запуск
 rebuild-no-cache:
 	docker compose down
 	docker compose build --no-cache
-	docker compose up -d
+	docker compose up -d postgres redis
+	@echo "Ожидание готовности PostgreSQL..."
+	@sleep 10
 	@./scripts/init_postgres.sh
+	@echo "Запуск backend и frontend..."
+	docker compose up -d backend frontend
+	@sleep 5
+	@echo "Готово!"
+	@docker compose ps
 
 # Проверка подключения к PostgreSQL
 check-db:
