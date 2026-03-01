@@ -72,20 +72,22 @@ psql_super() {
 
 # Проверяем существование пользователя БД
 log_info "Проверка пользователя ${DB_USER}..."
-if ! psql_super "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}';" | grep -q "1"; then
-    log_warning "Пользователь ${DB_USER} не существует. Создание..."
+USER_EXISTS=$(psql_super "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}';" 2>/dev/null | grep -q "1" && echo "yes" || echo "no")
+if [ "$USER_EXISTS" = "no" ]; then
+    log_info "Создание пользователя ${DB_USER}..."
     psql_super "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';" || true
 fi
 
 # Проверяем существование базы данных
 log_info "Проверка базы данных ${DB_NAME}..."
-if ! psql_super "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}';" | grep -q "1"; then
-    log_warning "База данных ${DB_NAME} не существует. Создание..."
+DB_EXISTS=$(psql_super "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}';" 2>/dev/null | grep -q "1" && echo "yes" || echo "no")
+if [ "$DB_EXISTS" = "no" ]; then
+    log_info "Создание базы данных ${DB_NAME}..."
     psql_super "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};" || true
 fi
 
-# Проверяем права доступа
-log_info "Проверка прав доступа..."
+# Применяем права сразу после создания пользователя и БД
+log_info "Применение прав доступа..."
 psql_super "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" 2>/dev/null || true
 
 # Предоставляем права на схему public (необходимо для PostgreSQL 15+)

@@ -26,7 +26,7 @@ help:
 up:
 	docker compose up -d postgres redis
 	@echo "Ожидание готовности PostgreSQL..."
-	@sleep 10
+	@sleep 15
 	@./scripts/init_postgres.sh
 	@echo "Запуск backend и frontend..."
 	docker compose up -d backend frontend
@@ -39,7 +39,7 @@ up-safe:
 	docker compose down -v
 	docker compose up -d postgres redis
 	@echo "Ожидание готовности PostgreSQL..."
-	@sleep 10
+	@sleep 15
 	@./scripts/init_postgres.sh
 	@echo "Запуск backend и frontend..."
 	docker compose up -d backend frontend
@@ -60,7 +60,7 @@ rebuild:
 	docker compose down
 	docker compose up -d postgres redis
 	@echo "Ожидание готовности PostgreSQL..."
-	@sleep 10
+	@sleep 15
 	@./scripts/init_postgres.sh
 	@echo "Запуск backend и frontend..."
 	docker compose up -d --build backend frontend
@@ -74,7 +74,7 @@ rebuild-no-cache:
 	docker compose build --no-cache
 	docker compose up -d postgres redis
 	@echo "Ожидание готовности PostgreSQL..."
-	@sleep 10
+	@sleep 15
 	@./scripts/init_postgres.sh
 	@echo "Запуск backend и frontend..."
 	docker compose up -d backend frontend
