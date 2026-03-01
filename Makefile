@@ -1,4 +1,4 @@
-.PHONY: help up down rebuild logs shell test migrate reset-db clean
+.PHONY: help up down rebuild rebuild-no-cache logs shell test migrate reset-db clean
 
 # Справка по командам
 help:
@@ -7,6 +7,7 @@ help:
 	@echo "  make up          - Запуск всех сервисов (frontend + backend + db + redis)"
 	@echo "  make down        - Остановка всех сервисов"
 	@echo "  make rebuild     - Пересборка и запуск всех сервисов"
+	@echo "  make rebuild-no-cache - Пересборка без кэша и запуск всех сервисов"
 	@echo "  make logs        - Просмотр логов всех сервисов"
 	@echo "  make logs-backend- Логи backend"
 	@echo "  make logs-frontend - Логи frontend"
@@ -29,6 +30,12 @@ down:
 rebuild:
 	docker compose down
 	docker compose up -d --build
+
+# Пересборка без кэша и запуск
+rebuild-no-cache:
+	docker compose down
+	docker compose build --no-cache
+	docker compose up -d
 
 # Логи всех сервисов
 logs:
