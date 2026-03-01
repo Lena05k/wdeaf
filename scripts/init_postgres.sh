@@ -31,6 +31,9 @@ if [ -f ".env" ]; then
     export $(grep -v '^#' .env | xargs)
 fi
 
+# Переменные для подключения к PostgreSQL
+PG_SUPER_USER=${POSTGRES_USER:-postgres}
+PG_SUPER_PASSWORD=${POSTGRES_PASSWORD:-secure_db_password_change_this}
 DB_USER=${DB_USER:-wdeaf_user}
 DB_NAME=${DB_NAME:-wdeaf_db}
 DB_PASSWORD=${DB_PASSWORD:-secure_db_password_change_this}
@@ -62,23 +65,34 @@ for i in {1..60}; do
     sleep 1
 done
 
-# Проверяем существование пользователя
+# Функция для выполнения команд psql от имени суперпользователя
+psql_super() {
+    docker compose exec -T postgres psql -U "$PG_SUPER_USER" -d postgres -c "$1" 2>/dev/null
+}
+
+# Проверяем существование пользователя БД
 log_info "Проверка пользователя ${DB_USER}..."
-if ! docker compose exec -T postgres psql -U postgres -d postgres -c "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}';" | grep -q "1"; then
+if ! psql_super "SELECT 1 FROM pg_roles WHERE rolname='${DB_USER}';" | grep -q "1"; then
     log_warning "Пользователь ${DB_USER} не существует. Создание..."
-    docker compose exec -T postgres psql -U postgres -d postgres -c "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';" || true
+    psql_super "CREATE USER ${DB_USER} WITH PASSWORD '${DB_PASSWORD}';" || true
 fi
 
 # Проверяем существование базы данных
 log_info "Проверка базы данных ${DB_NAME}..."
-if ! docker compose exec -T postgres psql -U postgres -d postgres -c "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}';" | grep -q "1"; then
+if ! psql_super "SELECT 1 FROM pg_database WHERE datname='${DB_NAME}';" | grep -q "1"; then
     log_warning "База данных ${DB_NAME} не существует. Создание..."
-    docker compose exec -T postgres psql -U postgres -d postgres -c "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};" || true
+    psql_super "CREATE DATABASE ${DB_NAME} OWNER ${DB_USER};" || true
 fi
 
 # Проверяем права доступа
 log_info "Проверка прав доступа..."
-docker compose exec -T postgres psql -U postgres -d postgres -c "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" 2>/dev/null || true
+psql_super "GRANT ALL PRIVILEGES ON DATABASE ${DB_NAME} TO ${DB_USER};" 2>/dev/null || true
+
+# Предоставляем права на схему public (необходимо для PostgreSQL 15+)
+log_info "Предоставление прав на схему public..."
+psql_super "GRANT ALL ON SCHEMA public TO ${DB_USER};" 2>/dev/null || true
+psql_super "GRANT ALL ON ALL TABLES IN SCHEMA public TO ${DB_USER};" 2>/dev/null || true
+psql_super "GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO ${DB_USER};" 2>/dev/null || true
 
 # Проверяем аутентификацию пользователя
 log_info "Проверка аутентификации..."
